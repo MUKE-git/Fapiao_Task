@@ -1,0 +1,14 @@
+.streamlit/secrets.toml
+.env
+.env.local
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 本机专用入口（密钥与邮箱仅通过环境变量配置，不纳入版本库）
+main_test.py
+history1_test.py
+
+# 本地对话导出，可能含误粘贴的密钥
+.specstory/
