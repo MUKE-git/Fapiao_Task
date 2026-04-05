@@ -12,3 +12,6 @@ history1_test.py
 
 # 本地对话导出，可能含误粘贴的密钥
 .specstory/
+
+# 单轮任务调试快照（可能含邮件主题等，非源码）
+task_debug.json

@@ -25,7 +25,29 @@ streamlit run history1_test.py
 python history1_test.py
 ```
 
-在页面填写 IMAP 地址、邮箱、授权码；结果默认在**本机桌面**上指定文件夹（如 `Invoice_Task`）。页面与日志**不会**展示百炼 API Key。
+### 本机 vs 云端（临时目录）
+
+- **本机默认**：结果写在**当前用户桌面**下你填写的子文件夹（如 `Invoice_Task`）。处理结束后可**下载 zip** 作备份。
+- **Streamlit Community Cloud** 等环境：会自动使用**临时目录**，处理结束后请**下载 zip**；服务器不长期保存文件。也可在页面「高级选项」中勾选「强制使用临时目录并打包下载」在本机测试同样流程。
+- 可选环境变量：`FAPIAO_USE_TEMP_OUTPUT=1` 时强制走临时目录 + zip。
+
+页面与日志**不会**展示百炼 API Key。
+
+### 输出内容
+
+- **汇总表**：`发票信息汇总表.xlsx`，第一行为表头，列顺序为：发票日期、发票号码、报销金额（后续若扩展字段，在同一顺序末尾追加列即可）。
+- **调试**：`task_debug.json`。
+- **附件与 PDF**：见目录 `1_Downloaded_Zips`、`2_Extracted_PDFs`。
+
+### 命名规则
+
+- 每个 PDF 的类型判定顺序为：**邮件附件原名**（含「行程单」「发票」等关键词）**>** **AI 的 file_classifications** **>** **PDF 正文关键词**。
+- 仅当上述三种依据规范化后**不完全一致**时，输出文件名才带后缀 **「（待人工核查）」**；三者一致时不加该后缀。
+- 若某封邮件出现 **Not Found**、**FIELD_NOT_FOUND** 或 **AI 调用异常**，Streamlit 页面会列出该邮件的**主题**与 **Date 头时间**，便于在邮箱里定位原信核对。
+
+### 关于「附件越跑越多 / 和上次混在一起」
+
+程序只处理**未读**邮件，且**不会**自动把邮件标为已读。若同一批未读被多次运行，或多次任务共用**同一输出文件夹**，`2_Extracted_PDFs` 里会累积多轮文件，看起来像「重复」。需要时可：手动将已处理邮件标为已读，或每次使用**新的输出文件夹名**，或清空该目录后再跑。
 
 ## 本机运营脚本
 
@@ -33,5 +55,5 @@ python history1_test.py
 
 ## 模块说明
 
-- `invoice_pipeline.py`：收信、附件、AI、Excel、debug（无 Streamlit）
+- `invoice_pipeline.py`：收信、附件、AI、Excel、debug（无 Streamlit）；`zip_directory_to_bytes` 供打包下载。
 - `app_demo.py`：Streamlit 界面
