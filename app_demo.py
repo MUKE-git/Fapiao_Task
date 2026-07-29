@@ -31,6 +31,16 @@ def _dashscope_api_key() -> str:
         return ""
 
 
+def _dashscope_model() -> str:
+    env_model = (os.environ.get("DASHSCOPE_MODEL") or "").strip()
+    if env_model:
+        return env_model
+    try:
+        return str(st.secrets.get("DASHSCOPE_MODEL", "") or "").strip() or "qwen-plus"
+    except (FileNotFoundError, TypeError, Exception):
+        return "qwen-plus"
+
+
 def _use_cloud_output(force: bool) -> bool:
     """是否使用临时目录 + 打包下载（Streamlit Cloud / 环境变量 / 用户勾选）。"""
     if force:
@@ -107,6 +117,7 @@ if submitted:
                 output_folder_name=output_folder,
                 use_netease_id=use_netease,
                 dashscope_api_key=api_key,
+                dashscope_model=_dashscope_model(),
                 output_root=output_root,
             )
 

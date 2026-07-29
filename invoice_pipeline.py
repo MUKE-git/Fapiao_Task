@@ -31,6 +31,13 @@ SUMMARY_COLUMNS: List[Tuple[str, str]] = [
     ("发票日期", "invoice_date"),
     ("发票号码", "invoice_number"),
     ("报销金额", "total_amount"),
+    ("发票类型", "invoice_type"),
+    ("票面类型", "receipt_type"),
+    ("出行时间", "travel_time"),
+    ("销售方", "seller"),
+    ("邮件号码", "task_id"),
+    ("行程类型", "trip_type"),
+    ("出发地/目的地", "origin_dest"),
 ]
 
 import dashscope
@@ -71,6 +78,7 @@ class RunConfig:
     output_folder_name: str = "Invoice_Task"
     use_netease_id: bool = False
     dashscope_api_key: str = ""
+    dashscope_model: str = "qwen-plus"
     output_root: Optional[str] = None
 
     @property
@@ -213,6 +221,11 @@ def build_fallback_audit_result(files):
     invoice_no = "Not Found"
     invoice_date = "Not Found"
     travel_time = "Not Found"
+    invoice_type = "Not Found"
+    receipt_type = "Not Found"
+    seller = "Not Found"
+    trip_type = "Not Found"
+    origin_dest = "Not Found"
 
     m_amt = re.search(r"价税合计[^\n]{0,40}?[（\(]小写[）\)]\s*[¥￥]?\s*([0-9]+(?:\.[0-9]+)?)", invoice_text)
     if not m_amt:
@@ -235,11 +248,36 @@ def build_fallback_audit_result(files):
     if m_time:
         travel_time = f"{_normalize_date_text(m_time.group(1))} {m_time.group(2)}"
 
+    m_inv_type = re.search(r"(?:发票类型|发票名称)[:：]?\s*(.{2,30})", invoice_text)
+    if m_inv_type:
+        invoice_type = m_inv_type.group(1).strip()
+
+    m_rec_type = re.search(r"(?:服务名称|货物名称)[:：]?\s*\*?([^*\n]{2,20})\*?", invoice_text)
+    if m_rec_type:
+        receipt_type = m_rec_type.group(1).strip()
+
+    m_seller = re.search(r"(?:销售方名称|销售方)[:：]?\s*(.{4,60})", invoice_text)
+    if m_seller:
+        seller = m_seller.group(1).strip()
+
+    m_trip_type = re.search(r"(机票|高铁|火车|滴滴|网约车|出租车|地铁|公交|大巴|飞机)", itinerary_text)
+    if m_trip_type:
+        trip_type = m_trip_type.group(1)
+
+    m_od = re.search(r"([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)\s*[-—→至到]\s*([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)", itinerary_text)
+    if m_od:
+        origin_dest = f"{m_od.group(1)} → {m_od.group(2)}"
+
     return {
         "total_amount": amount,
         "invoice_number": invoice_no,
         "invoice_date": invoice_date,
         "travel_time": travel_time,
+        "invoice_type": invoice_type,
+        "receipt_type": receipt_type,
+        "seller": seller,
+        "trip_type": trip_type,
+        "origin_dest": origin_dest,
         "data_source": "Fallback_Local_Regex",
     }
 
@@ -568,7 +606,9 @@ def _rename_pdfs_with_audit(
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """按「原名>AI>正文」解析类型后重命名；仅当三种类型依据不一致时加「（待人工核查）」。"""
     amount_text = format_amount_text(data.get("total_amount", "0"))
-    invoice_date_cn = format_invoice_date_cn(data.get("invoice_date", "Not Found"))
+    inv_date_raw = str(data.get("invoice_date", "")).strip()
+    if not inv_date_raw or inv_date_raw == "Not Found":
+        inv_date_raw = "未知日期"
     classifications = data.get("file_classifications") or []
     files = task_info.get("files") or []
     manual_unknown: List[Dict[str, Any]] = []
@@ -625,11 +665,12 @@ def _rename_pdfs_with_audit(
         # #endregion
 
         if eff_n == "Invoice":
-            base = f"{invoice_date_cn}+客运服务费+{amount_text}元"
+            inv_type = str(data.get("receipt_type") or data.get("invoice_type") or "发票").strip()
+            base = f"{inv_type}+{inv_date_raw}+{amount_text}元"
         elif eff_n == "Itinerary":
-            base = f"行程单+{amount_text}元"
+            base = f"行程单+{inv_date_raw}+{amount_text}元"
         else:
-            base = f"票据+{amount_text}元"
+            base = f"票据+{inv_date_raw}+{amount_text}元"
         new_name = f"{base}{tag}.pdf"
         raw_new = os.path.join(os.path.dirname(old), new_name)
         new = build_non_conflicting_path(raw_new)
@@ -649,6 +690,7 @@ def _rename_pdfs_with_audit(
 
 def call_ai_audit_and_rename(
     task_info: dict,
+    model: str = "qwen-plus",
     mail_subject: str = "",
     mail_date_hint: str = "",
 ) -> Tuple[Optional[dict], str, List[Dict[str, Any]], List[Dict[str, Any]]]:
@@ -669,7 +711,7 @@ def call_ai_audit_and_rename(
 # Task 
 1. **角色判定**：结合附件原名与正文，判断每个文件是真正的【发票】、还是【行程单/行程明细】、或其它（Unknown）。
 2. **数据核实**：若附件原名已能判断类型，file_classifications 的 role 应与「Pre-Type（原名优先合并后）」一致；若正文与原名明显矛盾，role 可为 Unknown。 
-3. **信息提取**：从判定后的文件中提取四个核心字段。
+3. **信息提取**：从判定后的文件中提取七个核心字段。
 4. **必须输出 file_classifications**：与上述文件一一对应；每个对象的 file 字段必须与输入中的文件名（含 Msg 前缀的 pdf 名）一致；role 只能是 Invoice、Itinerary、Unknown 三者之一（英文）。
 
 # Extraction Rules
@@ -690,7 +732,28 @@ def call_ai_audit_and_rename(
    - 必须从【行程单】文本中提取。
    - 重点寻找“上车时间”或“用车时间” 。
    - **核心逻辑**：如果行程单包含多段行程（多行数据），请务必只提取【第一笔行程】的起始时间 。
-   - 忽略“申请日期”或“打印日期” [cite: 15, 24]。
+   - 忽略“申请日期”或“打印日期” 。
+5. **发票类型 (invoice_type)**：
+   - 从【发票】文本中提取。
+   - 如“增值税电子普通发票”、“增值税专用发票”、“增值税普通发票”等。
+   - 通常位于票面顶部标题区域。
+6. **票面类型 (receipt_type)**：
+   - 从【发票】文本中提取。
+   - 即发票的服务/货物名称，如“客运服务费”、“餐饮服务费”、“住宿服务费”等。
+   - 通常位于“货物或应税劳务、服务名称”或“*服务名称*”之后。
+7. **销售方 (seller)**：
+   - 从【发票】文本中提取。
+   - 即开票方企业名称，通常位于“销售方名称”或“销售方”之后。
+   - 提取完整的公司全称。
+8. **行程类型 (trip_type)**：
+   - 必须从【行程单】文本中提取。
+   - 判断出行方式，如“机票”、“高铁”、“火车”、“滴滴”、“网约车”、“出租车”、“地铁”、“公交”等。
+   - 若行程单中无明确出行方式，填写 "Not Found"。
+9. **出发地/目的地 (origin_dest)**：
+   - 必须从【行程单】文本中提取。
+   - 格式为“出发地 → 目的地”，如“北京 → 上海”、“杭州东站 → 南京南站”。
+   - 若行程单包含多段行程，只提取第一段的起终点。
+   - 若无法提取，填写 "Not Found"。
 
 # Constraints
 - 如果信息缺失，请填写 "Not Found"。
@@ -704,6 +767,11 @@ def call_ai_audit_and_rename(
   "invoice_number": "26327000000491302024",
   "invoice_date": "2026-03-09",
   "travel_time": "2026-02-27 09:18",
+  "invoice_type": "增值税电子普通发票",
+  "receipt_type": "客运服务费",
+  "seller": "某某出行科技有限公司",
+  "trip_type": "网约车",
+  "origin_dest": "杭州东站 → 萧山国际机场",
   "data_source": "T3_Chuxing",
   "file_classifications": [
     {"file": "Msg123_发票.pdf", "role": "Invoice"},
@@ -713,8 +781,19 @@ def call_ai_audit_and_rename(
 
     error_reason = ""
     try:
-        # 步骤 B：HTTP 调 DashScope，期望返回一整段 JSON 字符串
-        response = Generation.call(model='qwen-plus', prompt=f"{system_prompt}\n内容：{combined_content}")
+        # 步骤 B：HTTP 调 DashScope，带重试（429/5xx 最多重试2次，间隔1s/3s）
+        response = None
+        retry_intervals = [1, 3]
+        for attempt in range(1 + len(retry_intervals)):
+            response = Generation.call(model=model, prompt=f"{system_prompt}\n内容：{combined_content}")
+            if response.status_code == 200:
+                break
+            if response.status_code == 429 or response.status_code >= 500:
+                if attempt < len(retry_intervals):
+                    time.sleep(retry_intervals[attempt])
+                    continue
+            break
+
         if response.status_code == 200:
             res_text = response.output.text.replace("```json", "").replace("```", "").strip()
             try:
@@ -794,11 +873,15 @@ def run_pipeline(
             if audit is None:
                 flags.append("无 audit_result")
             else:
-                for k in ("invoice_number", "invoice_date", "total_amount"):
+                for k in ("invoice_number", "invoice_date", "total_amount", "invoice_type", "receipt_type", "seller"):
                     if audit.get(k) in (None, "", "Not Found"):
                         flags.append(f"缺少或无效: {k}")
                 if has_it and audit.get("travel_time") in (None, "", "Not Found"):
                     flags.append("缺少或无效: travel_time（行程单）")
+                if has_it and audit.get("trip_type") in (None, "", "Not Found"):
+                    flags.append("缺少或无效: trip_type（行程单）")
+                if has_it and audit.get("origin_dest") in (None, "", "Not Found"):
+                    flags.append("缺少或无效: origin_dest（行程单）")
             if flags:
                 out.append({
                     "mail_subject": item.get("subject", ""),
@@ -1022,7 +1105,7 @@ def run_pipeline(
                 else:
                     log(f"正在调用 AI 审计: {subject}...")
                     audit_res, error_reason, mm, manual_u = call_ai_audit_and_rename(
-                        task_summary[msg_id_str], mail_subject=subject, mail_date_hint=friendly_date
+                        task_summary[msg_id_str], model=cfg.dashscope_model, mail_subject=subject, mail_date_hint=friendly_date
                     )
                     all_manual_unknown.extend(manual_u)
                     if audit_res:
@@ -1036,11 +1119,25 @@ def run_pipeline(
                     pre_reason = task_summary[msg_id_str].get("error_reason", "")
                     task_summary[msg_id_str]["error_reason"] = (pre_reason + ";" + error_reason).strip(";")
                     if audit_res:
-                        excel_rows.append({
-                            "invoice_date": audit_res.get("invoice_date", "Not Found"),
-                            "invoice_number": audit_res.get("invoice_number", "Not Found"),
-                            "total_amount": audit_res.get("total_amount", "Not Found"),
-                        })
+                        has_not_found = any(
+                            str(audit_res.get(k, "")).strip() in ("", "Not Found")
+                            for k in ("invoice_date", "invoice_number", "total_amount")
+                        )
+                        if has_not_found:
+                            log(f"⚠️ 关键字段缺失，未写入 Excel: {subject}")
+                        else:
+                            excel_rows.append({
+                                "invoice_date": audit_res.get("invoice_date", "Not Found"),
+                                "invoice_number": audit_res.get("invoice_number", "Not Found"),
+                                "total_amount": audit_res.get("total_amount", "Not Found"),
+                                "invoice_type": audit_res.get("invoice_type", "Not Found"),
+                                "receipt_type": audit_res.get("receipt_type", "Not Found"),
+                                "travel_time": audit_res.get("travel_time", "Not Found"),
+                                "seller": audit_res.get("seller", "Not Found"),
+                                "task_id": msg_id_str,
+                                "trip_type": audit_res.get("trip_type", "Not Found"),
+                                "origin_dest": audit_res.get("origin_dest", "Not Found"),
+                            })
 
         # 7.7 所有邮件处理完后：把本轮汇总行写入 Excel，并写 task_debug.json
         excel_error, excel_target_file = append_to_summary_excel(
