@@ -19,6 +19,7 @@ import json
 import os
 import re
 import time
+import uuid
 import zipfile
 from dataclasses import dataclass
 from email.header import decode_header
@@ -241,30 +242,53 @@ def build_fallback_audit_result(files):
     if m_date:
         invoice_date = _normalize_date_text(m_date.group(1))
 
+    # 发票类型：匹配标题行如 "电子发票（普通发票）"、"增值税电子普通发票" 等
+    m_inv_type = re.search(r"(?:发票类型|发票名称)[:：]?\s*(.{2,30})", invoice_text)
+    if not m_inv_type:
+        m_inv_type = re.search(r"(增值税)?电子发票[（(]([^)）]+)[)）]", invoice_text)
+        if m_inv_type:
+            invoice_type = f"电子发票（{m_inv_type.group(2)}）"
+        else:
+            m_inv_type = re.search(r"(增值税\w*发票|电子发票|通用机打发票|公路内河货运发票)", invoice_text)
+    if m_inv_type and invoice_type == "Not Found":
+        invoice_type = m_inv_type.group(1) if m_inv_type.lastindex is None or m_inv_type.lastindex == 0 else m_inv_type.group(0)
+
+    # 票面类型：匹配 *服务名*项目名 格式，如 "*运输服务*客运服务费"
+    m_rec_type = re.search(r"(?:服务名称|货物名称)[:：]?\s*\*?([^*\n]{2,20})\*?", invoice_text)
+    if not m_rec_type:
+        m_rec_type = re.search(r"\*([^*]+)\*([^*\n]{2,20})", invoice_text)
+        if m_rec_type:
+            receipt_type = m_rec_type.group(2).strip()
+    if m_rec_type and receipt_type == "Not Found":
+        receipt_type = m_rec_type.group(1).strip() if receipt_type == "Not Found" else receipt_type
+
+    # 销售方：匹配各种格式，如 "销 名称：xxx"、"销售方名称：xxx"、"销售方：xxx"
+    m_seller = re.search(r"(?:销售方名称|销售方)[:：]?\s*(.{4,60})", invoice_text)
+    if not m_seller:
+        m_seller = re.search(r"销\s*售?\s*方?\s*名称[:：]?\s*(.{4,60})", invoice_text)
+    if not m_seller:
+        m_seller = re.search(r"销\s+名称[:：]\s*(.{4,60})", invoice_text)
+    if m_seller:
+        seller = m_seller.group(1).strip()
+
+    # 出行时间：从行程单首行提取日期+时间（支持跨行格式）
     m_time = re.search(
-        r"([0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2})[\s\n]*([0-2]?[0-9]:[0-5][0-9](?::[0-5][0-9])?)",
+        r"([0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2})[\s\S]*?([0-2]?[0-9]:[0-5][0-9](?::[0-5][0-9])?)",
         itinerary_text
     )
     if m_time:
         travel_time = f"{_normalize_date_text(m_time.group(1))} {m_time.group(2)}"
 
-    m_inv_type = re.search(r"(?:发票类型|发票名称)[:：]?\s*(.{2,30})", invoice_text)
-    if m_inv_type:
-        invoice_type = m_inv_type.group(1).strip()
-
-    m_rec_type = re.search(r"(?:服务名称|货物名称)[:：]?\s*\*?([^*\n]{2,20})\*?", invoice_text)
-    if m_rec_type:
-        receipt_type = m_rec_type.group(1).strip()
-
-    m_seller = re.search(r"(?:销售方名称|销售方)[:：]?\s*(.{4,60})", invoice_text)
-    if m_seller:
-        seller = m_seller.group(1).strip()
-
-    m_trip_type = re.search(r"(机票|高铁|火车|滴滴|网约车|出租车|地铁|公交|大巴|飞机)", itinerary_text)
+    # 行程类型：匹配车型/服务方（快车、曹操出行等）
+    m_trip_type = re.search(r"(机票|高铁|火车|滴滴|网约车|出租车|地铁|公交|大巴|飞机|快车|专车|顺风车|曹操出行|T3出行|阳光出行|花小猪)", itinerary_text)
     if m_trip_type:
         trip_type = m_trip_type.group(1)
 
+    # 出发地/目的地：从行程单表格中提取起点和终点
     m_od = re.search(r"([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)\s*[-—→至到]\s*([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)", itinerary_text)
+    if not m_od:
+        # 尝试匹配表格格式：城市 起点 终点（如 "广州 春兰花园西南侧 智光综合能源产业"）
+        m_od = re.search(r"[\u4e00-\u9fa5]{2,}\s+([\u4e00-\u9fa5]{2,}(?:[-\u4e00-\u9fa5]*)?)\s+([\u4e00-\u9fa5]{2,}(?:[-\u4e00-\u9fa5]*)?)\s+[¥￥]", itinerary_text)
     if m_od:
         origin_dest = f"{m_od.group(1)} → {m_od.group(2)}"
 
@@ -603,6 +627,7 @@ def _rename_pdfs_with_audit(
     data: dict,
     mail_subject: str,
     mail_date_hint: str,
+    run_id: str = "",
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """按「原名>AI>正文」解析类型后重命名；仅当三种类型依据不一致时加「（待人工核查）」。"""
     amount_text = format_amount_text(data.get("total_amount", "0"))
@@ -616,12 +641,12 @@ def _rename_pdfs_with_audit(
     # #region agent log
     def _dbg(loc: str, msg: str, data_d: Dict[str, Any], hid: str) -> None:
         try:
-            p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "debug-70cc39.log")
+            p = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"debug-{run_id}.log")
             with open(p, "a", encoding="utf-8") as df:
                 df.write(
                     json.dumps(
                         {
-                            "sessionId": "70cc39",
+                            "sessionId": run_id,
                             "timestamp": int(time.time() * 1000),
                             "location": loc,
                             "message": msg,
@@ -693,6 +718,7 @@ def call_ai_audit_and_rename(
     model: str = "qwen-plus",
     mail_subject: str = "",
     mail_date_hint: str = "",
+    run_id: str = "",
 ) -> Tuple[Optional[dict], str, List[Dict[str, Any]], List[Dict[str, Any]]]:
     # 步骤 A：把同一封邮件下的多个 PDF 片段拼成一段给模型的「内容」
     combined_content = ""
@@ -711,7 +737,7 @@ def call_ai_audit_and_rename(
 # Task 
 1. **角色判定**：结合附件原名与正文，判断每个文件是真正的【发票】、还是【行程单/行程明细】、或其它（Unknown）。
 2. **数据核实**：若附件原名已能判断类型，file_classifications 的 role 应与「Pre-Type（原名优先合并后）」一致；若正文与原名明显矛盾，role 可为 Unknown。 
-3. **信息提取**：从判定后的文件中提取七个核心字段。
+3. **信息提取**：从判定后的文件中提取以下所有字段。
 4. **必须输出 file_classifications**：与上述文件一一对应；每个对象的 file 字段必须与输入中的文件名（含 Msg 前缀的 pdf 名）一致；role 只能是 Invoice、Itinerary、Unknown 三者之一（英文）。
 
 # Extraction Rules
@@ -757,6 +783,7 @@ def call_ai_audit_and_rename(
 
 # Constraints
 - 如果信息缺失，请填写 "Not Found"。
+- **每个字段都必须出现在 JSON 输出中**，即使值为 "Not Found" 也不能省略该字段。
 - 不要包含任何解释性文字，只输出 JSON 格式。
 - 金额只保留数字，不带货币符号。
 - file_classifications 数组长度必须与附件文件数量相同，顺序与输入 File 段落顺序一致。
@@ -785,7 +812,13 @@ def call_ai_audit_and_rename(
         response = None
         retry_intervals = [1, 3]
         for attempt in range(1 + len(retry_intervals)):
-            response = Generation.call(model=model, prompt=f"{system_prompt}\n内容：{combined_content}")
+            response = Generation.call(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": combined_content},
+                ],
+            )
             if response.status_code == 200:
                 break
             if response.status_code == 429 or response.status_code >= 500:
@@ -802,17 +835,31 @@ def call_ai_audit_and_rename(
                 # 步骤 B-失败：JSON 解析不了 → 用本机正则兜底一版「伪 AI 结果」
                 data = build_fallback_audit_result(task_info.get("files", []))
                 error_reason = "JSON_PARSE_ERROR;USE_FALLBACK"
+            # 确保所有期望字段存在，缺失的补默认值并记录
+            expected_fields = [
+                "total_amount", "invoice_number", "invoice_date", "travel_time",
+                "invoice_type", "receipt_type", "seller",
+                "trip_type", "origin_dest", "file_classifications",
+            ]
+            missing = [f for f in expected_fields if f not in data]
+            if missing:
+                for f in missing:
+                    data[f] = "Not Found" if f != "file_classifications" else []
+                error_reason = (error_reason + ";AI_MISSING_FIELDS:" + ",".join(missing)).strip(";")
             if any(data.get(k) in (None, "", "Not Found") for k in ["invoice_date", "invoice_number", "total_amount"]):
                 error_reason = (error_reason + ";FIELD_NOT_FOUND").strip(";")
-            mm, manual_u = _rename_pdfs_with_audit(task_info, data, mail_subject, mail_date_hint)
+            mm, manual_u = _rename_pdfs_with_audit(task_info, data, mail_subject, mail_date_hint, run_id)
             return data, error_reason, mm, manual_u
         # 步骤 B-HTTP 非 200：同样走兜底 + 重命名 + 空差异列表（AI 没给出分类）
         code = str(getattr(response, "code", "") or "")
+        message = str(getattr(response, "message", "") or "")
         error_reason = f"AI_API_{code}" if code else f"AI_API_STATUS_{response.status_code}"
+        if message:
+            error_reason += f"({message})"
         data = build_fallback_audit_result(task_info.get("files", []))
         if any(data.get(k) in (None, "", "Not Found") for k in ["invoice_date", "invoice_number", "total_amount"]):
             error_reason = (error_reason + ";FIELD_NOT_FOUND").strip(";")
-        mm, manual_u = _rename_pdfs_with_audit(task_info, data, mail_subject, mail_date_hint)
+        mm, manual_u = _rename_pdfs_with_audit(task_info, data, mail_subject, mail_date_hint, run_id)
         return data, error_reason, mm, manual_u
     except Exception as e:
         return None, f"PROCESSING_EXCEPTION: {str(e)}", [], []
@@ -826,6 +873,7 @@ def run_pipeline(
     cfg: RunConfig, log: Optional[LogFn] = None
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """执行完整一轮；返回 (分类不一致列表, 统计信息)。统计含 unseen_total、invoice_keyword_mails、manual_unknown_alerts 等。"""
+    run_id = uuid.uuid4().hex[:6]
     log = log or _noop_log
     all_mismatches: List[Dict[str, Any]] = []
     empty_stats: Dict[str, Any] = {
@@ -906,12 +954,12 @@ def run_pipeline(
         # #region agent log
         def _imap_ingest(hid: str, msg: str, d: Dict[str, Any]) -> None:
             try:
-                logp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "debug-70cc39.log")
+                logp = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"debug-{run_id}.log")
                 with open(logp, "a", encoding="utf-8") as wf:
                     wf.write(
                         json.dumps(
                             {
-                                "sessionId": "70cc39",
+                                "sessionId": run_id,
                                 "timestamp": int(time.time() * 1000),
                                 "hypothesisId": hid,
                                 "location": "invoice_pipeline.py:run_pipeline:imap",
@@ -1068,7 +1116,7 @@ def run_pipeline(
                             "attachment_original_name": fname_orig,
                             "identified_type": merged,
                             "local_pdf_type": f_type,
-                            "text_snapshot": f_text[:800],
+                            "text_snapshot": f_text[:3000],
                         })
                     elif fname.lower().endswith(".zip"):
                         idx += 1
@@ -1091,7 +1139,7 @@ def run_pipeline(
                                     "attachment_original_name": inner_orig,
                                     "identified_type": merged,
                                     "local_pdf_type": f_type,
-                                    "text_snapshot": f_text[:800],
+                                    "text_snapshot": f_text[:3000],
                                 })
                         except Exception as e:
                             old_reason = task_summary[msg_id_str].get("error_reason", "")
@@ -1105,7 +1153,7 @@ def run_pipeline(
                 else:
                     log(f"正在调用 AI 审计: {subject}...")
                     audit_res, error_reason, mm, manual_u = call_ai_audit_and_rename(
-                        task_summary[msg_id_str], model=cfg.dashscope_model, mail_subject=subject, mail_date_hint=friendly_date
+                        task_summary[msg_id_str], model=cfg.dashscope_model, mail_subject=subject, mail_date_hint=friendly_date, run_id=run_id
                     )
                     all_manual_unknown.extend(manual_u)
                     if audit_res:

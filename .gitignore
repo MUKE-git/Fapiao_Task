@@ -10,8 +10,17 @@ venv/
 main_test.py
 history1_test.py
 
+# 诊断/测试脚本（含硬编码凭据，不纳入版本库）
+test_diag_163.py
+test_ghost_unread.py
+test_ghost_unread_v2.py
+
 # 本地对话导出，可能含误粘贴的密钥
 .specstory/
 
 # 单轮任务调试快照（可能含邮件主题等，非源码）
 task_debug.json
+
+# 调试日志（含邮件信息，不应提交）
+debug-*.log
+debug.log

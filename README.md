@@ -4,9 +4,12 @@
 
 1. 安装依赖：`pip install -r requirements.txt`
 2. 配置 AI 密钥（二选一）  
-   - **推荐**：在 `.streamlit` 文件夹里**新建**文件 `secrets.toml`（不必改 example 的文件名；若在资源管理器重命名后“又跳回去”，多半是云同步或复制成了带「副本」的文件名，直接在编辑器里新建 `secrets.toml` 即可），内容为：  
-     `DASHSCOPE_API_KEY = "（百炼控制台复制的 API Key）"`  
-   - 或设置环境变量 `DASHSCOPE_API_KEY`
+   - **推荐**：在 `.streamlit` 文件夹里**新建**文件 `secrets.toml`（不必改 example 的文件名；若在资源管理器重命名后"又跳回去"，多半是云同步或复制成了带「副本」的文件名，直接在编辑器里新建 `secrets.toml` 即可），内容为：  
+     ```
+     DASHSCOPE_API_KEY = "（百炼控制台复制的 API Key）"
+     DASHSCOPE_MODEL = "qwen3.7-plus"
+     ```  
+   - 或设置环境变量 `DASHSCOPE_API_KEY` 和 `DASHSCOPE_MODEL`
 3. 启动：
 
 ```bash
@@ -35,7 +38,7 @@ python history1_test.py
 
 ### 输出内容
 
-- **汇总表**：`发票信息汇总表.xlsx`，第一行为表头，列顺序为：发票日期、发票号码、报销金额（后续若扩展字段，在同一顺序末尾追加列即可）。
+- **汇总表**：`发票信息汇总表.xlsx`，第一行为表头，列顺序为：发票日期、发票号码、报销金额、发票类型、票面类型、出行时间、销售方、邮件号码、行程类型、出发地/目的地。
 - **调试**：`task_debug.json`。
 - **附件与 PDF**：见目录 `1_Downloaded_Zips`、`2_Extracted_PDFs`。
 
