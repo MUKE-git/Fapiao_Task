@@ -914,6 +914,8 @@ def run_pipeline(
                 for f in files
             )
             flags: List[str] = []
+            if er:
+                flags.append(f"API诊断: {er}")
             if "InvalidApiKey" in er:
                 flags.append("AI 调用返回 InvalidApiKey（本次未走通云端模型，已用本地兜底）")
             if "FIELD_NOT_FOUND" in er:
