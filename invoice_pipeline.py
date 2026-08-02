@@ -828,7 +828,12 @@ def call_ai_audit_and_rename(
             break
 
         if response.status_code == 200:
-            res_text = response.output.text.replace("```json", "").replace("```", "").strip()
+            res_text = (response.output.text or "").replace("```json", "").replace("```", "").strip()
+            if not res_text:
+                data = build_fallback_audit_result(task_info.get("files", []))
+                error_reason = "AI_EMPTY_RESPONSE;USE_FALLBACK"
+                mm, manual_u = _rename_pdfs_with_audit(task_info, data, mail_subject, mail_date_hint, run_id)
+                return data, error_reason, mm, manual_u
             try:
                 data = json.loads(res_text)
             except Exception:
