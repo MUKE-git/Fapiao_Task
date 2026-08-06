@@ -12,14 +12,15 @@
 """
 from __future__ import annotations
 
+from datetime import datetime
 import email
 import imaplib
 import io
 import json
 import os
 import re
+import shutil
 import time
-import uuid
 import zipfile
 from dataclasses import dataclass
 from email.header import decode_header
@@ -37,8 +38,17 @@ SUMMARY_COLUMNS: List[Tuple[str, str]] = [
     ("出行时间", "travel_time"),
     ("销售方", "seller"),
     ("邮件号码", "task_id"),
-    ("行程类型", "trip_type"),
     ("出发地/目的地", "origin_dest"),
+]
+
+# 交通类票面类型关键词：匹配到这些关键词的发票，强制要求有行程单
+TRANSPORT_RECEIPT_KEYWORDS = [
+    "客运服务费",
+    "代收通行费",
+    "运输服务费",
+    "通行费",
+    "网约车服务费",
+    "出租车服务费",
 ]
 
 import dashscope
@@ -52,6 +62,15 @@ LogFn = Callable[[str], None]
 def _noop_log(_: str) -> None:
     """无网页时的空日志，避免每处都判断 log 是否为 None。"""
     pass
+
+
+def _log_exc(log: LogFn, prefix: str = "异常") -> None:
+    """把当前正在处理的异常的完整 traceback 写到 log。
+
+    用法：在 except 块里直接调用 `_log_exc(log, "场景名")`。
+    必须在 except 块内调用，否则 traceback.format_exc() 拿不到当前异常。
+    """
+    log(f"❌ {prefix}：\n{traceback.format_exc()}")
 
 
 # ---------------------------------------------------------------------------
@@ -144,13 +163,13 @@ def ensure_output_dirs(cfg: RunConfig) -> None:
 # ---------------------------------------------------------------------------
 
 def build_non_conflicting_path(path: str) -> str:
-    """目标路径已存在时自动加 _dup1、_dup2…，避免覆盖。"""
+    """目标路径已存在时自动加 (1)、(2)…，避免覆盖。"""
     if not os.path.exists(path):
         return path
     base, ext = os.path.splitext(path)
     i = 1
     while True:
-        candidate = f"{base}_dup{i}{ext}"
+        candidate = f"{base}({i}){ext}"
         if not os.path.exists(candidate):
             return candidate
         i += 1
@@ -165,6 +184,19 @@ def format_amount_text(amount) -> str:
         return f"{num:.2f}".rstrip("0").rstrip(".")
     except Exception:
         return str(amount).strip() if str(amount).strip() else "0"
+
+
+def clean_receipt_type(raw: str) -> str:
+    """清洗票面类型：*A*B 格式取二级类目 B，同时去掉 Windows 非法字符。"""
+    if not raw:
+        return raw
+    # 匹配 *一级类目*二级类目 格式，取二级类目
+    m = re.match(r'\*[^*]+\*(.+)', raw)
+    if m:
+        cleaned = m.group(1).strip()
+    else:
+        cleaned = raw.strip()
+    return re.sub(r'[\\/:*?"<>|]', '', cleaned)
 
 
 def format_travel_date_cn(travel_time) -> str:
@@ -225,7 +257,6 @@ def build_fallback_audit_result(files):
     invoice_type = "Not Found"
     receipt_type = "Not Found"
     seller = "Not Found"
-    trip_type = "Not Found"
     origin_dest = "Not Found"
 
     m_amt = re.search(r"价税合计[^\n]{0,40}?[（\(]小写[）\)]\s*[¥￥]?\s*([0-9]+(?:\.[0-9]+)?)", invoice_text)
@@ -279,11 +310,6 @@ def build_fallback_audit_result(files):
     if m_time:
         travel_time = f"{_normalize_date_text(m_time.group(1))} {m_time.group(2)}"
 
-    # 行程类型：匹配车型/服务方（快车、曹操出行等）
-    m_trip_type = re.search(r"(机票|高铁|火车|滴滴|网约车|出租车|地铁|公交|大巴|飞机|快车|专车|顺风车|曹操出行|T3出行|阳光出行|花小猪)", itinerary_text)
-    if m_trip_type:
-        trip_type = m_trip_type.group(1)
-
     # 出发地/目的地：从行程单表格中提取起点和终点
     m_od = re.search(r"([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)\s*[-—→至到]\s*([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)", itinerary_text)
     if not m_od:
@@ -300,7 +326,6 @@ def build_fallback_audit_result(files):
         "invoice_type": invoice_type,
         "receipt_type": receipt_type,
         "seller": seller,
-        "trip_type": trip_type,
         "origin_dest": origin_dest,
         "data_source": "Fallback_Local_Regex",
     }
@@ -634,6 +659,10 @@ def _rename_pdfs_with_audit(
     inv_date_raw = str(data.get("invoice_date", "")).strip()
     if not inv_date_raw or inv_date_raw == "Not Found":
         inv_date_raw = "未知日期"
+    travel_time_raw = str(data.get("travel_time", "")).strip()
+    travel_date_raw = travel_time_raw.split(" ")[0] if travel_time_raw and " " in travel_time_raw else travel_time_raw
+    if not travel_date_raw or travel_date_raw.lower() == "not found":
+        travel_date_raw = inv_date_raw
     classifications = data.get("file_classifications") or []
     files = task_info.get("files") or []
     manual_unknown: List[Dict[str, Any]] = []
@@ -690,10 +719,10 @@ def _rename_pdfs_with_audit(
         # #endregion
 
         if eff_n == "Invoice":
-            inv_type = str(data.get("receipt_type") or data.get("invoice_type") or "发票").strip()
+            inv_type = clean_receipt_type(str(data.get("receipt_type") or data.get("invoice_type") or "发票"))
             base = f"{inv_type}+{inv_date_raw}+{amount_text}元"
         elif eff_n == "Itinerary":
-            base = f"行程单+{inv_date_raw}+{amount_text}元"
+            base = f"行程单+{travel_date_raw}+{amount_text}元"
         else:
             base = f"票据+{inv_date_raw}+{amount_text}元"
         new_name = f"{base}{tag}.pdf"
@@ -756,7 +785,7 @@ def call_ai_audit_and_rename(
    - 格式统一转化为 YYYY-MM-DD（例如 2026-03-09） 。
 4. **出行时间 (travel_time)**：
    - 必须从【行程单】文本中提取。
-   - 重点寻找“上车时间”或“用车时间” 。
+   - 重点寻找“上车时间”、“用车时间”或“入口时间” 。
    - **核心逻辑**：如果行程单包含多段行程（多行数据），请务必只提取【第一笔行程】的起始时间 。
    - 忽略“申请日期”或“打印日期” 。
 5. **发票类型 (invoice_type)**：
@@ -771,11 +800,7 @@ def call_ai_audit_and_rename(
    - 从【发票】文本中提取。
    - 即开票方企业名称，通常位于“销售方名称”或“销售方”之后。
    - 提取完整的公司全称。
-8. **行程类型 (trip_type)**：
-   - 必须从【行程单】文本中提取。
-   - 判断出行方式，如“机票”、“高铁”、“火车”、“滴滴”、“网约车”、“出租车”、“地铁”、“公交”等。
-   - 若行程单中无明确出行方式，填写 "Not Found"。
-9. **出发地/目的地 (origin_dest)**：
+8. **出发地/目的地 (origin_dest)**：
    - 必须从【行程单】文本中提取。
    - 格式为“出发地 → 目的地”，如“北京 → 上海”、“杭州东站 → 南京南站”。
    - 若行程单包含多段行程，只提取第一段的起终点。
@@ -797,7 +822,6 @@ def call_ai_audit_and_rename(
   "invoice_type": "增值税电子普通发票",
   "receipt_type": "客运服务费",
   "seller": "某某出行科技有限公司",
-  "trip_type": "网约车",
   "origin_dest": "杭州东站 → 萧山国际机场",
   "data_source": "T3_Chuxing",
   "file_classifications": [
@@ -828,7 +852,10 @@ def call_ai_audit_and_rename(
             break
 
         if response.status_code == 200:
-            res_text = response.output.text.replace("```json", "").replace("```", "").strip()
+            raw = response.output.text
+            if not raw and response.output and getattr(response.output, "choices", None):
+                raw = response.output.choices[0].get("message", {}).get("content", "")
+            res_text = (raw or "").replace("```json", "").replace("```", "").strip()
             try:
                 data = json.loads(res_text)
             except Exception:
@@ -839,7 +866,7 @@ def call_ai_audit_and_rename(
             expected_fields = [
                 "total_amount", "invoice_number", "invoice_date", "travel_time",
                 "invoice_type", "receipt_type", "seller",
-                "trip_type", "origin_dest", "file_classifications",
+                "origin_dest", "file_classifications",
             ]
             missing = [f for f in expected_fields if f not in data]
             if missing:
@@ -873,7 +900,7 @@ def run_pipeline(
     cfg: RunConfig, log: Optional[LogFn] = None
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """执行完整一轮；返回 (分类不一致列表, 统计信息)。统计含 unseen_total、invoice_keyword_mails、manual_unknown_alerts 等。"""
-    run_id = uuid.uuid4().hex[:6]
+    run_id = f"{datetime.now().month}-{datetime.now().day}-{datetime.now().hour:02d}{datetime.now().minute:02d}"
     log = log or _noop_log
     all_mismatches: List[Dict[str, Any]] = []
     empty_stats: Dict[str, Any] = {
@@ -926,10 +953,14 @@ def run_pipeline(
                         flags.append(f"缺少或无效: {k}")
                 if has_it and audit.get("travel_time") in (None, "", "Not Found"):
                     flags.append("缺少或无效: travel_time（行程单）")
-                if has_it and audit.get("trip_type") in (None, "", "Not Found"):
-                    flags.append("缺少或无效: trip_type（行程单）")
                 if has_it and audit.get("origin_dest") in (None, "", "Not Found"):
                     flags.append("缺少或无效: origin_dest（行程单）")
+                # 交通类发票强制要求行程单：票面类型含交通关键词但无行程单附件
+                if not has_it and audit is not None:
+                    receipt_type = clean_receipt_type(str(audit.get("receipt_type", "") or ""))
+                    if receipt_type and receipt_type != "Not Found":
+                        if any(kw in receipt_type for kw in TRANSPORT_RECEIPT_KEYWORDS):
+                            flags.append(f"缺少行程单: 票面类型为「{receipt_type}」（交通类），但未找到行程单附件")
             if flags:
                 out.append({
                     "mail_subject": item.get("subject", ""),
@@ -1179,11 +1210,10 @@ def run_pipeline(
                                 "invoice_number": audit_res.get("invoice_number", "Not Found"),
                                 "total_amount": audit_res.get("total_amount", "Not Found"),
                                 "invoice_type": audit_res.get("invoice_type", "Not Found"),
-                                "receipt_type": audit_res.get("receipt_type", "Not Found"),
+                                "receipt_type": clean_receipt_type(audit_res.get("receipt_type", "Not Found")),
                                 "travel_time": audit_res.get("travel_time", "Not Found"),
                                 "seller": audit_res.get("seller", "Not Found"),
                                 "task_id": msg_id_str,
-                                "trip_type": audit_res.get("trip_type", "Not Found"),
                                 "origin_dest": audit_res.get("origin_dest", "Not Found"),
                             })
 
@@ -1218,6 +1248,7 @@ def run_pipeline(
         return all_mismatches, stats_out
     except imaplib.IMAP4.error as e:
         err = str(e)
+        _log_exc(log, "IMAP 协议错误")
         log(f"错误: {err}")
         hint = _imap_error_hint(err)
         if hint:
@@ -1237,6 +1268,7 @@ def run_pipeline(
             "imap_error": err,
         }
     except Exception as e:
+        _log_exc(log, "主流程未捕获异常")
         log(f"错误: {e}")
         if mail:
             try:

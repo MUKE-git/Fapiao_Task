@@ -73,8 +73,22 @@ if _use_cloud_output(force_temp):
 else:
     st.caption("请在您本机运行本程序；生成文件将保存在您本机桌面上的指定文件夹。")
 
+IMAP_PRESETS = {
+    "163 邮箱": "imap.163.com",
+    "QQ 邮箱": "imap.qq.com",
+    "126 邮箱": "imap.126.com",
+    "Yeah 邮箱": "imap.yeah.net",
+    "Gmail": "imap.gmail.com",
+    "Outlook": "outlook.office365.com",
+    "其他（手动输入）": "__custom__",
+}
+
 with st.form("mail_form"):
-    imap_host = st.text_input("IMAP 服务器", value="imap.163.com")
+    imap_choice = st.selectbox("IMAP 服务器", options=list(IMAP_PRESETS.keys()))
+    if IMAP_PRESETS[imap_choice] == "__custom__":
+        imap_host = st.text_input("手动输入 IMAP 服务器地址", placeholder="例如 imap.example.com")
+    else:
+        imap_host = IMAP_PRESETS[imap_choice]
     imap_user = st.text_input("邮箱账号")
     imap_password = st.text_input("邮箱授权码（或密码）", type="password")
     output_folder = st.text_input(
