@@ -139,6 +139,7 @@ if submitted:
 
                 def log(msg: str) -> None:
                     status.write(msg)
+                    print(msg, flush=True)  # 双写到 stdout，让 Streamlit Cloud App logs 也能看到
 
                 mismatches, stats = run_pipeline(cfg, log=log)
 
@@ -181,8 +182,8 @@ if submitted:
                     st.session_state.pop("last_zip_name", None)
                 elif ikw == 0:
                     st.warning(
-                        f"检测到 **{ut}** 封未读邮件，但主题中**均不含「发票」**，未下载、未解压附件。"
-                        "（仅处理主题含「发票」的邮件。）"
+                        f"检测到 **{ut}** 封未读邮件，但主题中**均不含发票/报销相关关键词**，未下载、未解压附件。"
+                        "（仅处理主题含「发票」「报销」「报销凭证」「电子发票」「开票」的邮件。）"
                     )
                     st.session_state.pop("last_zip_bytes", None)
                     st.session_state.pop("last_zip_name", None)

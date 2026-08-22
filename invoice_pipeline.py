@@ -8,12 +8,13 @@
 4. ZIP 解压出 PDF、往报销 Excel 追加行
 5. 本机 PDF 关键词分类 + 与 AI 返回的 file_classifications 比对（人工确认列表）
 6. 调百炼 API：要 JSON + 按本机类型重命名 PDF
-7. run_pipeline：连邮箱 → 扫未读 → 主题含「发票」才处理 → 写 Excel → 写 task_debug.json
+7. run_pipeline：连邮箱 → 扫未读 → 主题含「发票/报销/报销凭证/电子发票/开票」才处理 → 写 Excel → 写 task_debug.json
 """
 from __future__ import annotations
 
 from datetime import datetime
 import email
+import hashlib
 import imaplib
 import io
 import json
@@ -21,6 +22,7 @@ import os
 import re
 import shutil
 import time
+import traceback
 import zipfile
 from dataclasses import dataclass
 from email.header import decode_header
@@ -37,7 +39,6 @@ SUMMARY_COLUMNS: List[Tuple[str, str]] = [
     ("票面类型", "receipt_type"),
     ("出行时间", "travel_time"),
     ("销售方", "seller"),
-    ("邮件号码", "task_id"),
     ("出发地/目的地", "origin_dest"),
 ]
 
@@ -1103,7 +1104,7 @@ def run_pipeline(
         log(f"--- 任务开始：检测到 {len(mail_ids)} 封未读邮件 ---")
 
         invoice_kw_count = 0
-        # 7.4 逐封处理：主题不含「发票」的整封跳过
+        # 7.4 逐封处理：主题不含发票/报销相关关键词的整封跳过
         for m_id in mail_ids:
             msg_id_str = m_id.decode()
             _, h_data = mail.fetch(m_id, "(BODY[HEADER.FIELDS (SUBJECT DATE)])")
@@ -1111,7 +1112,7 @@ def run_pipeline(
             subject = decode_str(msg_h["Subject"])
             friendly_date = safe_parse_mail_date(msg_h.get("Date"))
 
-            if "发票" in subject:
+            if any(kw in subject for kw in ["发票", "报销", "报销凭证", "电子发票", "开票"]):
                 invoice_kw_count += 1
                 # 7.5 拉整封 MIME，遍历部件：落盘 pdf / zip，并对每个 pdf 做 local_inspect
                 _, f_data = mail.fetch(m_id, "(RFC822)")
@@ -1125,6 +1126,7 @@ def run_pipeline(
                     "error_reason": "",
                 }
 
+                seen_hashes: set[str] = set()  # 同封邮件内 MD5 去重（直接附件 vs ZIP 内含相同 PDF）
                 for part in msg.walk():
                     if part.get_content_maintype() == 'multipart':
                         continue
@@ -1133,13 +1135,23 @@ def run_pipeline(
                         continue
                     fname = decode_str(fname)
                     if fname.lower().endswith(".pdf"):
+                        payload = part.get_payload(decode=True)
+                        content_hash = hashlib.md5(payload).hexdigest()
+                        if content_hash in seen_hashes:
+                            task_summary[msg_id_str].setdefault("dedup_skipped", []).append({
+                                "filename": fname,
+                                "md5": content_hash,
+                                "reason": "直接附件内重复",
+                            })
+                            continue
+                        seen_hashes.add(content_hash)
                         pdf_count += 1
                         idx += 1
                         fname_orig = fname
                         fname = clean_filename(fname, idx)
                         save_p = os.path.join(cfg.extract_dir, f"Msg{msg_id_str}_{fname}")
                         with open(save_p, "wb") as f:
-                            f.write(part.get_payload(decode=True))
+                            f.write(payload)
                         f_type, f_text = local_inspect_pdf(save_p)
                         merged = merge_type_from_name_and_local(fname_orig, f_type)
                         task_summary[msg_id_str]["files"].append({
@@ -1162,6 +1174,17 @@ def run_pipeline(
                                 f.write(part.get_payload(decode=True))
                             extracted = extract_pdfs_from_zip(zip_path, msg_id_str, zip_name, cfg.extract_dir)
                             for p, inner_orig in extracted:
+                                with open(p, "rb") as _f:
+                                    content_hash = hashlib.md5(_f.read()).hexdigest()
+                                if content_hash in seen_hashes:
+                                    task_summary[msg_id_str].setdefault("dedup_skipped", []).append({
+                                        "filename": inner_orig,
+                                        "md5": content_hash,
+                                        "reason": "ZIP内与直接附件重复",
+                                    })
+                                    os.remove(p)  # 物理删除重复文件，避免被打包进用户下载的压缩包
+                                    continue
+                                seen_hashes.add(content_hash)
                                 pdf_count += 1
                                 f_type, f_text = local_inspect_pdf(p)
                                 merged = merge_type_from_name_and_local(inner_orig, f_type)
@@ -1213,7 +1236,6 @@ def run_pipeline(
                                 "receipt_type": clean_receipt_type(audit_res.get("receipt_type", "Not Found")),
                                 "travel_time": audit_res.get("travel_time", "Not Found"),
                                 "seller": audit_res.get("seller", "Not Found"),
-                                "task_id": msg_id_str,
                                 "origin_dest": audit_res.get("origin_dest", "Not Found"),
                             })
 
