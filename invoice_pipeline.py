@@ -76,6 +76,15 @@ from ai_client import (
     call_ai_audit_and_rename,
 )
 
+from fallback_extractor import build_fallback_audit_result
+
+from excel_writer import append_to_summary_excel
+
+from attachment_processor import (
+    extract_pdfs_from_zip,
+    local_inspect_pdf,
+)
+
 LogFn = Callable[[str], None]
 
 
@@ -101,164 +110,13 @@ def _log_exc(log: LogFn, prefix: str = "异常") -> None:
 #  已拆分至 utils.py，由上方 import 承接)
 
 
-# ---------------------------------------------------------------------------
-# 三、AI 不可用或 JSON 坏了时：用正则从已抽取的 PDF 文本片段里硬凑一张「假审计结果」
-# ---------------------------------------------------------------------------
-
-def build_fallback_audit_result(files):
-    """把本机已标成 Invoice/Itinerary 的 text_snapshot 拼起来，用正则抠金额、票号、日期、首段上车时间。"""
-    invoice_text = ""
-    itinerary_text = ""
-    for f in files:
-        t = f.get("identified_type", "")
-        txt = str(f.get("text_snapshot", ""))
-        if t == "Invoice":
-            invoice_text += "\n" + txt
-        elif t == "Itinerary":
-            itinerary_text += "\n" + txt
-
-    amount = "Not Found"
-    invoice_no = "Not Found"
-    invoice_date = "Not Found"
-    travel_time = "Not Found"
-    invoice_type = "Not Found"
-    receipt_type = "Not Found"
-    seller = "Not Found"
-    origin_dest = "Not Found"
-
-    m_amt = re.search(r"价税合计[^\n]{0,40}?[（\(]小写[）\)]\s*[¥￥]?\s*([0-9]+(?:\.[0-9]+)?)", invoice_text)
-    if not m_amt:
-        m_amt = re.search(r"合\s*计[^\n]{0,30}?[¥￥]\s*([0-9]+(?:\.[0-9]+)?)", invoice_text)
-    if m_amt:
-        amount = m_amt.group(1)
-
-    m_no = re.search(r"发票号码[:：]?\s*([0-9]{8,})", invoice_text)
-    if m_no:
-        invoice_no = m_no.group(1)
-
-    m_date = re.search(r"开票日期[:：]?\s*([0-9]{4}[年\-/][0-9]{1,2}[月\-/][0-9]{1,2})", invoice_text)
-    if m_date:
-        invoice_date = _normalize_date_text(m_date.group(1))
-
-    # 发票类型：匹配标题行如 "电子发票（普通发票）"、"增值税电子普通发票" 等
-    m_inv_type = re.search(r"(?:发票类型|发票名称)[:：]?\s*(.{2,30})", invoice_text)
-    if not m_inv_type:
-        m_inv_type = re.search(r"(增值税)?电子发票[（(]([^)）]+)[)）]", invoice_text)
-        if m_inv_type:
-            invoice_type = f"电子发票（{m_inv_type.group(2)}）"
-        else:
-            m_inv_type = re.search(r"(增值税\w*发票|电子发票|通用机打发票|公路内河货运发票)", invoice_text)
-    if m_inv_type and invoice_type == "Not Found":
-        invoice_type = m_inv_type.group(1) if m_inv_type.lastindex is None or m_inv_type.lastindex == 0 else m_inv_type.group(0)
-
-    # 票面类型：匹配 *服务名*项目名 格式，如 "*运输服务*客运服务费"
-    m_rec_type = re.search(r"(?:服务名称|货物名称)[:：]?\s*\*?([^*\n]{2,20})\*?", invoice_text)
-    if not m_rec_type:
-        m_rec_type = re.search(r"\*([^*]+)\*([^*\n]{2,20})", invoice_text)
-        if m_rec_type:
-            receipt_type = m_rec_type.group(2).strip()
-    if m_rec_type and receipt_type == "Not Found":
-        receipt_type = m_rec_type.group(1).strip() if receipt_type == "Not Found" else receipt_type
-
-    # 销售方：匹配各种格式，如 "销 名称：xxx"、"销售方名称：xxx"、"销售方：xxx"
-    m_seller = re.search(r"(?:销售方名称|销售方)[:：]?\s*(.{4,60})", invoice_text)
-    if not m_seller:
-        m_seller = re.search(r"销\s*售?\s*方?\s*名称[:：]?\s*(.{4,60})", invoice_text)
-    if not m_seller:
-        m_seller = re.search(r"销\s+名称[:：]\s*(.{4,60})", invoice_text)
-    if m_seller:
-        seller = m_seller.group(1).strip()
-
-    # 出行时间：从行程单首行提取日期+时间（支持跨行格式）
-    m_time = re.search(
-        r"([0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2})[\s\S]*?([0-2]?[0-9]:[0-5][0-9](?::[0-5][0-9])?)",
-        itinerary_text
-    )
-    if m_time:
-        travel_time = f"{_normalize_date_text(m_time.group(1))} {m_time.group(2)}"
-
-    # 出发地/目的地：从行程单表格中提取起点和终点
-    m_od = re.search(r"([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)\s*[-—→至到]\s*([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)", itinerary_text)
-    if not m_od:
-        # 尝试匹配表格格式：城市 起点 终点（如 "广州 春兰花园西南侧 智光综合能源产业"）
-        m_od = re.search(r"[\u4e00-\u9fa5]{2,}\s+([\u4e00-\u9fa5]{2,}(?:[-\u4e00-\u9fa5]*)?)\s+([\u4e00-\u9fa5]{2,}(?:[-\u4e00-\u9fa5]*)?)\s+[¥￥]", itinerary_text)
-    if m_od:
-        origin_dest = f"{m_od.group(1)} → {m_od.group(2)}"
-
-    return {
-        "total_amount": amount,
-        "invoice_number": invoice_no,
-        "invoice_date": invoice_date,
-        "travel_time": travel_time,
-        "invoice_type": invoice_type,
-        "receipt_type": receipt_type,
-        "seller": seller,
-        "origin_dest": origin_dest,
-        "data_source": "Fallback_Local_Regex",
-    }
+# (本机正则兜底：build_fallback_audit_result 已拆分至 fallback_extractor.py，由上方 import 承接)
 
 
-# ---------------------------------------------------------------------------
-# 四、ZIP 附件：只解压根目录单层 PDF → 落到 extract_dir，供后续 local_inspect / AI 使用
-# ---------------------------------------------------------------------------
-
-def extract_pdfs_from_zip(zip_path: str, mail_id: str, zip_display_name: str, extract_dir: str):
-    """无密码 zip；跳过子目录里的文件，只处理压缩包根下的 .pdf。返回 (落盘路径, zip 内原始文件名) 列表。"""
-    pdf_paths: List[Tuple[str, str]] = []
-    zip_base = os.path.splitext(os.path.basename(zip_display_name))[0]
-    with zipfile.ZipFile(zip_path, "r") as zf:
-        for info in zf.infolist():
-            name = info.filename
-            if name.endswith("/") or "/" in name or "\\" in name:
-                continue
-            if not name.lower().endswith(".pdf"):
-                continue
-            inner_base = os.path.basename(name)
-            safe_pdf_name = clean_filename(inner_base, 1)
-            target_name = f"Msg{mail_id}_{zip_base}_{safe_pdf_name}"
-            target_path = build_non_conflicting_path(os.path.join(extract_dir, target_name))
-            with zf.open(info, "r") as src, open(target_path, "wb") as dst:
-                dst.write(src.read())
-            pdf_paths.append((target_path, inner_base))
-    return pdf_paths
+# (ZIP 附件处理：extract_pdfs_from_zip 已拆分至 attachment_processor.py，由上方 import 承接)
 
 
-# ---------------------------------------------------------------------------
-# 四（续）、报销总表：仅 total2.xlsx，按 SUMMARY_COLUMNS 列顺序追加行并带表头
-# ---------------------------------------------------------------------------
-
-def append_to_summary_excel(
-    rows: List[Dict[str, Any]],
-    summary_path: str,
-) -> Tuple[Optional[str], Optional[str]]:
-    """rows 来自本轮所有「处理成功」邮件的 AI 结果；无行则跳过。返回 (错误信息, 实际写入的文件路径)。"""
-    if not rows:
-        return None, None
-    try:
-        if os.path.exists(summary_path):
-            wb = load_workbook(summary_path)
-        else:
-            wb = Workbook()
-        ws = wb.active
-        if ws.cell(row=1, column=1).value in (None, ""):
-            for j, (header, _) in enumerate(SUMMARY_COLUMNS, start=1):
-                ws.cell(row=1, column=j, value=header)
-        row_idx = 2
-        while ws.cell(row=row_idx, column=1).value not in (None, ""):
-            row_idx += 1
-        for item in rows:
-            for j, (_, key) in enumerate(SUMMARY_COLUMNS, start=1):
-                val = item.get(key, "Not Found")
-                if key == "invoice_date":
-                    val = sanitize_excel_date_display(val)
-                ws.cell(row=row_idx, column=j, value=val)
-            row_idx += 1
-        wb.save(summary_path)
-        return None, summary_path
-    except PermissionError:
-        return "EXCEL_PERMISSION_DENIED: 请关闭 发票信息汇总表.xlsx 后重试", None
-    except Exception as e:
-        return f"EXCEL_WRITE_ERROR: {str(e)}", None
+# (报销总表写入：append_to_summary_excel 已拆分至 excel_writer.py，由上方 import 承接)
 
 
 # (通用小工具：zip_directory_to_bytes / clean_filename / decode_str / safe_parse_mail_date /
@@ -270,22 +128,7 @@ def append_to_summary_excel(
 #  _resolve_ai_role_for_file / collect_classification_mismatches 已拆分至 type_classifier.py)
 
 
-
-def local_inspect_pdf(file_path: str):
-    """用 pdfplumber 抽全文，再靠少量关键词粗分 Invoice / Itinerary / Unknown（决定重命名用哪套模板）。"""
-    text_content = ""
-    file_type = "Unknown"
-    try:
-        with pdfplumber.open(file_path) as pdf:
-            for page in pdf.pages:
-                text_content += page.extract_text() or ""
-        if any(kw in text_content for kw in ["行程单", "上车时间", "用车时间", "行程日期", "ITINERARY"]):
-            file_type = "Itinerary"
-        elif any(kw in text_content for kw in ["发票", "税务局", "Invoice", "价税合计"]):
-            file_type = "Invoice"
-    except Exception as e:
-        text_content = f"读取失败: {str(e)}"
-    return file_type, text_content
+# (PDF 预读：local_inspect_pdf 已拆分至 attachment_processor.py，由上方 import 承接)
 
 
 # (AI 审计与重命名：call_ai_audit_and_rename / _rename_pdfs_with_audit 已拆分至 ai_client.py，

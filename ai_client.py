@@ -7,8 +7,7 @@ AI 审计与重命名模块（由 invoice_pipeline.py 拆分而来，契约 = A 
 - _rename_pdfs_with_audit：按「原名>AI>正文」解析类型后批量重命名，三层不一致加「（待人工核查）」，
   内嵌 agent debug 日志（写 debug-{run_id}.log）。
 
-依赖说明：build_fallback_audit_result 归属 fallback_extractor.py（拆分 T1-5），为避免与
-invoice_pipeline 循环导入，在本模块的函数内做延迟 import。
+依赖：build_fallback_audit_result 来自 fallback_extractor.py（无循环依赖，可直接 import）。
 """
 
 from __future__ import annotations
@@ -19,6 +18,8 @@ import time
 from typing import Any, Dict, List, Optional, Tuple
 
 from dashscope import Generation
+
+from fallback_extractor import build_fallback_audit_result
 
 from utils import (
     build_non_conflicting_path,
@@ -138,9 +139,6 @@ def call_ai_audit_and_rename(
     mail_date_hint: str = "",
     run_id: str = "",
 ) -> Tuple[Optional[dict], str, List[Dict[str, Any]], List[Dict[str, Any]]]:
-    # 延迟 import：避免与 invoice_pipeline 循环导入（build_fallback_audit_result 归 fallback_extractor）。
-    from invoice_pipeline import build_fallback_audit_result
-
     # 步骤 A：把同一封邮件下的多个 PDF 片段拼成一段给模型的「内容」
     combined_content = ""
     for file in task_info["files"]:
