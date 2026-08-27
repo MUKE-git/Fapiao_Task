@@ -30,32 +30,36 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-# 汇总表列顺序：表头与 rows 字典键对应；扩展时在列表末尾追加 (表头, 键名)。
-SUMMARY_COLUMNS: List[Tuple[str, str]] = [
-    ("发票日期", "invoice_date"),
-    ("发票号码", "invoice_number"),
-    ("报销金额", "total_amount"),
-    ("发票类型", "invoice_type"),
-    ("票面类型", "receipt_type"),
-    ("出行时间", "travel_time"),
-    ("销售方", "seller"),
-    ("出发地/目的地", "origin_dest"),
-]
-
-# 交通类票面类型关键词：匹配到这些关键词的发票，强制要求有行程单
-TRANSPORT_RECEIPT_KEYWORDS = [
-    "客运服务费",
-    "代收通行费",
-    "运输服务费",
-    "通行费",
-    "网约车服务费",
-    "出租车服务费",
-]
+# (SUMMARY_COLUMNS / TRANSPORT_RECEIPT_KEYWORDS 已拆分至 config.py，由上方 import 承接)
 
 import dashscope
 import pdfplumber
 from dashscope import Generation
 from openpyxl import Workbook, load_workbook
+
+from config import (
+    RunConfig,
+    SUMMARY_COLUMNS,
+    TRANSPORT_RECEIPT_KEYWORDS,
+    _imap_error_hint,
+    ensure_output_dirs,
+    safe_desktop_subfolder,
+    should_send_netease_id,
+)
+
+from utils import (
+    _normalize_date_text,
+    build_non_conflicting_path,
+    clean_filename,
+    clean_receipt_type,
+    decode_str,
+    format_amount_text,
+    format_invoice_date_cn,
+    format_travel_date_cn,
+    safe_parse_mail_date,
+    sanitize_excel_date_display,
+    zip_directory_to_bytes,
+)
 
 LogFn = Callable[[str], None]
 
@@ -74,165 +78,12 @@ def _log_exc(log: LogFn, prefix: str = "异常") -> None:
     log(f"❌ {prefix}：\n{traceback.format_exc()}")
 
 
-# ---------------------------------------------------------------------------
-# 一、配置与输出路径（一次任务用一份 RunConfig，决定文件落在桌面哪个文件夹）
-# ---------------------------------------------------------------------------
+# (配置与输出路径：safe_desktop_subfolder / RunConfig / _imap_error_hint /
+#  should_send_netease_id / ensure_output_dirs 已拆分至 config.py，由上方 import 承接)
 
-def safe_desktop_subfolder(name: str) -> str:
-    """把用户在网页里填的文件夹名洗干净，去掉非法字符，防止路径跑出桌面。"""
-    name = (name or "").strip() or "Invoice_Task"
-    name = re.sub(r'[\\/:*?"<>|]', "_", name).strip(".")
-    if not name or name in (".", ".."):
-        return "Invoice_Task"
-    return name[:120]
-
-
-@dataclass
-class RunConfig:
-    """单次运行所需配置：邮箱登录信息 + 输出子文件夹名 + 网易开关 + AI Key。
-
-    output_root 为 None 时，结果落在本机桌面下的子文件夹；否则落在该根目录下的子文件夹（如云上临时目录）。
-    """
-    imap_host: str
-    imap_user: str
-    imap_password: str
-    output_folder_name: str = "Invoice_Task"
-    use_netease_id: bool = False
-    dashscope_api_key: str = ""
-    dashscope_model: str = "qwen-plus"
-    output_root: Optional[str] = None
-
-    @property
-    def base_path(self) -> str:
-        """任务根目录：默认桌面子文件夹；若设置了 output_root 则为 根目录/子文件夹。"""
-        sub = safe_desktop_subfolder(self.output_folder_name)
-        if self.output_root:
-            return os.path.join(os.path.abspath(self.output_root), sub)
-        return str(Path.home() / "Desktop" / sub)
-
-    @property
-    def zips_dir(self) -> str:
-        """邮件里 zip 附件先存这里。"""
-        return os.path.join(self.base_path, "1_Downloaded_Zips")
-
-    @property
-    def extract_dir(self) -> str:
-        """单页 PDF 与 zip 解出的 PDF 最终都放在这里。"""
-        return os.path.join(self.base_path, "2_Extracted_PDFs")
-
-    @property
-    def debug_file(self) -> str:
-        """整轮任务的结构化快照，方便排查 AI/附件问题。"""
-        return os.path.join(self.base_path, "task_debug.json")
-
-    @property
-    def summary_excel_file(self) -> str:
-        """报销汇总表（按 SUMMARY_COLUMNS 顺序写入）。"""
-        return os.path.join(self.base_path, "发票信息汇总表.xlsx")
-
-
-def _imap_error_hint(err_text: str) -> str:
-    """将 IMAP 常见英文错误转为一行中文提示（不含敏感信息）。"""
-    t = err_text.lower()
-    if "authentication" in t or "login" in t or "password" in t or "credentials" in t or "auth" in t:
-        return "提示：登录失败，多为账号/授权码错误；163 等需使用「客户端授权码」且 IMAP 已开启。"
-    if "getaddrinfo" in t or "name or service not known" in t or "nodename" in t:
-        return "提示：无法解析 IMAP 服务器地址，请检查「IMAP 服务器」是否拼写正确。"
-    if "certificate" in t or ("ssl" in t and "wrong" in t):
-        return "提示：SSL 证书或加密方式异常，请确认使用官方 IMAP 主机（如 imap.163.com）。"
-    if "timed out" in t or "timeout" in t or "connection refused" in t:
-        return "提示：连接超时或被拒绝，请检查网络与防火墙。"
-    return ""
-
-
-def should_send_netease_id(host: str, use_netease_checkbox: bool) -> bool:
-    """网易邮箱服务器往往需要额外的 IMAP ID 指令；QQ 等不要发，否则可能登不上。"""
-    if use_netease_checkbox:
-        return True
-    h = (host or "").lower()
-    return any(x in h for x in ("163.com", "126.com", "yeah.net", "netease"))
-
-
-def ensure_output_dirs(cfg: RunConfig) -> None:
-    """每次跑任务前确保「下载 zip」和「解压 PDF」两个目录存在。"""
-    os.makedirs(cfg.zips_dir, exist_ok=True)
-    os.makedirs(cfg.extract_dir, exist_ok=True)
-
-
-# ---------------------------------------------------------------------------
-# 二、通用小工具（多处复用：起名、展示、解码）
-# ---------------------------------------------------------------------------
-
-def build_non_conflicting_path(path: str) -> str:
-    """目标路径已存在时自动加 (1)、(2)…，避免覆盖。"""
-    if not os.path.exists(path):
-        return path
-    base, ext = os.path.splitext(path)
-    i = 1
-    while True:
-        candidate = f"{base}({i}){ext}"
-        if not os.path.exists(candidate):
-            return candidate
-        i += 1
-
-
-def format_amount_text(amount) -> str:
-    """把金额转成用于文件名的短字符串（去多余小数点）。"""
-    try:
-        num = float(amount)
-        if num.is_integer():
-            return str(int(num))
-        return f"{num:.2f}".rstrip("0").rstrip(".")
-    except Exception:
-        return str(amount).strip() if str(amount).strip() else "0"
-
-
-def clean_receipt_type(raw: str) -> str:
-    """清洗票面类型：*A*B 格式取二级类目 B，同时去掉 Windows 非法字符。"""
-    if not raw:
-        return raw
-    # 匹配 *一级类目*二级类目 格式，取二级类目
-    m = re.match(r'\*[^*]+\*(.+)', raw)
-    if m:
-        cleaned = m.group(1).strip()
-    else:
-        cleaned = raw.strip()
-    return re.sub(r'[\\/:*?"<>|]', '', cleaned)
-
-
-def format_travel_date_cn(travel_time) -> str:
-    """从出行时间里抠出年月日，变成「2026年03月09日」（行程单等）。"""
-    text = str(travel_time or "").strip()
-    m = re.search(r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})", text)
-    if not m:
-        return "未知日期"
-    y, mo, d = m.groups()
-    return f"{y}年{int(mo):02d}月{int(d):02d}日"
-
-
-def format_invoice_date_cn(invoice_date) -> str:
-    """开票日期 YYYY-MM-DD →「2026年03月09日」，用于发票 PDF 重命名（勿与 travel_time 混用）。"""
-    s = str(invoice_date or "").strip()
-    if not s or s.lower() == "not found":
-        return "未知日期"
-    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", s)
-    if m:
-        return f"{m.group(1)}年{int(m.group(2)):02d}月{int(m.group(3)):02d}日"
-    m2 = re.search(r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})", s)
-    if m2:
-        y, mo, d = m2.groups()
-        return f"{y}年{int(mo):02d}月{int(d):02d}日"
-    return "未知日期"
-
-
-def _normalize_date_text(date_text) -> str:
-    """各种中文/斜杠日期统一成 YYYY-MM-DD，供兜底解析与 Excel。"""
-    s = str(date_text or "").strip()
-    m = re.search(r"(\d{4})[年\-/](\d{1,2})[月\-/](\d{1,2})", s)
-    if not m:
-        return "Not Found"
-    y, mo, d = m.groups()
-    return f"{y}-{int(mo):02d}-{int(d):02d}"
+# (通用小工具：build_non_conflicting_path / format_amount_text / clean_receipt_type /
+#  format_travel_date_cn / format_invoice_date_cn / _normalize_date_text
+#  已拆分至 utils.py，由上方 import 承接)
 
 
 # ---------------------------------------------------------------------------
@@ -395,102 +246,8 @@ def append_to_summary_excel(
         return f"EXCEL_WRITE_ERROR: {str(e)}", None
 
 
-def zip_directory_to_bytes(root_dir: str, arcname_root: str) -> bytes:
-    """将 root_dir 下所有文件递归打入 zip；无法读取的文件跳过。arcname_root 为压缩包内顶层文件夹名。"""
-    buf = io.BytesIO()
-    root_dir = os.path.abspath(root_dir)
-    arcname_root = arcname_root.strip("/\\") or "output"
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        if not os.path.isdir(root_dir):
-            return b""
-        for folder, _, files in os.walk(root_dir):
-            for fn in files:
-                path = os.path.join(folder, fn)
-                if not os.path.isfile(path):
-                    continue
-                try:
-                    rel = os.path.relpath(path, root_dir)
-                    arc = os.path.join(arcname_root, rel).replace("\\", "/")
-                    zf.write(path, arcname=arc)
-                except OSError:
-                    pass
-    buf.seek(0)
-    return buf.read()
-
-
-def clean_filename(filename: str, idx: int) -> str:
-    """去掉邮件附件名里 Windows 非法字符；乱码或过短时改成 Attachment_{idx}.pdf。"""
-    filename = re.sub(r'[\\/:*?"<>|]', '_', filename)
-    if "?" in filename or "\ufffd" in filename or len(filename.strip()) < 5:
-        return f"Attachment_{idx}.pdf"
-    return filename
-
-
-def decode_str(s) -> str:
-    """解码邮件 Subject/附件名里的 MIME 编码（=?utf-8?b?...?= 等）。"""
-    if not s:
-        return ""
-    try:
-        decoded_list = decode_header(s)
-        combined_text = ""
-        for content, charset in decoded_list:
-            if isinstance(content, bytes):
-                for enc in [charset, 'utf-8', 'gbk', 'gb18030']:
-                    if not enc:
-                        continue
-                    try:
-                        combined_text += content.decode(enc)
-                        break
-                    except Exception:
-                        continue
-                else:
-                    combined_text += content.decode('utf-8', errors='replace')
-            else:
-                combined_text += str(content)
-        return combined_text
-    except Exception:
-        return "decoded_error"
-
-
-def safe_parse_mail_date(date_header: Optional[str]) -> str:
-    """
-    解析邮件 Date 头为 YYYY-MM-DD；异常格式（如 Go 调试串含 m=+）不抛错，尽量抠出日期或返回「未知日期」。
-    """
-    if not date_header or not str(date_header).strip():
-        return "未知日期"
-    raw = str(date_header).strip()
-    try:
-        return parsedate_to_datetime(raw).strftime("%Y-%m-%d")
-    except (ValueError, TypeError, OSError):
-        pass
-    if " m=+" in raw:
-        raw = raw.split(" m=+", 1)[0].strip()
-    m = re.search(r"\d{4}-\d{2}-\d{2}", raw)
-    if m:
-        return m.group(0)
-    return "未知日期"
-
-
-_ISO_DATE_FULL = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-
-
-def sanitize_excel_date_display(value) -> str:
-    """
-    开票日期写入汇总表「发票日期」列前清洗：只保留合法 YYYY-MM-DD，避免 Go 调试串等触发 Invalid date value or format。
-    """
-    if value is None:
-        return "Not Found"
-    s = str(value).strip()
-    if not s or s.lower() == "not found":
-        return "Not Found"
-    if _ISO_DATE_FULL.match(s):
-        return s
-    if " m=+" in s:
-        s = s.split(" m=+", 1)[0].strip()
-    m = re.search(r"\d{4}-\d{2}-\d{2}", s)
-    if m:
-        return m.group(0)
-    return "Not Found"
+# (通用小工具：zip_directory_to_bytes / clean_filename / decode_str / safe_parse_mail_date /
+#  sanitize_excel_date_display 已拆分至 utils.py，由上方 import 承接)
 
 
 # ---------------------------------------------------------------------------
@@ -1029,7 +786,8 @@ def run_pipeline(
             },
         )
 
-        search_typ, data = mail.search(None, "UNSEEN")
+        # 用 UID 搜索（而非序列号）：UID 在会话间稳定，断线重连后可精确续跑当前邮件（契约§5）
+        search_typ, data = mail.uid("SEARCH", "UNSEEN")
         if data and len(data) > 0 and data[0] is not None:
             raw_chunk = data[0]
         else:
@@ -1103,11 +861,64 @@ def run_pipeline(
 
         log(f"--- 任务开始：检测到 {len(mail_ids)} 封未读邮件 ---")
 
+        # 断线重连：163 会在 AI 审计等长空闲后掐断 IMAP 连接（如 Errno 10054）。
+        # 策略：宁可重做断点邮件，不可遗漏；已处理完的邮件不再触碰。
+        def _reconnect_imap() -> bool:
+            nonlocal mail
+            try:
+                try:
+                    mail.logout()
+                except Exception:
+                    pass
+                mail = imaplib.IMAP4_SSL(host)
+                mail.login(cfg.imap_user.strip(), cfg.imap_password)
+                if should_send_netease_id(host, cfg.use_netease_id):
+                    imaplib.Commands['ID'] = ('AUTH', '(("name" "com.netease.mail") ("version" "1.0.0") ("vendor" "netease"))')
+                    mail._simple_command('ID', '("name" "com.netease.mail" "version" "1.0.0" "vendor" "netease")')
+                typ, _dat = mail.select("INBOX")
+                return typ == "OK"
+            except Exception as rc_err:
+                _log_exc(log, "IMAP 重连失败")
+                log(f"错误: {rc_err}")
+                return False
+
+        def _fetch_uid_with_reconnect(m_id: bytes, query: str):
+            """UID FETCH + 断线重连：重连后对断点邮件整体重做（已读状态不影响 fetch）。
+
+            最多 2 次重连，间隔 1s/3s；仍失败则抛出，由外层 IMAP 异常分支统一兜底。
+            """
+            nonlocal mail
+            delays = (1, 3)
+            last_err: Optional[Exception] = None
+            for attempt in range(len(delays) + 1):
+                try:
+                    return mail.uid("FETCH", m_id, query)
+                except (imaplib.IMAP4.abort, OSError) as e:
+                    last_err = e
+                    if attempt >= len(delays):
+                        raise
+                    wait = delays[attempt]
+                    log(f"⚠️ IMAP 连接中断（{type(e).__name__}: {e}），{wait}s 后重连并重做当前邮件（第 {attempt + 1} 次重试）...")
+                    _imap_ingest(
+                        "H_reconnect",
+                        "fetch_abort_reconnect",
+                        {
+                            "mail_uid": m_id.decode(errors="replace"),
+                            "attempt": attempt + 1,
+                            "error": f"{type(e).__name__}: {e}",
+                            "query": query,
+                        },
+                    )
+                    time.sleep(wait)
+                    if not _reconnect_imap():
+                        raise last_err
+            raise last_err  # 理论不可达
+
         invoice_kw_count = 0
         # 7.4 逐封处理：主题不含发票/报销相关关键词的整封跳过
         for m_id in mail_ids:
             msg_id_str = m_id.decode()
-            _, h_data = mail.fetch(m_id, "(BODY[HEADER.FIELDS (SUBJECT DATE)])")
+            _, h_data = _fetch_uid_with_reconnect(m_id, "(BODY[HEADER.FIELDS (SUBJECT DATE)])")
             msg_h = email.message_from_bytes(h_data[0][1])
             subject = decode_str(msg_h["Subject"])
             friendly_date = safe_parse_mail_date(msg_h.get("Date"))
@@ -1115,7 +926,7 @@ def run_pipeline(
             if any(kw in subject for kw in ["发票", "报销", "报销凭证", "电子发票", "开票"]):
                 invoice_kw_count += 1
                 # 7.5 拉整封 MIME，遍历部件：落盘 pdf / zip，并对每个 pdf 做 local_inspect
-                _, f_data = mail.fetch(m_id, "(RFC822)")
+                _, f_data = _fetch_uid_with_reconnect(m_id, "(RFC822)")
                 msg = email.message_from_bytes(f_data[0][1])
                 pdf_count, idx = 0, 0
                 task_summary[msg_id_str] = {
