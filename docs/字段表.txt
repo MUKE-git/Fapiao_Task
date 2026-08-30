@@ -1,0 +1,81 @@
+3.1 业务背景
+发票邮件处理系统：通过 IMAP 收取财务邮箱里的发票/行程单邮件，识别 PDF/XML/OFD/图片凭证，逐条提取字段，按「一发票一笔」落成结构化记录，输出员工报销 Excel 汇总表；对缺凭证、字段缺失、重复、匹配失败等异常打 status 标记并引导前端人工核查。记录单位 = 一发票一笔；行程单不单独成行，匹配后字段汇入 a 类发票。
+
+3.2 实体清单（4 实体）
+实体	粒度	关键字段	关系
+邮件	一轮未读邮件，每封一个 mail 对象	mail_id、mail_uid、subject、mail_date	1 ─ N 文件；1 ─ N 发票
+文件	每个附件/凭证文件	文件序号、文件类型、预读类型、预读票号、预读金额	1 ─ 0..1 发票（分类）；1 ─ 0..1 行程单（分类）
+发票	一张发票一条记录	文件编号、行程类型ab、6 业务字段、状态	0..1 ─ 0..1 行程单（匹配汇入，仅 a 类）
+行程单	一个行程单凭证（不单独成行）	匹配金额、承运方、出行时间、出发地目的地	匹配后字段汇入 a 类发票
+
+3.3字段表
+实体	英文字段	中文	类型	必填	业务含义	约束/取值	默认值	示例	备注
+邮件	mail_id	邮件序号	string	是	本轮未读邮件的业务顺序编号	格式 Msg{n}，n 从 1 递增、上限 150	NULL	Msg3	仅展示用，追源靠 mail_uid
+邮件	mail_uid	IMAP UID	string	是	邮件服务器唯一稳定编号	varchar(50)，纯数字，跨会话稳定	NULL	1747702802	断线重连后仍稳定，追源锚点
+邮件	subject	邮件主题	string	是	来源邮件主题	varchar(50)，解码后明文	NULL	【去哪儿网】机票订单电子报销凭证	人工待核定位线索
+邮件	mail_date	邮件日期	date	是	邮件 Date 头日期	date，YYYY-MM-DD	NULL	2026-08-24	人工待核定位线索
+文件	file_seq	文件序号	string	是	邮件内文件编号	char(2)（01–99），邮件内 UNIQUE	NULL	01	与 mail_id 拼成全局定位键
+文件	file_type	文件类型	enum	是	文件物理格式	PDF / XML / OFD / 图片 / 其他	其他	PDF	凭证形态分流依据
+文件	original_name	原文件名	string	是	附件原始名	varchar(100)，去 MIME 编码 + 清洗	NULL	2026-04-20 广州-大连-…-机票电子发票-1264.00.pdf	行程单匹配第二锚点
+文件	pre_read_type	预读类型	enum	是	预读判定的凭证角色	Invoice / Itinerary / Unknown	Unknown	Invoice	决定走发票还是行程单提取
+文件	pre_read_invoice_no	预读票号	string	否	预读粗抓的发票号码	varchar(20)，纯数字；可空	Not Found	26317000002959474309	数据侧↔凭证侧对应锚点
+文件	pre_read_amount	预读金额	decimal(16,2)	否	预读粗抓的金额	>0；可空	Not Found	102.39	
+发票	record_id	文件编号	string	是	记录唯一标识	格式 Msg{n}-{m}，UNIQUE	NULL	Msg3-01	mail_id+文件序号,全局定位键
+发票	kind	行程类型ab	enum	是	发票类别	a类 / b类	NULL	a类	a类=交通需行程单，判定见 §3.1
+发票	invoice_date	发票日期	date	是	开票日期	date，YYYY-MM-DD	Not Found	2026-8-17	本地规则校验
+发票	invoice_number	发票号码	string	是	发票号码	varchar(20)，纯数字，NOT NULL，UNIQUE	Not Found	26327000000775232739	去重判重依据
+发票	total_amount	报销金额	decimal(16,2)	是	报销金额（价税合计）	>0，与价税合计一致	Not Found	293.52	行程单匹配首要锚点
+发票	invoice_type	发票类型	string	否	发票种类	varchar(20)，如「电子发票（普通发票）」	Not Found	电子发票（普通发票）	
+发票	receipt_type	票面类型	string	是	服务/货物名称	varchar(50)，二级类目（*A*B 取 B）	Not Found	客运服务费	a类判定依据
+发票	seller	销售方	string	是	开票方企业名称	varchar(50)，trim + 去中英文逗号	Not Found	郑州哈拜网络科技有限公司天津分公司	
+发票	status	状态	enum	是	记录处理结论	complete / 缺凭证 / 人工待核	complete	complete	非 complete 触发前端人工核查
+行程单	record_id	文件编号	string	是	行程单对应文件的全局定位	格式 Msg{n}-{m}，UNIQUE	NULL	Msg3-02	
+行程单	match_amount	匹配金额	decimal(16,2)	是	行程单票面金额	>0	Not Found	53.93	与发票报销金额四舍五入对齐
+行程单	carrier	承运方	string	是	承运企业	varchar(50)	Not Found	郑州哈拜网络科技有限公司天津分公司	
+行程单	travel_time	出行时间	datetime	是	首笔行程的起始时间	datetime，YYYY-MM-DD HH:mm（分钟）	Not Found	2026-03-23 09:02	匹配后汇入 a 类发票
+行程单	origin_dest	出发地目的地	string	是	首段起终点	varchar(100)，格式 A→B	Not Found	杭州东站→萧山国际机场	匹配后汇入 a 类发票
+
+
+3.4 业务规则（关键几条）
+a 类判定：行程类型ab == "a类" ⇔ 票面类型命中 TRANSPORT_RECEIPT_KEYWORDS（子串匹配、对"费"字容错）。
+字段归属 = 校验边界：b 类只校验 6 字段；a 类校验 8 字段，其中 出行时间/出发地目的地 校验「是否已从行程单汇入」。
+行程单匹配：① 报销金额（四舍五入 ±容差）→ ② 原文件名；两级未命中 → 人工待核；销售方不参与自动匹配。
+写 Excel 去重仲裁：本轮结果集内按发票号码判重；冲突时 XML 优先 → AI 二次仲裁 → 人工待核。
+本地规则（确定性）：发票号码位数/格式、报销金额 >0 且与价税合计一致、日期 YYYY-MM-DD；命中采信，未命中降级兜底/仲裁/人工待核。
+
+3.5 数据样例（英文 key，b 类 + a 类各一）
+
+JSON
+
+{
+  "mail_id": "Msg3",
+  "mail_uid": "1747702802",
+  "subject": "【去哪儿网】机票订单电子报销凭证",
+  "mail_date": "2026-08-17",
+  "files": [
+    { "file_seq": "01", "file_type": "PDF",
+      "original_name": "2026-04-20 广州-大连-...-机票电子发票-1264.00.pdf",
+      "pre_read_type": "Invoice", "pre_read_invoice_no": "26327000001479569264",
+      "pre_read_amount": 1264.0 }
+  ],
+  "records": [
+    { "record_id": "Msg3-01", "kind": "b类", "invoice_date": "2026-08-17",
+      "invoice_number": "26327000001479569264", "total_amount": 1264.0,
+      "invoice_type": "电子发票（普通发票）", "receipt_type": "机票款",
+      "seller": "淮安去哪儿国际旅行社有限公司", "status": "complete" }
+  ],
+  "dedup_skipped": [ { "filename": "…机票电子发票-1264.00.pdf", "reason": "ZIP内与直接附件重复" } ],
+  "error_reason": ""
+}
+
+JSON
+
+{ "mail_id": "Msg5", "mail_uid": "1747702815",
+  "subject": "【电子发票】郑州哈拜网络科技有限公司（发票金额：53.93元）",
+  "records": [ {
+      "record_id": "Msg5-01", "kind": "a类", "total_amount": 53.93,
+      "receipt_type": "客运服务", "travel_time": "2026-03-23 09:02",
+      "origin_dest": "杭州东站 → 萧山国际机场",
+      "matched_itinerary": { "file_seq": "02", "match_amount": 53.93, "match_method": "金额" },
+      "status": "complete"
+  } ] }

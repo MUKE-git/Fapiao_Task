@@ -1,0 +1,38 @@
+erDiagram
+    邮件 ||--o{ 文件 : "包含 1:N"
+    文件 ||--o| 发票 : "分类(预读=Invoice)"
+    文件 ||--o| 行程单 : "分类(预读=Itinerary)"
+    发票 ||--o| 行程单 : "匹配汇入(仅a类)"
+
+    邮件 {
+        string mail_id
+        string mail_uid
+        string subject
+        date mail_date
+    }
+    文件 {
+        string file_seq
+        enum file_type
+        string original_name
+        enum pre_read_type
+        string pre_read_invoice_no
+        decimal pre_read_amount
+    }
+    发票 {
+        string record_id
+        enum kind
+        date invoice_date
+        string invoice_number
+        decimal total_amount
+        string invoice_type
+        string receipt_type
+        string seller
+        enum status
+    }
+    行程单 {
+        string record_id
+        decimal match_amount
+        string carrier
+        datetime travel_time
+        string origin_dest
+    }
