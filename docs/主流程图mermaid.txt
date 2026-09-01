@@ -55,7 +55,7 @@ flowchart TD
 
     M -->|有XML| N
     M -->|无XML| P
-    P -->|有OFD| N
+    P -->|有OFD| SS
     P -->|无OFD，仅纯PDF发票| Q
 
     N --> O

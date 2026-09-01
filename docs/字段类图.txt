@@ -8,7 +8,7 @@ classDiagram
         +string mail_id
         +string mail_uid
         +string subject
-        +date mail_date
+        +datetime mail_date
     }
     class 文件 {
         +string file_seq
