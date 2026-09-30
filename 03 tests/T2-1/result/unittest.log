@@ -1,0 +1,43 @@
+test_B00_01 (test_t2_1_acceptance.T21Acceptance.test_B00_01) ... ok
+test_B01_01 (test_t2_1_acceptance.T21Acceptance.test_B01_01) ... ok
+test_B02_01 (test_t2_1_acceptance.T21Acceptance.test_B02_01) ... ok
+test_B02_02 (test_t2_1_acceptance.T21Acceptance.test_B02_02) ... ok
+test_B03_01 (test_t2_1_acceptance.T21Acceptance.test_B03_01) ... FAIL
+test_B04_01 (test_t2_1_acceptance.T21Acceptance.test_B04_01) ... ok
+test_B05_01 (test_t2_1_acceptance.T21Acceptance.test_B05_01) ... ok
+test_B05_02 (test_t2_1_acceptance.T21Acceptance.test_B05_02) ... ok
+test_B06_01 (test_t2_1_acceptance.T21Acceptance.test_B06_01) ... ok
+test_B06_02 (test_t2_1_acceptance.T21Acceptance.test_B06_02) ... ok
+test_B07_01 (test_t2_1_acceptance.T21Acceptance.test_B07_01) ... ok
+test_B07_02 (test_t2_1_acceptance.T21Acceptance.test_B07_02) ... ok
+test_B07_03 (test_t2_1_acceptance.T21Acceptance.test_B07_03) ... ok
+test_B07_04 (test_t2_1_acceptance.T21Acceptance.test_B07_04) ... ok
+test_B07_05 (test_t2_1_acceptance.T21Acceptance.test_B07_05) ... ok
+test_B08_01 (test_t2_1_acceptance.T21Acceptance.test_B08_01) ... ok
+test_B09_01 (test_t2_1_acceptance.T21Acceptance.test_B09_01) ... ok
+test_B10_01 (test_t2_1_acceptance.T21Acceptance.test_B10_01) ... ok
+test_B11_01 (test_t2_1_acceptance.T21Acceptance.test_B11_01) ... ok
+test_B11_02 (test_t2_1_acceptance.T21Acceptance.test_B11_02) ... ok
+test_B11_03 (test_t2_1_acceptance.T21Acceptance.test_B11_03) ... ok
+test_B11_04 (test_t2_1_acceptance.T21Acceptance.test_B11_04) ... ok
+test_B12_01 (test_t2_1_acceptance.T21Acceptance.test_B12_01) ... ok
+test_B12_02 (test_t2_1_acceptance.T21Acceptance.test_B12_02) ... ok
+test_B13_01 (test_t2_1_acceptance.T21Acceptance.test_B13_01) ... ok
+test_B13_02 (test_t2_1_acceptance.T21Acceptance.test_B13_02) ... ok
+test_B13_03 (test_t2_1_acceptance.T21Acceptance.test_B13_03) ... ok
+test_B14_01 (test_t2_1_acceptance.T21Acceptance.test_B14_01) ... ok
+test_B14_02 (test_t2_1_acceptance.T21Acceptance.test_B14_02) ... ok
+
+======================================================================
+FAIL: test_B03_01 (test_t2_1_acceptance.T21Acceptance.test_B03_01)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\lenovo\Desktop\AI_Player\fapiao3.0\03 tests\T2-1\scripts\test_t2_1_acceptance.py", line 230, in test_B03_01
+    self.assertIsNotNone(outcome.mail.records[0].matched_itinerary)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unexpectedly None
+
+----------------------------------------------------------------------
+Ran 29 tests in 1.010s
+
+FAILED (failures=1)

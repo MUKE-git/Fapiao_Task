@@ -1,0 +1,1111 @@
+{
+  "suite": "T2-1 B 编号技术验收",
+  "total": 29,
+  "counts": {
+    "通过": 28,
+    "失败": 1,
+    "未执行": 0,
+    "无法验证": 0
+  },
+  "cases": [
+    {
+      "id": "B00-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "connect",
+            1
+          ],
+          [
+            "search",
+            "UNSEEN"
+          ],
+          [
+            "logout"
+          ]
+        ],
+        "observed": {
+          "stats": {
+            "unseen_total": 0,
+            "skipped_no_invoice_keyword": 0,
+            "invoice_keyword_mails": 0,
+            "manual_unknown_alerts": [],
+            "not_found_alerts": [],
+            "imap_mailbox_status": {
+              "messages": 0,
+              "unseen": 0
+            },
+            "imap_error": null
+          },
+          "mails": [],
+          "records": []
+        }
+      }
+    },
+    {
+      "id": "B01-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "01",
+            "办公用品发票.pdf"
+          ],
+          [
+            "connect",
+            1
+          ],
+          [
+            "search",
+            "UNSEEN"
+          ],
+          [
+            "fetch",
+            "1001",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "1001",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "logout"
+          ]
+        ],
+        "observed": {
+          "stats": {
+            "unseen_total": 1,
+            "skipped_no_invoice_keyword": 0,
+            "invoice_keyword_mails": 1,
+            "manual_unknown_alerts": [],
+            "not_found_alerts": [
+              {
+                "mail_subject": "本轮结果",
+                "flags": [
+                  "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对"
+                ]
+              },
+              {
+                "mail_subject": "本轮结果",
+                "flags": [
+                  "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+                ]
+              }
+            ],
+            "imap_mailbox_status": {
+              "messages": 1,
+              "unseen": 1
+            },
+            "imap_error": null
+          },
+          "mails": [
+            "1001"
+          ],
+          "records": [
+            [
+              "Msg1-01"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "B02-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "01",
+            "甲发票.pdf"
+          ],
+          [
+            "process_pdf",
+            "02",
+            "乙发票.pdf"
+          ]
+        ],
+        "observed": {
+          "files": [
+            "PDF",
+            "PDF"
+          ],
+          "records": [
+            "Msg1-01",
+            "Msg1-02"
+          ],
+          "alerts": []
+        }
+      }
+    },
+    {
+      "id": "B02-02",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "PDF",
+            "PDF"
+          ],
+          "records": [
+            "Msg1-01",
+            "Msg1-02"
+          ],
+          "alerts": []
+        }
+      }
+    },
+    {
+      "id": "B03-01",
+      "status": "失败",
+      "detail": "Traceback (most recent call last):\n  File \"C:\\Users\\lenovo\\Desktop\\AI_Player\\fapiao3.0\\03 tests\\T2-1\\scripts\\test_t2_1_acceptance.py\", line 230, in test_B03_01\n    self.assertIsNotNone(outcome.mail.records[0].matched_itinerary)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: unexpectedly None\n",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "PDF",
+            "PDF"
+          ],
+          "records": [
+            "Msg1-01"
+          ],
+          "alerts": [],
+          "matched_itinerary": null,
+          "matching_alerts": [
+            [
+              "行程单匹配尚待 T2-3 接入，需人工核对"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "B04-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "PDF"
+          ],
+          "records": [
+            "Msg1-01"
+          ],
+          "alerts": []
+        }
+      }
+    },
+    {
+      "id": "B05-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "PDF"
+          ],
+          "records": [
+            "Msg1-01"
+          ],
+          "alerts": []
+        }
+      }
+    },
+    {
+      "id": "B05-02",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "PDF",
+            "PDF"
+          ],
+          "records": [
+            "Msg1-01",
+            "Msg1-02"
+          ],
+          "alerts": []
+        }
+      }
+    },
+    {
+      "id": "B06-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "PDF"
+          ],
+          "records": [],
+          "alerts": [
+            "['PDF 类型无法确定，需人工核对']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B06-02",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "PDF"
+          ],
+          "records": [
+            "Msg1-01"
+          ],
+          "alerts": [
+            "['AI_PARSE_ERROR']",
+            "['AI_PARSE_ERROR']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B07-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "XML"
+          ],
+          "records": [],
+          "alerts": [
+            "['XML 文件已登记，本阶段尚未提取，请人工核对']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B07-02",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "OFD"
+          ],
+          "records": [],
+          "alerts": [
+            "['OFD 文件已登记，本阶段尚未提取，请人工核对']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B07-03",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "图片"
+          ],
+          "records": [],
+          "alerts": [
+            "['图片 文件已登记，本阶段尚未提取，请人工核对']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B07-04",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "其他"
+          ],
+          "records": [],
+          "alerts": [
+            "['其他 文件已登记，本阶段尚未提取，请人工核对']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B07-05",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [
+            "XML",
+            "OFD",
+            "图片"
+          ],
+          "records": [],
+          "alerts": [
+            "['PDF 类型无法确定，需人工核对']",
+            "['PDF 类型无法确定，需人工核对']",
+            "['PDF 类型无法确定，需人工核对']"
+          ],
+          "handler_calls": [
+            [
+              "XML",
+              "XML",
+              "01"
+            ],
+            [
+              "OFD",
+              "OFD",
+              "02"
+            ],
+            [
+              "图片",
+              "图片",
+              "03"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "B08-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "01",
+            "发票.pdf"
+          ]
+        ],
+        "observed": {
+          "files": [
+            "PDF",
+            "XML"
+          ],
+          "records": [
+            "Msg1-01"
+          ],
+          "alerts": [
+            "['XML 文件已登记，本阶段尚未提取，请人工核对']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B09-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "files": [],
+          "records": [],
+          "alerts": [
+            "['无有效附件']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B10-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "01",
+            "甲发票.pdf"
+          ],
+          [
+            "process_pdf",
+            "02",
+            "乙发票.pdf"
+          ]
+        ],
+        "observed": {
+          "files": [
+            "PDF",
+            "PDF"
+          ],
+          "records": [
+            "Msg1-01",
+            "Msg1-02"
+          ],
+          "alerts": []
+        }
+      }
+    },
+    {
+      "id": "B11-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "01",
+            "发票.pdf"
+          ]
+        ],
+        "observed": {
+          "files": [
+            "PDF"
+          ],
+          "records": [
+            "Msg1-01"
+          ],
+          "alerts": [
+            "['ZIP_EXTRACT_ERROR:File is not a zip file']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B11-02",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "01",
+            "正常.pdf"
+          ]
+        ],
+        "observed": {
+          "files": [],
+          "records": [],
+          "alerts": [
+            "['无有效附件']",
+            "['ZIP_UNSUPPORTED_ENTRY']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B11-03",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "01",
+            "正常.pdf"
+          ]
+        ],
+        "observed": {
+          "files": [
+            "PDF"
+          ],
+          "records": [
+            "Msg1-01"
+          ],
+          "alerts": [
+            "['ZIP_DEPTH_LIMIT']"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B11-04",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [],
+        "observed": {
+          "boundaries": {
+            "counts": [
+              50,
+              51
+            ],
+            "bytes": [
+              15728640,
+              15728641
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "B12-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "connect",
+            1
+          ],
+          [
+            "search",
+            "UNSEEN"
+          ],
+          [
+            "fetch",
+            "101",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "102",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "logout"
+          ]
+        ],
+        "observed": {
+          "stats": {
+            "unseen_total": 2,
+            "skipped_no_invoice_keyword": 2,
+            "invoice_keyword_mails": 0,
+            "manual_unknown_alerts": [],
+            "not_found_alerts": [],
+            "imap_mailbox_status": {
+              "messages": 2,
+              "unseen": 2
+            },
+            "imap_error": null
+          },
+          "mails": [],
+          "records": []
+        }
+      }
+    },
+    {
+      "id": "B12-02",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "01",
+            "发票.pdf"
+          ],
+          [
+            "connect",
+            1
+          ],
+          [
+            "search",
+            "UNSEEN"
+          ],
+          [
+            "fetch",
+            "101",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "102",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "102",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "logout"
+          ]
+        ],
+        "observed": {
+          "stats": {
+            "unseen_total": 2,
+            "skipped_no_invoice_keyword": 1,
+            "invoice_keyword_mails": 1,
+            "manual_unknown_alerts": [],
+            "not_found_alerts": [
+              {
+                "mail_subject": "本轮结果",
+                "flags": [
+                  "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对"
+                ]
+              },
+              {
+                "mail_subject": "本轮结果",
+                "flags": [
+                  "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+                ]
+              }
+            ],
+            "imap_mailbox_status": {
+              "messages": 2,
+              "unseen": 2
+            },
+            "imap_error": null
+          },
+          "mails": [
+            "102"
+          ],
+          "records": [
+            [
+              "Msg2-01"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "B13-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "201",
+            "01"
+          ],
+          [
+            "process_pdf",
+            "202",
+            "01"
+          ],
+          [
+            "process_pdf",
+            "203",
+            "01"
+          ],
+          [
+            "connect",
+            1
+          ],
+          [
+            "search",
+            "UNSEEN"
+          ],
+          [
+            "fetch",
+            "201",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "201",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "fetch",
+            "202",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "202",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "abort",
+            "202"
+          ],
+          [
+            "logout"
+          ],
+          [
+            "connect",
+            2
+          ],
+          [
+            "fetch",
+            "202",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "fetch",
+            "203",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "203",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "logout"
+          ]
+        ],
+        "observed": {
+          "stats": {
+            "unseen_total": 3,
+            "skipped_no_invoice_keyword": 0,
+            "invoice_keyword_mails": 3,
+            "manual_unknown_alerts": [],
+            "not_found_alerts": [
+              {
+                "mail_subject": "本轮结果",
+                "flags": [
+                  "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对"
+                ]
+              },
+              {
+                "mail_subject": "本轮结果",
+                "flags": [
+                  "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+                ]
+              }
+            ],
+            "imap_mailbox_status": {
+              "messages": 3,
+              "unseen": 3
+            },
+            "imap_error": null
+          },
+          "mails": [
+            "201",
+            "202",
+            "203"
+          ],
+          "records": [
+            [
+              "Msg1-01"
+            ],
+            [
+              "Msg2-01"
+            ],
+            [
+              "Msg3-01"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "B13-02",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "01",
+            "发票.pdf"
+          ]
+        ],
+        "observed": {
+          "logs": [
+            "已登记 Msg1：1 个文件，1 笔 PDF 发票",
+            "Excel 写入失败：EXCEL_PERMISSION_DENIED"
+          ],
+          "error_reason": "EXCEL_PERMISSION_DENIED"
+        }
+      }
+    },
+    {
+      "id": "B13-03",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "process_pdf",
+            "201",
+            "01"
+          ],
+          [
+            "connect",
+            1
+          ],
+          [
+            "search",
+            "UNSEEN"
+          ],
+          [
+            "fetch",
+            "201",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "201",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "fetch",
+            "202",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "202",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "abort",
+            "202"
+          ],
+          [
+            "logout"
+          ],
+          [
+            "connect",
+            2
+          ],
+          [
+            "fetch",
+            "202",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "abort",
+            "202"
+          ],
+          [
+            "logout"
+          ],
+          [
+            "connect",
+            3
+          ],
+          [
+            "fetch",
+            "202",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "abort",
+            "202"
+          ],
+          [
+            "logout"
+          ]
+        ],
+        "observed": {
+          "stats": {
+            "unseen_total": 3,
+            "skipped_no_invoice_keyword": 0,
+            "invoice_keyword_mails": 2,
+            "manual_unknown_alerts": [],
+            "not_found_alerts": [],
+            "imap_mailbox_status": {
+              "messages": 3,
+              "unseen": 3
+            },
+            "imap_error": "simulated disconnect"
+          },
+          "mails": [
+            "201"
+          ],
+          "records": [
+            [
+              "Msg1-01"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "B14-01",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "connect",
+            1
+          ],
+          [
+            "search",
+            "UNSEEN"
+          ],
+          [
+            "fetch",
+            "501",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "501",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "logout"
+          ]
+        ],
+        "observed": {
+          "stats": {
+            "unseen_total": 1,
+            "skipped_no_invoice_keyword": 0,
+            "invoice_keyword_mails": 1,
+            "manual_unknown_alerts": [],
+            "not_found_alerts": [
+              {
+                "mail_subject": "本轮结果",
+                "flags": [
+                  "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对"
+                ]
+              },
+              {
+                "mail_subject": "本轮结果",
+                "flags": [
+                  "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+                ]
+              },
+              {
+                "mail_subject": "电子发票",
+                "mail_date": "2026-09-29 09:30",
+                "mail_date_header": "",
+                "file_seq": "",
+                "filename": "",
+                "flags": [
+                  "缺行程单，需人工核对"
+                ]
+              }
+            ],
+            "imap_mailbox_status": {
+              "messages": 1,
+              "unseen": 1
+            },
+            "imap_error": null
+          },
+          "mails": [
+            "501"
+          ],
+          "records": [
+            [
+              "Msg1-01"
+            ]
+          ],
+          "transport_workbook_row": [
+            "2026-09-28",
+            "11111111111111111111",
+            126.4,
+            "电子发票（普通发票）",
+            "客运服务",
+            null,
+            "测试销售方有限公司",
+            null
+          ]
+        }
+      }
+    },
+    {
+      "id": "B14-02",
+      "status": "通过",
+      "detail": "全部断言满足",
+      "evidence": {
+        "trace": [
+          [
+            "connect",
+            1
+          ],
+          [
+            "search",
+            "UNSEEN"
+          ],
+          [
+            "fetch",
+            "501",
+            "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"
+          ],
+          [
+            "fetch",
+            "501",
+            "(BODY.PEEK[])"
+          ],
+          [
+            "logout"
+          ]
+        ],
+        "observed": {
+          "stats": {
+            "unseen_total": 1,
+            "skipped_no_invoice_keyword": 0,
+            "invoice_keyword_mails": 1,
+            "manual_unknown_alerts": [],
+            "not_found_alerts": [
+              {
+                "mail_subject": "本轮结果",
+                "flags": [
+                  "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对"
+                ]
+              },
+              {
+                "mail_subject": "本轮结果",
+                "flags": [
+                  "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+                ]
+              },
+              {
+                "mail_subject": "电子发票",
+                "mail_date": "2026-09-29 09:30",
+                "mail_date_header": "",
+                "file_seq": "",
+                "filename": "",
+                "flags": [
+                  "缺行程单，需人工核对"
+                ]
+              }
+            ],
+            "imap_mailbox_status": {
+              "messages": 1,
+              "unseen": 1
+            },
+            "imap_error": null
+          },
+          "mails": [
+            "501"
+          ],
+          "records": [
+            [
+              "Msg1-01"
+            ]
+          ],
+          "transport_workbook_row": [
+            "2026-09-28",
+            "11111111111111111111",
+            126.4,
+            "电子发票（普通发票）",
+            "客运服务费",
+            null,
+            "测试销售方有限公司",
+            null
+          ]
+        }
+      }
+    }
+  ],
+  "coverage_limits": [
+    {
+      "scope": "真实 IMAP 服务器端到端",
+      "status": "未执行",
+      "reason": "未使用专用测试邮箱；模拟 IMAP 的组件测试不等于真实服务器验证"
+    },
+    {
+      "scope": "真实 PDF 预读与字段识别准确度",
+      "status": "未执行",
+      "reason": "B 用例对 PDF 返回值使用受控替身；该能力属于 PDF 处理器自身验收"
+    },
+    {
+      "scope": "T2-6 正式缺字段校验",
+      "status": "无法验证",
+      "reason": "当前 T2-6 校验端口尚未接入；B05 只验证主循环保留缺字段记录"
+    },
+    {
+      "scope": "T3 XML/OFD/图片真实提取与跨格式匹配",
+      "status": "无法验证",
+      "reason": "本轮只验文件形态分流和接口触发，真实处理脚本不在 T2-1 范围"
+    }
+  ]
+}

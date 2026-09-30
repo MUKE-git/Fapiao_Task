@@ -7,9 +7,6 @@ debug-*.log
 debug.log
 task_debug.json
 
-# 临时转换/校验输出
-_v2_output/
-
 # Python
 __pycache__/
 *.pyc

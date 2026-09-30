@@ -604,7 +604,3 @@ def run_pipeline(
         except Exception:
             pass
         return all_mismatches, {**empty_stats, "imap_error": str(e)}
-
-
-# 保留旧模块的公开 import 路径，实际运行入口转到 T2-1 新 driver。
-from pipeline import run_pipeline as run_pipeline

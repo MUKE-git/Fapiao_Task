@@ -15,10 +15,10 @@ import streamlit as st
 from invoice_pipeline import (
     RunConfig,
     _imap_error_hint,
+    run_pipeline,
     safe_desktop_subfolder,
     zip_directory_to_bytes,
 )
-from pipeline import run_pipeline
 
 
 def _dashscope_api_key() -> str:
