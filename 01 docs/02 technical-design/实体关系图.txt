@@ -1,3 +1,5 @@
+%% 2026-10-01 目标模型；完整行程单四字段保存到 JSON，编号仅本轮唯一。
+%% 发票类型可空；票面类型缺失时分类暂空并人工待核。金额 Decimal 最多四位，JSON 十进制字符串。
 erDiagram
     邮件 ||--o{ 文件 : "包含 1:N"
     文件 ||--o| 发票 : "分类(预读=Invoice)"
@@ -14,6 +16,8 @@ erDiagram
         string file_seq
         enum file_type
         string original_name
+        string internal_name
+        string exported_name
         enum pre_read_type
         string pre_read_invoice_no
         decimal pre_read_amount
@@ -32,7 +36,6 @@ erDiagram
     行程单 {
         string record_id
         decimal match_amount
-        string carrier
         datetime travel_time
         string origin_dest
     }

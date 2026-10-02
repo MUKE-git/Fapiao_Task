@@ -1,3 +1,5 @@
+2026-10-01 修订目标：与《重构方案.md》§3～6 一致；模型代码待适配，不代表当前实现已满足。
+
 3.1 业务背景
 发票邮件处理系统：通过 IMAP 收取财务邮箱里的发票/行程单邮件，识别 PDF/XML/OFD/图片凭证，逐条提取字段，按「一发票一笔」落成结构化记录，输出员工报销 Excel 汇总表；对缺凭证、字段缺失、重复、匹配失败等异常打 status 标记并引导前端人工核查。记录单位 = 一发票一笔；行程单不单独成行，匹配后字段汇入 a 类发票。
 
@@ -6,7 +8,7 @@
 邮件	一轮未读邮件，每封一个 mail 对象	mail_id、mail_uid、subject、mail_date	1 ─ N 文件
 文件	每个附件/凭证文件	文件序号、文件类型、预读类型、预读票号、预读金额	1 ─ 0..1 发票（分类）；1 ─ 0..1 行程单（分类）
 发票	一张发票一条记录	文件编号、行程类型ab、6 业务字段、状态	0..1 ─ 0..1 行程单（匹配汇入，仅 a 类）
-行程单	一个行程单凭证（不单独成行）	匹配金额、承运方、出行时间、出发地目的地	匹配后字段汇入 a 类发票
+行程单	一个行程单凭证（不单独成行）	编号、匹配金额、出行时间、出发地目的地	匹配后字段汇入 a 类发票
 
 3.3字段表
 实体	英文字段	中文	类型	必填	业务含义	约束/取值	默认值	示例	备注
@@ -14,102 +16,47 @@
 邮件	mail_uid	IMAP UID	string	是	邮件服务器唯一稳定编号	varchar(50)，纯数字，跨会话稳定	NULL	1747702802	断线重连后仍稳定，追源锚点
 邮件	subject	邮件主题	string	是	来源邮件主题	varchar(50)，解码后明文	NULL	【去哪儿网】机票订单电子报销凭证	人工待核定位线索
 邮件	mail_date	邮件日期时间	datetime	是	邮件 Date 头时间（精确定位到分钟）	datetime，YYYY-MM-DD HH:mm	NULL	2026-08-24 09:30	人工待核定位线索
-文件	file_seq	文件序号	string	是	邮件内文件编号	char(2)（01–99），邮件内 UNIQUE	NULL	01	与 mail_id 拼成全局定位键
+文件	file_seq	文件序号	string	是	邮件内文件编号	char(2)（01–99），邮件内 UNIQUE	NULL	01	与 mail_id 拼成本轮定位键
 文件	file_type	文件类型	enum	是	文件物理格式	PDF / XML / OFD / 图片 / 其他	其他	PDF	凭证形态分流依据
-文件	original_name	原文件名	string	是	附件原始名	varchar(100)，去 MIME 编码 + 清洗	NULL	2026-04-20 广州-大连-…-机票电子发票-1264.00.pdf	行程单匹配第二锚点
+文件	original_name	原文件名	string	是	附件原始名	完整 MIME 解码原名，不截断、不做存盘清洗	NULL	2026-04-20 广州-大连-…-机票电子发票-1264.00.pdf	行程单匹配第二锚点
 文件	pre_read_type	预读类型	enum	是	预读判定的凭证角色	Invoice / Itinerary / Unknown	Unknown	Invoice	决定走发票还是行程单提取
 文件	pre_read_invoice_no	预读票号	string	否	预读粗抓的发票号码	varchar(20)，纯数字；可空	Not Found	26317000002959474309	数据侧↔凭证侧对应锚点
-文件	pre_read_amount	预读金额	decimal(16,2)	否	预读粗抓的金额	>0；可空	Not Found	102.39	
-发票	record_id	文件编号	string	是	记录唯一标识	格式 Msg{n}-{m}，UNIQUE	NULL	Msg3-01	mail_id+文件序号,全局定位键
-发票	kind	行程类型ab	enum	是	发票类别	a类 / b类	NULL	a类	a类=交通需行程单，判定见 §3.1
+文件	pre_read_amount	预读金额	decimal(18,4)，JSON十进制字符串	否	预读粗抓的金额	>0；可空	Not Found	102.39	保留原始精度
+文件	internal_name	内部文件名	string	是	内部落盘文件定位	完整名称最多120字符	NULL	Msg3_01_客运服务.pdf	不以导出命名覆盖内部文件
+文件	exported_name	导出文件名	string	否	用户压缩包内文件名	业务命名；完整名称最多120字符	空字符串	客运服务+2026-08-17+53.93元.pdf	导出前可空，导出后保存名称映射
+发票	record_id	文件编号	string	是	记录唯一标识	格式 Msg{n}-{m}，UNIQUE	NULL	Msg3-01	mail_id+文件序号,本轮定位键
+发票	kind	行程类型ab	enum	是	发票类别	a类 / b类；票面类型缺失或无效时暂空并人工待核	NULL	a类	a类=交通需行程单，判定见 §3.1
 发票	invoice_date	发票日期	date	是	开票日期	date，YYYY-MM-DD	Not Found	2026-08-17	本地规则校验
-发票	invoice_number	发票号码	string	是	发票号码	varchar(20)，纯数字，NOT NULL，UNIQUE	Not Found	26327000000775232739	去重判重依据
-发票	total_amount	报销金额	decimal(16,2)	是	报销金额（价税合计）	>0，与价税合计一致	Not Found	293.52	行程单匹配首要锚点
-发票	invoice_type	发票类型	string	否	发票种类	varchar(20)，如「电子发票（普通发票）」	Not Found	电子发票（普通发票）	
+发票	invoice_number	发票号码	string	是	发票号码	20位纯数字；候选可重复，去重仅限本轮；缺失须标记	Not Found	26327000000775232739	去重判重依据
+发票	total_amount	报销金额	decimal(18,4)，JSON十进制字符串	是	报销金额（价税合计）	>0，与价税合计一致	Not Found	293.52	行程单匹配首要锚点
+发票	invoice_type	发票类型	string	否	发票种类	varchar(20)，如「电子发票（普通发票）」；有值才校验	空字符串	电子发票（普通发票）	不用于判定a/b类
 发票	receipt_type	票面类型	string	是	服务/货物名称	varchar(50)，二级类目（*A*B 取 B）	Not Found	客运服务费	a类判定依据
 发票	seller	销售方	string	是	开票方企业名称	varchar(50)，trim + 去中英文逗号	Not Found	郑州哈拜网络科技有限公司天津分公司	
 发票	status	状态	enum	是	记录处理结论	complete / 缺凭证 / 人工待核	complete	complete	非 complete 触发前端人工核查
-行程单	record_id	文件编号	string	是	行程单对应文件的全局定位	格式 Msg{n}-{m}，UNIQUE	NULL	Msg3-02	
-行程单	match_amount	匹配金额	decimal(16,2)	是	行程单票面金额	>0	Not Found	53.93	与发票报销金额四舍五入对齐
-行程单	carrier	承运方	string	是	承运企业	varchar(50)	Not Found	郑州哈拜网络科技有限公司天津分公司	仅内部校验表；不汇入发票行、不进用户 Excel	
+行程单	record_id	文件编号	string	是	行程单对应文件的本轮定位	格式 Msg{n}-{m}，UNIQUE	NULL	Msg3-02	仅本轮唯一
+行程单	match_amount	匹配金额	decimal(18,4)，JSON十进制字符串	是	行程单票面金额	>0	Not Found	53.93	保留原始精度，匹配比较规则见§3.4
 行程单	travel_time	出行时间	datetime	是	首笔行程的起始时间	datetime，YYYY-MM-DD HH:mm（分钟）	Not Found	2026-03-23 09:02	匹配后汇入 a 类发票
 行程单	origin_dest	出发地目的地	string	是	首段起终点	varchar(100)，格式 A→B	Not Found	杭州东站→萧山国际机场	匹配后汇入 a 类发票
 
 
-3.4 业务规则（关键几条）
-a 类判定：行程类型ab == "a类" ⇔ 票面类型命中 TRANSPORT_RECEIPT_KEYWORDS（子串匹配、对"费"字容错）。
-字段归属 = 校验边界：b 类只校验 6 字段；a 类校验 8 字段，其中 出行时间/出发地目的地 校验「是否已从行程单汇入」。
-行程单匹配：① 报销金额（四舍五入 ±容差）→ ② 原文件名；两级未命中 → 人工待核；销售方不参与自动匹配。
-写 Excel 去重仲裁：本轮结果集内按发票号码判重；冲突时 XML 优先 → AI 二次仲裁 → 人工待核。
-本地规则（确定性）：发票号码位数/格式、报销金额 >0 且与价税合计一致、日期 YYYY-MM-DD；命中采信，未命中降级兜底/仲裁/人工待核。
+3.4 业务规则
 
-3.5 数据样例（英文 key，b 类 + a 类各一）
+- 发票必填：日期、号码、金额、票面类型、销售方；缺失标记，有值查规则。发票类型非必填，缺失留空，有值查规则。
+- a/b 根据有效票面类型命中 TRANSPORT_RECEIPT_KEYWORDS 判定；对“费”字容错。票面类型缺失/无效时分类暂空并人工待核，不能默认 b 类。
+- b 类不校验旅行字段；a 类校验时间与起终点是否从行程单汇入。
+- 行程单仅四字段：record_id、match_amount、travel_time、origin_dest，全部持久保存在每封邮件的 itineraries 数组中，包括未匹配项。不保存或提取企业名称。
+- 单邮件恰好一票一单自动成组，不要求金额一致或完整；其他数量组合按金额→完整解码原名匹配，不能唯一确定则人工待核。单对单也遵守 a 类汇入及入表规则。
+- 金额最多四位，JSON 用十进制字符串保留原始位数，计算使用 Decimal/ROUND_HALF_UP；先按较低精度比较，再用原始差值 ≤0.5 判断候选。不得提前舍入两位，Excel 显示两位。超四位或非法值提示核查。
+- 按发票入表，仅票号、日期、金额全部缺失才排除，前端提醒且 JSON 保留；部分缺失仍入表并核查。
+- 同邮件 MD5 去重复附件；本轮同票号去重仲裁：一致保留一条，不一致 XML 优先（T3），否则 AI 二次仲裁或人工待核。空票号不作为共同票号合并，不查历史文件。
+- 用户 Excel 固定八列，行程单只汇入时间与起终点，不另建表、不追加独立行。内部校验表沿用现有布局并删除行程单企业名称列。
+- 本轮编号可在下一轮重新开始，每轮使用独立输出目录。
+- files 的 internal_name 与 exported_name 保存内部名、用户导出名对应；导出前 exported_name 可空。完整实际文件名最多120字符，含编号/扩展名/重名后缀，超长主体截断加短摘要；original_name 完整保留。
+- 单次 AI 输入一个文件，file_classifications 只返回对应的一项；匹配由程序完成。
 
-JSON
+3.5 JSON 结构及样例
 
-{
-  "mail_id": "Msg3",
-  "mail_uid": "1747702802",
-  "subject": "【去哪儿网】机票订单电子报销凭证",
-  "mail_date": "2026-08-17 09:30",
-  "files": [
-    { "file_seq": "01", "file_type": "PDF",
-      "original_name": "2026-04-20 广州-大连-...-机票电子发票-1264.00.pdf",
-      "pre_read_type": "Invoice", "pre_read_invoice_no": "26327000001479569264",
-      "pre_read_amount": 1264.0 }
-  ],
-  "records": [
-    { "record_id": "Msg3-01", "kind": "b类",
-      "fields": {
-        "invoice_date": "2026-08-17",
-        "invoice_number": "26327000001479569264",
-        "total_amount": 1264.0,
-        "invoice_type": "电子发票（普通发票）",
-        "receipt_type": "机票款",
-        "seller": "淮安去哪儿国际旅行社有限公司"
-      },
-      "source": { "source_file_seq": ["01"] },
-      "status": "complete"
-    }
-  ],
-  "dedup_skipped": [ { "filename": "…机票电子发票-1264.00.pdf", "reason": "ZIP内与直接附件重复" } ],
-  "error_reason": ""
-}
-
-JSON
-
-{
-  "mail_id": "Msg5",
-  "mail_uid": "1747702815",
-  "subject": "【电子发票】郑州哈拜网络科技有限公司（发票金额：53.93元）",
-  "mail_date": "2026-08-17 10:05",
-  "files": [
-    { "file_seq": "01", "file_type": "PDF",
-      "original_name": "客运服务+2026-04-27+53.93元.pdf",
-      "pre_read_type": "Invoice", "pre_read_invoice_no": "26122000000521862826",
-      "pre_read_amount": 53.93 },
-    { "file_seq": "02", "file_type": "PDF",
-      "original_name": "行程单+2026-03-23+53.93元.pdf",
-      "pre_read_type": "Itinerary", "pre_read_invoice_no": "Not Found",
-      "pre_read_amount": 53.93 }
-  ],
-  "records": [
-    { "record_id": "Msg5-01", "kind": "a类",
-      "fields": {
-        "invoice_date": "2026-04-27",
-        "invoice_number": "26122000000521862826",
-        "total_amount": 53.93,
-        "invoice_type": "电子发票（普通发票）",
-        "receipt_type": "客运服务",
-        "seller": "郑州哈拜网络科技有限公司天津分公司",
-        "travel_time": "2026-03-23 09:02",
-        "origin_dest": "杭州东站→萧山国际机场"
-      },
-      "source": { "source_file_seq": ["01"] },
-      "matched_itinerary": { "file_seq": "02", "match_amount": 53.93 },
-      "status": "complete"
-    }
-  ],
-  "dedup_skipped": [],
-  "error_reason": ""
-}
+完整 JSON 样例以 ../01 project/重构方案.md 的 §3.3 为唯一维护源，避免重复示例更新不同步。
+每封邮件包含 files、itineraries、records、dedup_skipped、error_reason 等字段；行程单数组中的 record_id 与文件编号对应。records.matched_itinerary 引用对应 file_seq，match_amount 与行程单条目一致。
+未匹配行程单仍保存四字段；b 类无 matched_itinerary，旅行列留空。缺失/无效票面类型 kind 暂空、status=人工待核。
+发票可选 invoice_type 缺失用空字符串；必填缺失占位与格式错误分别标记；缺失原因须可追溯到记录。
