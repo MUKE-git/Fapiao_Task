@@ -1,0 +1,34 @@
+[
+  {
+    "path": "mail/01_8211.eml",
+    "name": "原始邮件 8211",
+    "source": "RFC822/MIME",
+    "mail_uid": "8211",
+    "bytes": 80413,
+    "sha256": "776b2ff5b165cc140a1b8db84b65ba6a3b14d6861ef311295d7a0d52ffc75d12"
+  },
+  {
+    "path": "attachments/direct/8211_部门会议通知.pdf",
+    "name": "部门会议通知.pdf",
+    "source": "MIME",
+    "mail_uid": "8211",
+    "bytes": 58982,
+    "sha256": "27236c80df72681a0aef53dc6481ea6b36eb5c148b1a0bc71c472917c643b9b9"
+  },
+  {
+    "path": "mail/02_8212.eml",
+    "name": "原始邮件 8212",
+    "source": "RFC822/MIME",
+    "mail_uid": "8212",
+    "bytes": 34559,
+    "sha256": "6ea78d64edb215fe9147c6b638a8af37b327d55892475339aae78ec2f8d28dee"
+  },
+  {
+    "path": "attachments/direct/8212_发票甲.pdf",
+    "name": "发票甲.pdf",
+    "source": "MIME",
+    "mail_uid": "8212",
+    "bytes": 25058,
+    "sha256": "400be3edfac9402c890dd7ddc55707035c05440c9ebb4d59e98a9c602d934e08"
+  }
+]

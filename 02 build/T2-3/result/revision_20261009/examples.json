@@ -1,0 +1,642 @@
+{
+  "sample_type": "合成研发样例，非真实附件，非独立验收",
+  "examples": [
+    {
+      "title": "四文件均100",
+      "input": {
+        "invoices": [
+          [
+            "发票A.pdf",
+            "100.00",
+            "a类"
+          ],
+          [
+            "发票.pdf",
+            "100.00",
+            "a类"
+          ]
+        ],
+        "itineraries": [
+          [
+            "行程单A.pdf",
+            "100.00"
+          ],
+          [
+            "行程单.pdf",
+            "100.00"
+          ]
+        ]
+      },
+      "alerts": [],
+      "actual_mail": {
+        "mail_id": "Msg1",
+        "mail_uid": "123",
+        "subject": "电子发票",
+        "mail_date": "2026-10-04 10:00",
+        "files": [
+          {
+            "file_seq": "01",
+            "file_type": "PDF",
+            "original_name": "发票A.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "Msg1_01_内部.pdf",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "02",
+            "file_type": "PDF",
+            "original_name": "发票.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "Msg1_02_内部.pdf",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "03",
+            "file_type": "PDF",
+            "original_name": "行程单A.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "04",
+            "file_type": "PDF",
+            "original_name": "行程单.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "",
+            "exported_name": ""
+          }
+        ],
+        "itineraries": [
+          {
+            "record_id": "Msg1-03",
+            "match_amount": "100.00",
+            "travel_time": "2026-10-03 09:00",
+            "origin_dest": "杭州→上海"
+          },
+          {
+            "record_id": "Msg1-04",
+            "match_amount": "100.00",
+            "travel_time": "2026-10-03 09:00",
+            "origin_dest": "杭州→上海"
+          }
+        ],
+        "records": [
+          {
+            "record_id": "Msg1-01",
+            "kind": "a类",
+            "fields": {
+              "invoice_date": "2026-10-04",
+              "invoice_number": "01010101010101010101",
+              "total_amount": "100.00",
+              "invoice_type": "",
+              "receipt_type": "客运服务",
+              "seller": "发票销售方",
+              "travel_time": "2026-10-03 09:00",
+              "origin_dest": "杭州→上海"
+            },
+            "source": {
+              "source_file_seq": [
+                "01"
+              ]
+            },
+            "matched_itinerary": {
+              "file_seq": "03",
+              "match_amount": "100.00"
+            },
+            "status": "complete"
+          },
+          {
+            "record_id": "Msg1-02",
+            "kind": "a类",
+            "fields": {
+              "invoice_date": "2026-10-04",
+              "invoice_number": "02020202020202020202",
+              "total_amount": "100.00",
+              "invoice_type": "",
+              "receipt_type": "客运服务",
+              "seller": "发票销售方",
+              "travel_time": "2026-10-03 09:00",
+              "origin_dest": "杭州→上海"
+            },
+            "source": {
+              "source_file_seq": [
+                "02"
+              ]
+            },
+            "matched_itinerary": {
+              "file_seq": "04",
+              "match_amount": "100.00"
+            },
+            "status": "complete"
+          }
+        ],
+        "dedup_skipped": [],
+        "error_reason": ""
+      }
+    },
+    {
+      "title": "唯一明确尾缀优先，末尾金额不同",
+      "input": {
+        "invoices": [
+          [
+            "发票A.pdf",
+            "100.00",
+            "a类"
+          ],
+          [
+            "发票.pdf",
+            "100.00",
+            "a类"
+          ]
+        ],
+        "itineraries": [
+          [
+            "行程单A.pdf",
+            "100.00"
+          ],
+          [
+            "行程单.pdf",
+            "200.0000"
+          ]
+        ]
+      },
+      "alerts": [],
+      "actual_mail": {
+        "mail_id": "Msg1",
+        "mail_uid": "123",
+        "subject": "电子发票",
+        "mail_date": "2026-10-04 10:00",
+        "files": [
+          {
+            "file_seq": "01",
+            "file_type": "PDF",
+            "original_name": "发票A.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "Msg1_01_内部.pdf",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "02",
+            "file_type": "PDF",
+            "original_name": "发票.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "Msg1_02_内部.pdf",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "03",
+            "file_type": "PDF",
+            "original_name": "行程单A.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "04",
+            "file_type": "PDF",
+            "original_name": "行程单.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "",
+            "exported_name": ""
+          }
+        ],
+        "itineraries": [
+          {
+            "record_id": "Msg1-03",
+            "match_amount": "100.00",
+            "travel_time": "2026-10-03 09:00",
+            "origin_dest": "杭州→上海"
+          },
+          {
+            "record_id": "Msg1-04",
+            "match_amount": "200.0000",
+            "travel_time": "2026-10-03 09:00",
+            "origin_dest": "杭州→上海"
+          }
+        ],
+        "records": [
+          {
+            "record_id": "Msg1-01",
+            "kind": "a类",
+            "fields": {
+              "invoice_date": "2026-10-04",
+              "invoice_number": "01010101010101010101",
+              "total_amount": "100.00",
+              "invoice_type": "",
+              "receipt_type": "客运服务",
+              "seller": "发票销售方",
+              "travel_time": "2026-10-03 09:00",
+              "origin_dest": "杭州→上海"
+            },
+            "source": {
+              "source_file_seq": [
+                "01"
+              ]
+            },
+            "matched_itinerary": {
+              "file_seq": "03",
+              "match_amount": "100.00"
+            },
+            "status": "complete"
+          },
+          {
+            "record_id": "Msg1-02",
+            "kind": "a类",
+            "fields": {
+              "invoice_date": "2026-10-04",
+              "invoice_number": "02020202020202020202",
+              "total_amount": "100.00",
+              "invoice_type": "",
+              "receipt_type": "客运服务",
+              "seller": "发票销售方",
+              "travel_time": "2026-10-03 09:00",
+              "origin_dest": "杭州→上海"
+            },
+            "source": {
+              "source_file_seq": [
+                "02"
+              ]
+            },
+            "matched_itinerary": {
+              "file_seq": "04",
+              "match_amount": "200.0000"
+            },
+            "status": "complete"
+          }
+        ],
+        "dedup_skipped": [],
+        "error_reason": ""
+      }
+    },
+    {
+      "title": "末尾金额缺失",
+      "input": {
+        "invoices": [
+          [
+            "发票.pdf",
+            "Not Found",
+            "a类"
+          ],
+          [
+            "发票A.pdf",
+            "100.00",
+            "a类"
+          ]
+        ],
+        "itineraries": [
+          [
+            "行程单.pdf",
+            "Not Found"
+          ],
+          [
+            "行程单A.pdf",
+            "100.00"
+          ]
+        ]
+      },
+      "alerts": [
+        {
+          "mail_subject": "电子发票",
+          "mail_date": "2026-10-04 10:00",
+          "mail_date_header": "",
+          "file_seq": "01",
+          "filename": "发票.pdf",
+          "flags": [
+            "T2-3 Msg1-01 已按数量或原名成组，金额缺失或格式/精度需核对"
+          ]
+        }
+      ],
+      "actual_mail": {
+        "mail_id": "Msg1",
+        "mail_uid": "123",
+        "subject": "电子发票",
+        "mail_date": "2026-10-04 10:00",
+        "files": [
+          {
+            "file_seq": "01",
+            "file_type": "PDF",
+            "original_name": "发票.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "Msg1_01_内部.pdf",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "02",
+            "file_type": "PDF",
+            "original_name": "发票A.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "Msg1_02_内部.pdf",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "03",
+            "file_type": "PDF",
+            "original_name": "行程单.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "04",
+            "file_type": "PDF",
+            "original_name": "行程单A.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "",
+            "exported_name": ""
+          }
+        ],
+        "itineraries": [
+          {
+            "record_id": "Msg1-03",
+            "match_amount": "Not Found",
+            "travel_time": "2026-10-03 09:00",
+            "origin_dest": "杭州→上海"
+          },
+          {
+            "record_id": "Msg1-04",
+            "match_amount": "100.00",
+            "travel_time": "2026-10-03 09:00",
+            "origin_dest": "杭州→上海"
+          }
+        ],
+        "records": [
+          {
+            "record_id": "Msg1-01",
+            "kind": "a类",
+            "fields": {
+              "invoice_date": "2026-10-04",
+              "invoice_number": "01010101010101010101",
+              "total_amount": "Not Found",
+              "invoice_type": "",
+              "receipt_type": "客运服务",
+              "seller": "发票销售方",
+              "travel_time": "2026-10-03 09:00",
+              "origin_dest": "杭州→上海"
+            },
+            "source": {
+              "source_file_seq": [
+                "01"
+              ]
+            },
+            "matched_itinerary": {
+              "file_seq": "03",
+              "match_amount": "Not Found"
+            },
+            "status": "人工待核"
+          },
+          {
+            "record_id": "Msg1-02",
+            "kind": "a类",
+            "fields": {
+              "invoice_date": "2026-10-04",
+              "invoice_number": "02020202020202020202",
+              "total_amount": "100.00",
+              "invoice_type": "",
+              "receipt_type": "客运服务",
+              "seller": "发票销售方",
+              "travel_time": "2026-10-03 09:00",
+              "origin_dest": "杭州→上海"
+            },
+            "source": {
+              "source_file_seq": [
+                "02"
+              ]
+            },
+            "matched_itinerary": {
+              "file_seq": "04",
+              "match_amount": "100.00"
+            },
+            "status": "complete"
+          }
+        ],
+        "dedup_skipped": [],
+        "error_reason": "T2-3 Msg1-01 已按数量或原名成组，金额缺失或格式/精度需核对"
+      }
+    },
+    {
+      "title": "两张明确对应仍冲突，独立组继续",
+      "input": {
+        "invoices": [
+          [
+            "甲发票A.pdf",
+            "100.00",
+            "a类"
+          ],
+          [
+            "乙发票A.pdf",
+            "100.00",
+            "a类"
+          ],
+          [
+            "发票C.pdf",
+            "200.00",
+            "a类"
+          ]
+        ],
+        "itineraries": [
+          [
+            "行程单A.pdf",
+            "100.00"
+          ],
+          [
+            "行程单C.pdf",
+            "200.00"
+          ]
+        ]
+      },
+      "alerts": [
+        {
+          "mail_subject": "电子发票",
+          "mail_date": "2026-10-04 10:00",
+          "mail_date_header": "",
+          "file_seq": "01",
+          "filename": "甲发票A.pdf",
+          "flags": [
+            "T2-3 Msg1-01 多张发票拟关联同一行程单 Msg1-04（Msg1-01、Msg1-02），一对一关系冲突且无唯一明确尾缀，需人工核对"
+          ]
+        },
+        {
+          "mail_subject": "电子发票",
+          "mail_date": "2026-10-04 10:00",
+          "mail_date_header": "",
+          "file_seq": "02",
+          "filename": "乙发票A.pdf",
+          "flags": [
+            "T2-3 Msg1-02 多张发票拟关联同一行程单 Msg1-04（Msg1-01、Msg1-02），一对一关系冲突且无唯一明确尾缀，需人工核对"
+          ]
+        },
+        {
+          "mail_subject": "电子发票",
+          "mail_date": "2026-10-04 10:00",
+          "mail_date_header": "",
+          "file_seq": "04",
+          "filename": "行程单A.pdf",
+          "flags": [
+            "T2-3 Msg1-04 行程单未匹配汇入，保留候选供人工核对"
+          ]
+        }
+      ],
+      "actual_mail": {
+        "mail_id": "Msg1",
+        "mail_uid": "123",
+        "subject": "电子发票",
+        "mail_date": "2026-10-04 10:00",
+        "files": [
+          {
+            "file_seq": "01",
+            "file_type": "PDF",
+            "original_name": "甲发票A.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "Msg1_01_内部.pdf",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "02",
+            "file_type": "PDF",
+            "original_name": "乙发票A.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "Msg1_02_内部.pdf",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "03",
+            "file_type": "PDF",
+            "original_name": "发票C.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "Msg1_03_内部.pdf",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "04",
+            "file_type": "PDF",
+            "original_name": "行程单A.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "",
+            "exported_name": ""
+          },
+          {
+            "file_seq": "05",
+            "file_type": "PDF",
+            "original_name": "行程单C.pdf",
+            "pre_read_type": "Unknown",
+            "pre_read_invoice_no": "Not Found",
+            "pre_read_amount": "Not Found",
+            "internal_name": "",
+            "exported_name": ""
+          }
+        ],
+        "itineraries": [
+          {
+            "record_id": "Msg1-04",
+            "match_amount": "100.00",
+            "travel_time": "2026-10-03 09:00",
+            "origin_dest": "杭州→上海"
+          },
+          {
+            "record_id": "Msg1-05",
+            "match_amount": "200.00",
+            "travel_time": "2026-10-03 09:00",
+            "origin_dest": "杭州→上海"
+          }
+        ],
+        "records": [
+          {
+            "record_id": "Msg1-01",
+            "kind": "a类",
+            "fields": {
+              "invoice_date": "2026-10-04",
+              "invoice_number": "01010101010101010101",
+              "total_amount": "100.00",
+              "invoice_type": "",
+              "receipt_type": "客运服务",
+              "seller": "发票销售方"
+            },
+            "source": {
+              "source_file_seq": [
+                "01"
+              ]
+            },
+            "status": "人工待核"
+          },
+          {
+            "record_id": "Msg1-02",
+            "kind": "a类",
+            "fields": {
+              "invoice_date": "2026-10-04",
+              "invoice_number": "02020202020202020202",
+              "total_amount": "100.00",
+              "invoice_type": "",
+              "receipt_type": "客运服务",
+              "seller": "发票销售方"
+            },
+            "source": {
+              "source_file_seq": [
+                "02"
+              ]
+            },
+            "status": "人工待核"
+          },
+          {
+            "record_id": "Msg1-03",
+            "kind": "a类",
+            "fields": {
+              "invoice_date": "2026-10-04",
+              "invoice_number": "03030303030303030303",
+              "total_amount": "200.00",
+              "invoice_type": "",
+              "receipt_type": "客运服务",
+              "seller": "发票销售方",
+              "travel_time": "2026-10-03 09:00",
+              "origin_dest": "杭州→上海"
+            },
+            "source": {
+              "source_file_seq": [
+                "03"
+              ]
+            },
+            "matched_itinerary": {
+              "file_seq": "05",
+              "match_amount": "200.00"
+            },
+            "status": "complete"
+          }
+        ],
+        "dedup_skipped": [],
+        "error_reason": "T2-3 Msg1-01 多张发票拟关联同一行程单 Msg1-04（Msg1-01、Msg1-02），一对一关系冲突且无唯一明确尾缀，需人工核对;T2-3 Msg1-02 多张发票拟关联同一行程单 Msg1-04（Msg1-01、Msg1-02），一对一关系冲突且无唯一明确尾缀，需人工核对;T2-3 Msg1-04 行程单未匹配汇入，保留候选供人工核对"
+      }
+    }
+  ]
+}

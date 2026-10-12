@@ -1,0 +1,19 @@
+{
+  "id": "C07",
+  "title": "多附件及重复文件",
+  "priority": "必选",
+  "stages": [
+    "T2-1"
+  ],
+  "source_kind": "合成",
+  "review_status": "待审核",
+  "review_focus": "检查同邮件 MD5 去重，区别于 T2-4 票号仲裁。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票 C07",
+      "note": "ZIP 内甲与直接附件甲字节完全相同；乙不同。"
+    }
+  ]
+}

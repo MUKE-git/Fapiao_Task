@@ -1,0 +1,50 @@
+{
+  "type": "人工标准答案草案，待逐条审核",
+  "case_id": "C22",
+  "variant": "hit_miss_hit",
+  "expected": {
+    "unseen_total": 3,
+    "selected_mails": 2,
+    "file_count": 2,
+    "record_count": 2,
+    "itinerary_count": 0,
+    "excel_rows": 2,
+    "matched_by_invoice": {},
+    "duplicate_skipped": 0,
+    "alerts_contain": [],
+    "field_checks": {
+      "发票甲.pdf": {
+        "invoice_number": "26331780465373588813",
+        "total_amount": "355.29"
+      },
+      "发票乙.pdf": {
+        "invoice_number": "26331751770250313413",
+        "total_amount": "289.87"
+      }
+    },
+    "mail_checks": {
+      "header_fetched_uids": [
+        "8221",
+        "8222",
+        "8223"
+      ],
+      "full_fetched_uids": [
+        "8221",
+        "8223"
+      ],
+      "records_by_uid": {
+        "8221": [
+          "发票甲.pdf"
+        ],
+        "8223": [
+          "发票乙.pdf"
+        ]
+      },
+      "pdf_calls": [
+        "发票甲.pdf",
+        "发票乙.pdf"
+      ]
+    }
+  },
+  "reason": "第一封命中、第二封不命中、第三封命中；跳过中间邮件后继续处理，且两张发票分别归属自己的邮件。"
+}

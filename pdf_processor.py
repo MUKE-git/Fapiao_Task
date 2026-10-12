@@ -8,23 +8,14 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
-from typing import Any
 
 from ai_client import call_ai_audit_and_rename
 from attachment_processor import CollectedFile, local_inspect_pdf
 from config import RunConfig
-from data_model import NOT_FOUND, PRE_READ_UNKNOWN
+from data_model import NOT_FOUND, PRE_READ_UNKNOWN, normalize_amount
 from fallback_extractor import build_fallback_audit_result
 from processor_contracts import DocumentResult
 from type_classifier import merge_type_from_name_and_local, normalize_doc_role
-
-
-def _amount(value: Any) -> float | str:
-    try:
-        amount = float(str(value).replace("¥", "").replace("￥", "").replace(",", ""))
-        return round(amount, 2) if amount > 0 else NOT_FOUND
-    except (TypeError, ValueError):
-        return NOT_FOUND
 
 
 def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
@@ -38,7 +29,7 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
     fallback_input = [{"identified_type": pre_type, "text_snapshot": text[:3000]}]
     pre_read = build_fallback_audit_result(fallback_input)
     file.meta.pre_read_invoice_no = str(pre_read.get("invoice_number") or NOT_FOUND)
-    file.meta.pre_read_amount = _amount(pre_read.get("total_amount"))
+    file.meta.pre_read_amount = normalize_amount(pre_read.get("total_amount"))
 
     # 旧接口同时重命名传入 PDF。隔离副本，保证正式存盘名持续携带 file_seq。
     with tempfile.TemporaryDirectory(prefix="fapiao_pdf_") as temp_dir:
@@ -55,6 +46,7 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
             task_info, model=cfg.dashscope_model, mail_subject=mail_subject,
             mail_date_hint=mail_date, run_id=run_id,
         )
+        expected_name = os.path.basename(temp_path)
 
     for mismatch in mismatches:
         mismatch["local_path"] = file.path
@@ -64,8 +56,16 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
 
     data = audit if isinstance(audit, dict) else pre_read
     ai_roles = data.get("file_classifications") or []
+    valid_classification = (isinstance(ai_roles, list) and len(ai_roles) == 1
+                            and isinstance(ai_roles[0], dict)
+                            and ai_roles[0].get("file") == expected_name
+                            and ai_roles[0].get("role") in ("Invoice", "Itinerary", "Unknown"))
+    if isinstance(audit, dict) and not valid_classification:
+        error = (error + ";" if error else "") + "PDF 单文件分类结果缺失、数量错误或文件名不对应"
+        manual.append({"filename": os.path.basename(file.path),
+                       "reason": "PDF 单文件分类契约异常"})
     ai_role = (normalize_doc_role(ai_roles[0].get("role"))
-               if ai_roles and isinstance(ai_roles[0], dict) else PRE_READ_UNKNOWN)
+               if valid_classification else PRE_READ_UNKNOWN)
     role = pre_type if pre_type != PRE_READ_UNKNOWN else ai_role
     return DocumentResult(file_seq=file.meta.file_seq, role=role, fields=data,
                           source_file_seq=[file.meta.file_seq], error_reason=error,

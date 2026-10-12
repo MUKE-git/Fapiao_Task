@@ -38,6 +38,6 @@ Traceback (most recent call last):
 AssertionError: unexpectedly None
 
 ----------------------------------------------------------------------
-Ran 29 tests in 1.010s
+Ran 29 tests in 1.024s
 
 FAILED (failures=1)

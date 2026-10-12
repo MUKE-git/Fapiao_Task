@@ -125,7 +125,8 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
         with open(path, "wb") as out:
             out.write(content)
         meta = FileRecord(file_seq=seq_text,
-                          file_type=_FILE_TYPES.get(suffix, "其他"), original_name=name)
+                          file_type=_FILE_TYPES.get(suffix, "其他"), original_name=name,
+                          internal_name=os.path.basename(path))
         mail.files.append(meta)
         collected.append(CollectedFile(meta, path))
 

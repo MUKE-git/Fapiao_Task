@@ -1,0 +1,40 @@
+{
+  "type": "人工标准答案草案，待逐条审核",
+  "case_id": "C22",
+  "variant": "miss_then_hit",
+  "expected": {
+    "unseen_total": 2,
+    "selected_mails": 1,
+    "file_count": 1,
+    "record_count": 1,
+    "itinerary_count": 0,
+    "excel_rows": 1,
+    "matched_by_invoice": {},
+    "duplicate_skipped": 0,
+    "alerts_contain": [],
+    "field_checks": {
+      "发票甲.pdf": {
+        "invoice_number": "26331461520399771704",
+        "total_amount": "97.49"
+      }
+    },
+    "mail_checks": {
+      "header_fetched_uids": [
+        "8211",
+        "8212"
+      ],
+      "full_fetched_uids": [
+        "8212"
+      ],
+      "records_by_uid": {
+        "8212": [
+          "发票甲.pdf"
+        ]
+      },
+      "pdf_calls": [
+        "发票甲.pdf"
+      ]
+    }
+  },
+  "reason": "第一封不命中，第二封命中；跳过第一封后应继续处理第二封。"
+}

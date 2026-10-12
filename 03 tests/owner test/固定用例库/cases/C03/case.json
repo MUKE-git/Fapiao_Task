@@ -1,0 +1,19 @@
+{
+  "id": "C03",
+  "title": "命中主题但无 PDF",
+  "priority": "必选",
+  "stages": [
+    "T2-1"
+  ],
+  "source_kind": "合成",
+  "review_status": "待审核",
+  "review_focus": "检查零文件、零记录、零 Excel 行和无有效附件提示。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票 C03",
+      "note": "命中主题，邮件没有任何附件。"
+    }
+  ]
+}

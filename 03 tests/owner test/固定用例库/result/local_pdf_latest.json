@@ -1,0 +1,5638 @@
+{
+  "type": "真实本地 PDF 阶段实测；AI HTTP 401 为离线替身；非人工标准答案",
+  "generated_at_utc": "2026-10-09T12:49:27.608932+00:00",
+  "summary": {
+    "case_count": 18,
+    "variant_count": 23,
+    "pdf_count": 46,
+    "readable_pdf_count": 45,
+    "all_checks_pass_count": 46,
+    "checks_need_attention_count": 0,
+    "role_difference_count": 1,
+    "field_comparison_difference_file_count": 45
+  },
+  "items": [
+    {
+      "case_id": "C02",
+      "variant": "v1",
+      "selected_in_original_main_flow": false,
+      "input": {
+        "path": "cases/C02/variants/v1/attachments/direct/无关凭证.pdf",
+        "original_name": "无关凭证.pdf",
+        "source": "MIME",
+        "bytes": 25292,
+        "sha256": "bdce560d8d2a9dd299be288a7f00cbfe4dc9cc0cc865aad5798fa4a517454b56"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000002",
+          "total_amount": "126.40",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：无关凭证.pdf\n发票号码：90000000000000000002\n开票日期：2026-09-28\n价税合计：126.40\n发票类型：电子发票（普通发票）\n票面类型：办公用品\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": null,
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000002",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000002",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000002",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "无关凭证.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000002",
+          "local_fallback_observed": "90000000000000000002",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "126.40",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "办公用品",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C02/v1/01.md"
+    },
+    {
+      "case_id": "C04",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C04/variants/v1/attachments/direct/办公用品发票.pdf",
+        "original_name": "办公用品发票.pdf",
+        "source": "MIME",
+        "bytes": 24934,
+        "sha256": "b201f3df14afb4c1cad976c5cac3d2cc43be47607b018ed4a51e310299c5f81f"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000004",
+          "total_amount": "126.40",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：办公用品发票.pdf\n发票号码：90000000000000000004\n开票日期：2026-09-28\n价税合计：126.40\n发票类型：电子发票（普通发票）\n票面类型：办公用品\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000004",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000004",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000004",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "办公用品发票.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000004",
+          "local_fallback_observed": "90000000000000000004",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "126.40",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "办公用品",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C04/v1/01.md"
+    },
+    {
+      "case_id": "C05",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C05/variants/v1/attachments/direct/客运发票.pdf",
+        "original_name": "客运发票.pdf",
+        "source": "MIME",
+        "bytes": 25566,
+        "sha256": "6afd5fb0f5d8e3c7f1ae6d3d20872bc1118315b2f3c0e46fb66e6d212de8abea"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000005",
+          "total_amount": "53.93",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：客运发票.pdf\n发票号码：90000000000000000005\n开票日期：2026-09-28\n价税合计：53.93\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000005",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000005",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000005",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "客运发票.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000005",
+          "local_fallback_observed": "90000000000000000005",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "53.93",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C05/v1/01.md"
+    },
+    {
+      "case_id": "C05",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C05/variants/v1/attachments/direct/行程单.pdf",
+        "original_name": "行程单.pdf",
+        "source": "MIME",
+        "bytes": 24907,
+        "sha256": "880de876e7100c5d7ae306268741d7d1778fb64932b0af0dfd79dba81df246c2"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "53.93",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州萧山国际机场"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单.pdf\n报销金额：53.93\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→杭州萧山国际机场"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 杭州萧山国际机场",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 杭州萧山国际机场",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "53.93",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→杭州萧山国际机场",
+          "local_fallback_observed": "杭州东站 → 杭州萧山国际机场",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C05/v1/02.md"
+    },
+    {
+      "case_id": "C06",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C06/variants/v1/attachments/zip/压缩包内发票.pdf",
+        "original_name": "压缩包内发票.pdf",
+        "source": "报销附件.zip",
+        "bytes": 25850,
+        "sha256": "d7d563828ecc8bd69ff9ec3f984ee940091b55b281694fb70bd18d5d83167419"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000006",
+          "total_amount": "126.40",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：压缩包内发票.pdf\n发票号码：90000000000000000006\n开票日期：2026-09-28\n价税合计：126.40\n发票类型：电子发票（普通发票）\n票面类型：办公用品\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000006",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000006",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000006",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "压缩包内发票.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000006",
+          "local_fallback_observed": "90000000000000000006",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "126.40",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "办公用品",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C06/v1/01.md"
+    },
+    {
+      "case_id": "C07",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C07/variants/v1/attachments/direct/发票甲.pdf",
+        "original_name": "发票甲.pdf",
+        "source": "MIME",
+        "bytes": 25058,
+        "sha256": "97ca72b1c954f4bf59ceb539a92d53d5f62908a94457d87b020e38865552fd39"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000007",
+          "total_amount": "53.93",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票甲.pdf\n发票号码：90000000000000000007\n开票日期：2026-09-28\n价税合计：53.93\n发票类型：电子发票（普通发票）\n票面类型：办公用品\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000007",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000007",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000007",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票甲.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000007",
+          "local_fallback_observed": "90000000000000000007",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "53.93",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "办公用品",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C07/v1/01.md"
+    },
+    {
+      "case_id": "C07",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C07/variants/v1/attachments/zip/发票甲.pdf",
+        "original_name": "发票甲.pdf",
+        "source": "汇总附件.zip",
+        "bytes": 25058,
+        "sha256": "97ca72b1c954f4bf59ceb539a92d53d5f62908a94457d87b020e38865552fd39"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000007",
+          "total_amount": "53.93",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票甲.pdf\n发票号码：90000000000000000007\n开票日期：2026-09-28\n价税合计：53.93\n发票类型：电子发票（普通发票）\n票面类型：办公用品\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000007",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000007",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000007",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票甲.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000007",
+          "local_fallback_observed": "90000000000000000007",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "53.93",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "办公用品",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C07/v1/02.md"
+    },
+    {
+      "case_id": "C07",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C07/variants/v1/attachments/zip/发票乙.pdf",
+        "original_name": "发票乙.pdf",
+        "source": "汇总附件.zip",
+        "bytes": 25031,
+        "sha256": "4845d43d71712e2829805e720a8ff8eabe0545ecca38ff57f375d5593c5ce1f7"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000070",
+          "total_amount": "126.40",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票乙.pdf\n发票号码：90000000000000000070\n开票日期：2026-09-28\n价税合计：126.40\n发票类型：电子发票（普通发票）\n票面类型：办公用品\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000070",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000070",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000070",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票乙.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000070",
+          "local_fallback_observed": "90000000000000000070",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "126.40",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "办公用品",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C07/v1/03.md"
+    },
+    {
+      "case_id": "C08",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C08/variants/v1/attachments/direct/附件01.pdf",
+        "original_name": "附件01.pdf",
+        "source": "MIME",
+        "bytes": 25181,
+        "sha256": "a97808ac506af1a4ab60fcb39cf092d5f53133862000b993c953e52d71969989"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000008",
+          "total_amount": "126.40",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：附件01.pdf\n发票号码：90000000000000000008\n开票日期：2026-09-28\n价税合计：126.40\n发票类型：电子发票（普通发票）\n票面类型：办公用品\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": null,
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000008",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000008",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000008",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "附件01.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000008",
+          "local_fallback_observed": "90000000000000000008",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "126.40",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "办公用品",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C08/v1/01.md"
+    },
+    {
+      "case_id": "C09",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C09/variants/v1/attachments/direct/损坏发票.pdf",
+        "original_name": "损坏发票.pdf",
+        "source": "MIME",
+        "bytes": 43,
+        "sha256": "d951bf52a59b86bbcac46663c28691543d182b3f4def3a992ad49e702cd04c38"
+      },
+      "declared_controlled_extract": {
+        "role": "Unknown",
+        "fields": {},
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": false,
+          "local_pdf_type": "Unknown",
+          "text": "读取失败: No /Root object! - Is this really a PDF?"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "Not Found",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "Not Found",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "损坏发票.pdf",
+                "mail_subject": "合成固定用例",
+                "mail_date": "2026-09-29",
+                "ai_role_used": "",
+                "type_used": "Invoice"
+              },
+              {
+                "filename": "损坏发票.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": true,
+      "field_comparison_for_review": [],
+      "snapshot": "result/local_pdf/C09/v1/01.md"
+    },
+    {
+      "case_id": "C11",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C11/variants/v1/attachments/direct/多金额多日期发票.pdf",
+        "original_name": "多金额多日期发票.pdf",
+        "source": "MIME",
+        "bytes": 26788,
+        "sha256": "a740f663cfcbc036f5cb2c886106f6cd033fc6c49e1ea5b9b976cfd28b48c7e3"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-10-03",
+          "invoice_number": "90000000000000000011",
+          "total_amount": "128.68",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：多金额多日期发票.pdf\n发票号码：90000000000000000011\n开票日期：2026-10-03\n价税合计：128.68\n发票类型：电子发票（普通发票）\n票面类型：办公用品\n销售方：合成测试销售方\n单价：120.00\n税额：8.68\n行程日期：2026-10-01"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000011",
+          "invoice_date": "2026-10-03",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000011",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000011",
+              "invoice_date": "2026-10-03",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "多金额多日期发票.pdf",
+                "mail_subject": "合成固定用例",
+                "mail_date": "2026-09-29",
+                "ai_role_used": "",
+                "type_used": "Invoice"
+              },
+              {
+                "filename": "多金额多日期发票.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-10-03",
+          "local_fallback_observed": "2026-10-03",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000011",
+          "local_fallback_observed": "90000000000000000011",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "128.68",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "办公用品",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C11/v1/01.md"
+    },
+    {
+      "case_id": "C12",
+      "variant": "partial",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C12/variants/partial/attachments/direct/缺票号发票.pdf",
+        "original_name": "缺票号发票.pdf",
+        "source": "MIME",
+        "bytes": 24885,
+        "sha256": "58360ae3e96b84a8eee781a2e1747e85f2fcc270f40d68c7067b3bba2a54c84e"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "Not Found",
+          "total_amount": "126.40",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：缺票号发票.pdf\n开票日期：2026-09-28\n价税合计：126.40\n发票类型：电子发票（普通发票）\n票面类型：办公用品\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "缺票号发票.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "Not Found",
+          "local_fallback_observed": "Not Found",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "126.40",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "办公用品",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C12/partial/01.md"
+    },
+    {
+      "case_id": "C12",
+      "variant": "all_missing",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C12/variants/all_missing/attachments/direct/三项全缺发票.pdf",
+        "original_name": "三项全缺发票.pdf",
+        "source": "MIME",
+        "bytes": 23892,
+        "sha256": "ba902bc788cce7899daf1dd96e83892bff7ab6fee6ca473745d1b4d1bf531083"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "Not Found",
+          "invoice_number": "Not Found",
+          "total_amount": "Not Found",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：三项全缺发票.pdf\n发票类型：电子发票（普通发票）\n票面类型：办公用品\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "三项全缺发票.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "Not Found",
+          "local_fallback_observed": "Not Found",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "Not Found",
+          "local_fallback_observed": "Not Found",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "Not Found",
+          "local_fallback_observed": "Not Found",
+          "same": true
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "办公用品",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C12/all_missing/01.md"
+    },
+    {
+      "case_id": "C13",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C13/variants/v1/attachments/direct/交通发票.pdf",
+        "original_name": "交通发票.pdf",
+        "source": "MIME",
+        "bytes": 25791,
+        "sha256": "858743c4dbf0b1dc5cdf806506daa0e2fe119ba3f18b6e04aa4c1f39f160f50b"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000013",
+          "total_amount": "80.13",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：交通发票.pdf\n发票号码：90000000000000000013\n开票日期：2026-09-28\n价税合计：80.13\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000013",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000013",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000013",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "交通发票.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000013",
+          "local_fallback_observed": "90000000000000000013",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "80.13",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C13/v1/01.md"
+    },
+    {
+      "case_id": "C14",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C14/variants/v1/attachments/direct/发票.pdf",
+        "original_name": "发票.pdf",
+        "source": "MIME",
+        "bytes": 25559,
+        "sha256": "5cdd7fc731c4b3d6e70d7c3a5c7fa44e38518b1b7d15b85e21f018ce23f56b64"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000014",
+          "total_amount": "100.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票.pdf\n发票号码：90000000000000000014\n开票日期：2026-09-28\n价税合计：100.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000014",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000014",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000014",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000014",
+          "local_fallback_observed": "90000000000000000014",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C14/v1/01.md"
+    },
+    {
+      "case_id": "C14",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C14/variants/v1/attachments/direct/行程单甲.pdf",
+        "original_name": "行程单甲.pdf",
+        "source": "MIME",
+        "bytes": 25072,
+        "sha256": "efd706101a7016bdb1e47bcc3e0c74c732b3b62e44048926c620ee2a4b7e0622"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.0000",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州宋城（之江路148号）"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单甲.pdf\n报销金额：100.0000\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→杭州宋城（之江路148号）"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 杭州宋城",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 杭州宋城",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单甲.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.0000",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→杭州宋城（之江路148号）",
+          "local_fallback_observed": "杭州东站 → 杭州宋城",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C14/v1/02.md"
+    },
+    {
+      "case_id": "C14",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C14/variants/v1/attachments/direct/行程单乙.pdf",
+        "original_name": "行程单乙.pdf",
+        "source": "MIME",
+        "bytes": 25054,
+        "sha256": "b43607941efc74c28d2caa96604a8dc7fa926b5cec63ce0ba4261670699436f5"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.40",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州宋城（之江路148号）→杭州东站"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单乙.pdf\n报销金额：100.40\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州宋城（之江路148号）→杭州东站"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单乙.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.40",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州宋城（之江路148号）→杭州东站",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C14/v1/03.md"
+    },
+    {
+      "case_id": "C15",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C15/variants/v1/attachments/direct/发票B.pdf",
+        "original_name": "发票B.pdf",
+        "source": "MIME",
+        "bytes": 25560,
+        "sha256": "41fdccacdcf243c1dfb64c51e8e0d497d025d6673b086a459de7453f20679957"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000015",
+          "total_amount": "100.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票B.pdf\n发票号码：90000000000000000015\n开票日期：2026-09-28\n价税合计：100.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000015",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000015",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000015",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票B.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000015",
+          "local_fallback_observed": "90000000000000000015",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C15/v1/01.md"
+    },
+    {
+      "case_id": "C15",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C15/variants/v1/attachments/direct/行程单A.pdf",
+        "original_name": "行程单A.pdf",
+        "source": "MIME",
+        "bytes": 25875,
+        "sha256": "7ca0a9f89bfee3c8251a07e287416375c4afb9d32353edb4b97967b10df589c2"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "中国美术学院（南山校区）→杭州东站"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单A.pdf\n报销金额：100.00\n出行时间：2026-09-25 10:00\n出发地/目的地：中国美术学院（南山校区）→杭州东站"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "中国美术学院（南山校区）→杭州东站",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C15/v1/02.md"
+    },
+    {
+      "case_id": "C15",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C15/variants/v1/attachments/direct/行程单B.pdf",
+        "original_name": "行程单B.pdf",
+        "source": "MIME",
+        "bytes": 26538,
+        "sha256": "634c927a88fba00f02dcd16f1d505bfbc97aa48f4a1f6057ad375f326c5af16d"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "浙江省科技馆（西湖文化广场2号）→杭州宋城"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单B.pdf\n报销金额：100.00\n出行时间：2026-09-25 10:00\n出发地/目的地：浙江省科技馆（西湖文化广场2号）→杭州宋城"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单B.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "浙江省科技馆（西湖文化广场2号）→杭州宋城",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C15/v1/03.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d049",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d049/attachments/direct/发票C.pdf",
+        "original_name": "发票C.pdf",
+        "source": "MIME",
+        "bytes": 25560,
+        "sha256": "5e690611392959b601525f8a89cd3f248429ea1e4b1afc7f744b37d7b0251ab2"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000016",
+          "total_amount": "100.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票C.pdf\n发票号码：90000000000000000016\n开票日期：2026-09-28\n价税合计：100.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000016",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000016",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000016",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票C.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000016",
+          "local_fallback_observed": "90000000000000000016",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d049/01.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d049",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d049/attachments/direct/行程单A.pdf",
+        "original_name": "行程单A.pdf",
+        "source": "MIME",
+        "bytes": 23970,
+        "sha256": "a0b4f2fccf2b3df3f9680bcdfb1fd15d535839f73ccc8406769b86fb00a0efad"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.49",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州宋城"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单A.pdf\n报销金额：100.49\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→杭州宋城"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 杭州宋城",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 杭州宋城",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.49",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→杭州宋城",
+          "local_fallback_observed": "杭州东站 → 杭州宋城",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d049/02.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d049",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d049/attachments/direct/行程单D.pdf",
+        "original_name": "行程单D.pdf",
+        "source": "MIME",
+        "bytes": 24909,
+        "sha256": "a600650c68c18a34ddd12875c3d260774d52bb8d4e7814e85c95fdc48fa4d8bc"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "200.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州萧山国际机场"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单D.pdf\n报销金额：200.00\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→杭州萧山国际机场"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 杭州萧山国际机场",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 杭州萧山国际机场",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单D.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "200.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→杭州萧山国际机场",
+          "local_fallback_observed": "杭州东站 → 杭州萧山国际机场",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d049/03.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d050",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d050/attachments/direct/发票C.pdf",
+        "original_name": "发票C.pdf",
+        "source": "MIME",
+        "bytes": 25560,
+        "sha256": "5e690611392959b601525f8a89cd3f248429ea1e4b1afc7f744b37d7b0251ab2"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000016",
+          "total_amount": "100.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票C.pdf\n发票号码：90000000000000000016\n开票日期：2026-09-28\n价税合计：100.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000016",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000016",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000016",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票C.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000016",
+          "local_fallback_observed": "90000000000000000016",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d050/01.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d050",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d050/attachments/direct/行程单A.pdf",
+        "original_name": "行程单A.pdf",
+        "source": "MIME",
+        "bytes": 23970,
+        "sha256": "14f2fc258626e2fbca0509976272b6155208f32a46e030315ee489e091f946d1"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.50",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州宋城"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单A.pdf\n报销金额：100.50\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→杭州宋城"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 杭州宋城",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 杭州宋城",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.50",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→杭州宋城",
+          "local_fallback_observed": "杭州东站 → 杭州宋城",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d050/02.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d050",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d050/attachments/direct/行程单D.pdf",
+        "original_name": "行程单D.pdf",
+        "source": "MIME",
+        "bytes": 24909,
+        "sha256": "a600650c68c18a34ddd12875c3d260774d52bb8d4e7814e85c95fdc48fa4d8bc"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "200.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州萧山国际机场"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单D.pdf\n报销金额：200.00\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→杭州萧山国际机场"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 杭州萧山国际机场",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 杭州萧山国际机场",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单D.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "200.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→杭州萧山国际机场",
+          "local_fallback_observed": "杭州东站 → 杭州萧山国际机场",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d050/03.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d051_name",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d051_name/attachments/direct/发票A.pdf",
+        "original_name": "发票A.pdf",
+        "source": "MIME",
+        "bytes": 25560,
+        "sha256": "9efaf21223863729096244483b9ceb80383cce6f9e6284642e8314b1781ffdf9"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000016",
+          "total_amount": "100.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票A.pdf\n发票号码：90000000000000000016\n开票日期：2026-09-28\n价税合计：100.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000016",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000016",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000016",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000016",
+          "local_fallback_observed": "90000000000000000016",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d051_name/01.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d051_name",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d051_name/attachments/direct/行程单A.pdf",
+        "original_name": "行程单A.pdf",
+        "source": "MIME",
+        "bytes": 23970,
+        "sha256": "18ce25e341596bc0661e374257d852d7f8072b504e216ebc482d5b69f3a25011"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.51",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州宋城"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单A.pdf\n报销金额：100.51\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→杭州宋城"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 杭州宋城",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 杭州宋城",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.51",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→杭州宋城",
+          "local_fallback_observed": "杭州东站 → 杭州宋城",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d051_name/02.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d051_name",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d051_name/attachments/direct/行程单D.pdf",
+        "original_name": "行程单D.pdf",
+        "source": "MIME",
+        "bytes": 24909,
+        "sha256": "a600650c68c18a34ddd12875c3d260774d52bb8d4e7814e85c95fdc48fa4d8bc"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "200.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州萧山国际机场"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单D.pdf\n报销金额：200.00\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→杭州萧山国际机场"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 杭州萧山国际机场",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 杭州萧山国际机场",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单D.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "200.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→杭州萧山国际机场",
+          "local_fallback_observed": "杭州东站 → 杭州萧山国际机场",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d051_name/03.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d051_no_name",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d051_no_name/attachments/direct/发票C.pdf",
+        "original_name": "发票C.pdf",
+        "source": "MIME",
+        "bytes": 25560,
+        "sha256": "5e690611392959b601525f8a89cd3f248429ea1e4b1afc7f744b37d7b0251ab2"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000016",
+          "total_amount": "100.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票C.pdf\n发票号码：90000000000000000016\n开票日期：2026-09-28\n价税合计：100.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000016",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000016",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000016",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票C.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000016",
+          "local_fallback_observed": "90000000000000000016",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d051_no_name/01.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d051_no_name",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d051_no_name/attachments/direct/行程单A.pdf",
+        "original_name": "行程单A.pdf",
+        "source": "MIME",
+        "bytes": 23970,
+        "sha256": "18ce25e341596bc0661e374257d852d7f8072b504e216ebc482d5b69f3a25011"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.51",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州宋城"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单A.pdf\n报销金额：100.51\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→杭州宋城"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 杭州宋城",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 杭州宋城",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.51",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→杭州宋城",
+          "local_fallback_observed": "杭州东站 → 杭州宋城",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d051_no_name/02.md"
+    },
+    {
+      "case_id": "C16",
+      "variant": "d051_no_name",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C16/variants/d051_no_name/attachments/direct/行程单D.pdf",
+        "original_name": "行程单D.pdf",
+        "source": "MIME",
+        "bytes": 24909,
+        "sha256": "a600650c68c18a34ddd12875c3d260774d52bb8d4e7814e85c95fdc48fa4d8bc"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "200.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州萧山国际机场"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单D.pdf\n报销金额：200.00\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→杭州萧山国际机场"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 杭州萧山国际机场",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 杭州萧山国际机场",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单D.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "200.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→杭州萧山国际机场",
+          "local_fallback_observed": "杭州东站 → 杭州萧山国际机场",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C16/d051_no_name/03.md"
+    },
+    {
+      "case_id": "C17",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C17/variants/v1/attachments/direct/发票A.pdf",
+        "original_name": "发票A.pdf",
+        "source": "MIME",
+        "bytes": 24766,
+        "sha256": "e635b7b19f31b4f87c810b2847a8fc0a8c7d1a7899f151fac95b2ef4bab3a2a2"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000017",
+          "total_amount": "Not Found",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票A.pdf\n发票号码：90000000000000000017\n开票日期：2026-09-28\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000017",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000017",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000017",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000017",
+          "local_fallback_observed": "90000000000000000017",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "Not Found",
+          "local_fallback_observed": "Not Found",
+          "same": true
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C17/v1/01.md"
+    },
+    {
+      "case_id": "C17",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C17/variants/v1/attachments/direct/行程单A.pdf",
+        "original_name": "行程单A.pdf",
+        "source": "MIME",
+        "bytes": 25307,
+        "sha256": "043c702b65679de55d58fdc875d9e62cf73bf729efc759dbf112df10da2179df"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "500.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→千岛湖镇人民政府"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单A.pdf\n报销金额：500.00\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州东站→千岛湖镇人民政府"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州东站 → 千岛湖镇人民政府",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州东站 → 千岛湖镇人民政府",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "500.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州东站→千岛湖镇人民政府",
+          "local_fallback_observed": "杭州东站 → 千岛湖镇人民政府",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C17/v1/02.md"
+    },
+    {
+      "case_id": "C17",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C17/variants/v1/attachments/direct/行程单B.pdf",
+        "original_name": "行程单B.pdf",
+        "source": "MIME",
+        "bytes": 26315,
+        "sha256": "910484de394cbeee1fe4ad70eee124816ce6867d227069484dcd959575ae3259"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "600.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州萧山国际机场→千岛湖镇人民政府"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单B.pdf\n报销金额：600.00\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州萧山国际机场→千岛湖镇人民政府"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州萧山国际机场 → 千岛湖镇人民政府",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州萧山国际机场 → 千岛湖镇人民政府",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单B.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "600.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州萧山国际机场→千岛湖镇人民政府",
+          "local_fallback_observed": "杭州萧山国际机场 → 千岛湖镇人民政府",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C17/v1/03.md"
+    },
+    {
+      "case_id": "C18",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C18/variants/v1/attachments/direct/发票A.pdf",
+        "original_name": "发票A.pdf",
+        "source": "MIME",
+        "bytes": 25560,
+        "sha256": "bf79a0a933c33d6e2bd0477fb9a64d6cc8ee55b30cb743ad20babd3668ece2f6"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000181",
+          "total_amount": "100.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票A.pdf\n发票号码：90000000000000000181\n开票日期：2026-09-28\n价税合计：100.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000181",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000181",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000181",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000181",
+          "local_fallback_observed": "90000000000000000181",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C18/v1/01.md"
+    },
+    {
+      "case_id": "C18",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C18/variants/v1/attachments/direct/发票B.pdf",
+        "original_name": "发票B.pdf",
+        "source": "MIME",
+        "bytes": 25560,
+        "sha256": "e805eeb13bc701b689f561446bef3cd9fcf21763f2fabdbf784ae6f6a204fb1d"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000182",
+          "total_amount": "100.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票B.pdf\n发票号码：90000000000000000182\n开票日期：2026-09-28\n价税合计：100.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000182",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000182",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000182",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票B.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000182",
+          "local_fallback_observed": "90000000000000000182",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C18/v1/02.md"
+    },
+    {
+      "case_id": "C18",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C18/variants/v1/attachments/direct/发票C.pdf",
+        "original_name": "发票C.pdf",
+        "source": "MIME",
+        "bytes": 25560,
+        "sha256": "27344ad79a5665edd063aad672c55eb65a24211916f1e171609c9ae2a0384b26"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000183",
+          "total_amount": "200.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票C.pdf\n发票号码：90000000000000000183\n开票日期：2026-09-28\n价税合计：200.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000183",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000183",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000183",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票C.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000183",
+          "local_fallback_observed": "90000000000000000183",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "200.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C18/v1/03.md"
+    },
+    {
+      "case_id": "C18",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C18/variants/v1/attachments/direct/行程单X.pdf",
+        "original_name": "行程单X.pdf",
+        "source": "MIME",
+        "bytes": 24973,
+        "sha256": "f9e8a280b396ad071b0c1a997a7742fea3e6e83eed636c166c54c16a04271dd3"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州宋城→杭州萧山国际机场"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单X.pdf\n报销金额：100.00\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州宋城→杭州萧山国际机场"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州宋城 → 杭州萧山国际机场",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "04",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州宋城 → 杭州萧山国际机场",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "04"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单X.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州宋城→杭州萧山国际机场",
+          "local_fallback_observed": "杭州宋城 → 杭州萧山国际机场",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C18/v1/04.md"
+    },
+    {
+      "case_id": "C18",
+      "variant": "v1",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C18/variants/v1/attachments/direct/行程单C.pdf",
+        "original_name": "行程单C.pdf",
+        "source": "MIME",
+        "bytes": 24348,
+        "sha256": "0af9b9ae166f2bc0cbbd529fb626a395ede06eb082637771309ad42141715773"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "200.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "临安汽车东站→杭州东站"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单C.pdf\n报销金额：200.00\n出行时间：2026-09-25 10:00\n出发地/目的地：临安汽车东站→杭州东站"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "临安汽车东站 → 杭州东站",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "05",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "临安汽车东站 → 杭州东站",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "05"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单C.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "200.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "临安汽车东站→杭州东站",
+          "local_fallback_observed": "临安汽车东站 → 杭州东站",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C18/v1/05.md"
+    },
+    {
+      "case_id": "C19",
+      "variant": "same_amount",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C19/variants/same_amount/attachments/direct/发票C.pdf",
+        "original_name": "发票C.pdf",
+        "source": "MIME",
+        "bytes": 25560,
+        "sha256": "07271eecf9fdfb2bd230ed05bf62d023b963030fe13a8423b796b2021becf74f"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000191",
+          "total_amount": "100.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票C.pdf\n发票号码：90000000000000000191\n开票日期：2026-09-28\n价税合计：100.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000191",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000191",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000191",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票C.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000191",
+          "local_fallback_observed": "90000000000000000191",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C19/same_amount/01.md"
+    },
+    {
+      "case_id": "C19",
+      "variant": "same_amount",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C19/variants/same_amount/attachments/direct/行程单A.pdf",
+        "original_name": "行程单A.pdf",
+        "source": "MIME",
+        "bytes": 24981,
+        "sha256": "2f3cbaa26e412ed676b57373176d99438e2ee5b0c09e2d94a06b05f4432fb35e"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州萧山国际机场→杭州宋城"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单A.pdf\n报销金额：100.00\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州萧山国际机场→杭州宋城"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州萧山国际机场 → 杭州宋城",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州萧山国际机场 → 杭州宋城",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州萧山国际机场→杭州宋城",
+          "local_fallback_observed": "杭州萧山国际机场 → 杭州宋城",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C19/same_amount/02.md"
+    },
+    {
+      "case_id": "C19",
+      "variant": "same_amount",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C19/variants/same_amount/attachments/direct/行程单B.pdf",
+        "original_name": "行程单B.pdf",
+        "source": "MIME",
+        "bytes": 25923,
+        "sha256": "97c04f49ccc959e1ba890efc2cfb96e9f073ba4f2778cb80f04b3d3d75bdf300"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "100.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州宋城→中国美术学院（南山校区）"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单B.pdf\n报销金额：100.00\n出行时间：2026-09-25 10:00\n出发地/目的地：杭州宋城→中国美术学院（南山校区）"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "杭州宋城 → 中国美术学院",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "杭州宋城 → 中国美术学院",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单B.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "杭州宋城→中国美术学院（南山校区）",
+          "local_fallback_observed": "杭州宋城 → 中国美术学院",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C19/same_amount/03.md"
+    },
+    {
+      "case_id": "C19",
+      "variant": "no_evidence",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C19/variants/no_evidence/attachments/direct/发票C.pdf",
+        "original_name": "发票C.pdf",
+        "source": "MIME",
+        "bytes": 25560,
+        "sha256": "c0f57d850db2288ded416209e719ac68cb61370466071f4d551b325bef9f963e"
+      },
+      "declared_controlled_extract": {
+        "role": "Invoice",
+        "fields": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "90000000000000000192",
+          "total_amount": "100.00",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Invoice",
+          "text": "合成测试发票\n仅供软件测试，不是真实报销凭证\n样本文件：发票C.pdf\n发票号码：90000000000000000192\n开票日期：2026-09-28\n价税合计：100.00\n发票类型：电子发票（普通发票）\n票面类型：客运服务费\n销售方：合成测试销售方"
+        },
+        "name_merge": {
+          "name_hint": "Invoice",
+          "pre_read_type": "Invoice"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "90000000000000000192",
+          "invoice_date": "2026-09-28",
+          "travel_time": "Not Found",
+          "invoice_type": "发票类型：电子发票（普通发票）",
+          "receipt_type": "Not Found",
+          "seller": "合成测试销售方",
+          "origin_dest": "Not Found",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Invoice",
+          "pre_read_invoice_no": "90000000000000000192",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "01",
+            "role": "Invoice",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "90000000000000000192",
+              "invoice_date": "2026-09-28",
+              "travel_time": "Not Found",
+              "invoice_type": "发票类型：电子发票（普通发票）",
+              "receipt_type": "Not Found",
+              "seller": "合成测试销售方",
+              "origin_dest": "Not Found",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "01"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "发票C.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "invoice_date",
+          "controlled_extract_draft": "2026-09-28",
+          "local_fallback_observed": "2026-09-28",
+          "same": true
+        },
+        {
+          "field": "invoice_number",
+          "controlled_extract_draft": "90000000000000000192",
+          "local_fallback_observed": "90000000000000000192",
+          "same": true
+        },
+        {
+          "field": "total_amount",
+          "controlled_extract_draft": "100.00",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "invoice_type",
+          "controlled_extract_draft": "电子发票（普通发票）",
+          "local_fallback_observed": "发票类型：电子发票（普通发票）",
+          "same": false
+        },
+        {
+          "field": "receipt_type",
+          "controlled_extract_draft": "客运服务费",
+          "local_fallback_observed": "Not Found",
+          "same": false
+        },
+        {
+          "field": "seller",
+          "controlled_extract_draft": "合成测试销售方",
+          "local_fallback_observed": "合成测试销售方",
+          "same": true
+        }
+      ],
+      "snapshot": "result/local_pdf/C19/no_evidence/01.md"
+    },
+    {
+      "case_id": "C19",
+      "variant": "no_evidence",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C19/variants/no_evidence/attachments/direct/行程单A.pdf",
+        "original_name": "行程单A.pdf",
+        "source": "MIME",
+        "bytes": 25315,
+        "sha256": "7673c00b30c4f8fe9ee9ef9c0ad5c01986e2e6927a1c76ee28160f568daa0480"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "200.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "千岛湖镇人民政府→杭州东站"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单A.pdf\n报销金额：200.00\n出行时间：2026-09-25 10:00\n出发地/目的地：千岛湖镇人民政府→杭州东站"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "千岛湖镇人民政府 → 杭州东站",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "02",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "千岛湖镇人民政府 → 杭州东站",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "02"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单A.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "200.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "千岛湖镇人民政府→杭州东站",
+          "local_fallback_observed": "千岛湖镇人民政府 → 杭州东站",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C19/no_evidence/02.md"
+    },
+    {
+      "case_id": "C19",
+      "variant": "no_evidence",
+      "selected_in_original_main_flow": true,
+      "input": {
+        "path": "cases/C19/variants/no_evidence/attachments/direct/行程单B.pdf",
+        "original_name": "行程单B.pdf",
+        "source": "MIME",
+        "bytes": 25841,
+        "sha256": "faa66c7d8ab1f34becb0fbae9cacd479be8de8a359dcc3cdbffe868096fad060"
+      },
+      "declared_controlled_extract": {
+        "role": "Itinerary",
+        "fields": {
+          "match_amount": "300.00",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "临安汽车东站→杭州萧山国际机场"
+        },
+        "status": "待审核草案；不是本地兜底标准答案"
+      },
+      "actual_stages": {
+        "pdf_pre_read": {
+          "readable": true,
+          "local_pdf_type": "Itinerary",
+          "text": "合成测试行程单\n仅供软件测试，不是真实报销凭证\n样本文件：行程单B.pdf\n报销金额：300.00\n出行时间：2026-09-25 10:00\n出发地/目的地：临安汽车东站→杭州萧山国际机场"
+        },
+        "name_merge": {
+          "name_hint": "Itinerary",
+          "pre_read_type": "Itinerary"
+        },
+        "local_regex_fallback": {
+          "total_amount": "Not Found",
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "travel_time": "2026-09-25 10:00",
+          "invoice_type": "Not Found",
+          "receipt_type": "Not Found",
+          "seller": "Not Found",
+          "origin_dest": "临安汽车东站 → 杭州萧山国际机场",
+          "data_source": "Fallback_Local_Regex"
+        },
+        "offline_ai_response": {
+          "status_code": 401,
+          "code": "OFFLINE_FIXTURE",
+          "calls": 1
+        },
+        "process_pdf": {
+          "pre_read_type": "Itinerary",
+          "pre_read_invoice_no": "Not Found",
+          "pre_read_amount": "Not Found",
+          "document_result": {
+            "file_seq": "03",
+            "role": "Itinerary",
+            "fields": {
+              "total_amount": "Not Found",
+              "invoice_number": "Not Found",
+              "invoice_date": "Not Found",
+              "travel_time": "2026-09-25 10:00",
+              "invoice_type": "Not Found",
+              "receipt_type": "Not Found",
+              "seller": "Not Found",
+              "origin_dest": "临安汽车东站 → 杭州萧山国际机场",
+              "data_source": "Fallback_Local_Regex"
+            },
+            "source_file_seq": [
+              "03"
+            ],
+            "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应",
+            "mismatches": [],
+            "manual_unknown": [
+              {
+                "filename": "行程单B.pdf",
+                "reason": "PDF 单文件分类契约异常"
+              }
+            ]
+          },
+          "raised": ""
+        }
+      },
+      "checks": {
+        "input_hash_and_size": true,
+        "readability_matches_declared_error": true,
+        "offline_ai_called_once": true,
+        "real_fallback_reached": true,
+        "pre_read_type_matches_direct_check": true,
+        "pre_read_invoice_no_matches_direct_check": true,
+        "pre_read_amount_matches_direct_check": true,
+        "pre_read_preserves_input_route": true
+      },
+      "role_difference_from_controlled_draft": false,
+      "field_comparison_for_review": [
+        {
+          "field": "match_amount",
+          "controlled_extract_draft": "300.00",
+          "local_fallback_observed": "（本地兜底无此字段）",
+          "same": false
+        },
+        {
+          "field": "travel_time",
+          "controlled_extract_draft": "2026-09-25 10:00",
+          "local_fallback_observed": "2026-09-25 10:00",
+          "same": true
+        },
+        {
+          "field": "origin_dest",
+          "controlled_extract_draft": "临安汽车东站→杭州萧山国际机场",
+          "local_fallback_observed": "临安汽车东站 → 杭州萧山国际机场",
+          "same": false
+        }
+      ],
+      "snapshot": "result/local_pdf/C19/no_evidence/03.md"
+    }
+  ]
+}

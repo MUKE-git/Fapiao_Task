@@ -1,0 +1,12 @@
+{
+  "type": "受控逐文件提取结果；不是 AI 或真实 PDF 处理器的实测输出",
+  "documents": [
+    {
+      "original_name": "发票.pdf",
+      "role": "Unknown",
+      "fields": {},
+      "error_reason": "PDF_READ_ERROR",
+      "source_sha256": "d951bf52a59b86bbcac46663c28691543d182b3f4def3a992ad49e702cd04c38"
+    }
+  ]
+}

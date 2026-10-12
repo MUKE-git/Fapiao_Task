@@ -1,0 +1,43 @@
+[
+  {
+    "mail_id": "Msg1",
+    "mail_uid": "8009",
+    "subject": "电子发票 C09",
+    "mail_date": "2026-09-29 09:30",
+    "files": [
+      {
+        "file_seq": "01",
+        "file_type": "PDF",
+        "original_name": "发票.pdf",
+        "pre_read_type": "Invoice",
+        "pre_read_invoice_no": "Not Found",
+        "pre_read_amount": "Not Found",
+        "internal_name": "Msg1_01_发票.pdf",
+        "exported_name": ""
+      }
+    ],
+    "itineraries": [],
+    "records": [
+      {
+        "record_id": "Msg1-01",
+        "kind": "",
+        "fields": {
+          "invoice_date": "Not Found",
+          "invoice_number": "Not Found",
+          "total_amount": "Not Found",
+          "invoice_type": "",
+          "receipt_type": "Not Found",
+          "seller": "Not Found"
+        },
+        "source": {
+          "source_file_seq": [
+            "01"
+          ]
+        },
+        "status": "人工待核"
+      }
+    ],
+    "dedup_skipped": [],
+    "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);FIELD_NOT_FOUND;PDF 单文件分类结果缺失、数量错误或文件名不对应"
+  }
+]

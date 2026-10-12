@@ -1,0 +1,22 @@
+{
+  "type": "人工标准答案草案，待逐条审核",
+  "case_id": "C18",
+  "variant": "v1",
+  "expected": {
+    "unseen_total": 1,
+    "selected_mails": 1,
+    "file_count": 5,
+    "record_count": 3,
+    "itinerary_count": 2,
+    "excel_rows": 3,
+    "matched_by_invoice": {
+      "发票C.pdf": "行程单C.pdf"
+    },
+    "duplicate_skipped": 0,
+    "alerts_contain": [
+      "被多张发票竞争"
+    ],
+    "field_checks": {}
+  },
+  "reason": "A/B 均先拟配 X，冲突撤回；C/C 独立配对。"
+}

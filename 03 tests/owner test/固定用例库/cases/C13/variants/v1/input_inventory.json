@@ -1,0 +1,16 @@
+[
+  {
+    "path": "00_raw.eml",
+    "name": "原始邮件",
+    "source": "RFC822/MIME",
+    "bytes": 35231,
+    "sha256": "d80c4c1f3ae91ae6c61985c50a8f2ea2c99a2228e2dafa3ab1aba3a1594991e2"
+  },
+  {
+    "path": "attachments/direct/发票.pdf",
+    "name": "发票.pdf",
+    "source": "MIME",
+    "bytes": 25559,
+    "sha256": "d6f94299c240112f628479766825fbc904243531b63ae211c62be4e46a0c781b"
+  }
+]

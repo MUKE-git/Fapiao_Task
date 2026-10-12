@@ -1,0 +1,28 @@
+{
+  "id": "C22",
+  "title": "多封未读邮件的主题筛选",
+  "priority": "必选",
+  "stages": [
+    "T2-1"
+  ],
+  "source_kind": "合成",
+  "review_status": "待审核",
+  "review_focus": "逐封判断主题；仅完整获取命中邮件，跳过不命中邮件后继续处理，并保持邮件与附件、记录的对应关系。",
+  "variants": [
+    {
+      "id": "all_miss",
+      "path": "variants/all_miss",
+      "note": "两封未读邮件均不命中，必须逐封读邮件头；任何一封都不应完整获取附件。"
+    },
+    {
+      "id": "miss_then_hit",
+      "path": "variants/miss_then_hit",
+      "note": "第一封不命中，第二封命中；跳过第一封后应继续处理第二封。"
+    },
+    {
+      "id": "hit_miss_hit",
+      "path": "variants/hit_miss_hit",
+      "note": "第一封命中、第二封不命中、第三封命中；跳过中间邮件后继续处理，且两张发票分别归属自己的邮件。"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+test_excel_filters_only_all_missing_per_invoice (test_conflict_incremental.ConflictIncrementalTests.test_excel_filters_only_all_missing_per_invoice) ... ok
+test_partial_missing_date_does_not_overwrite_on_next_run (test_conflict_incremental.ConflictIncrementalTests.test_partial_missing_date_does_not_overwrite_on_next_run) ... ok
+test_pdf_classification_must_identify_the_one_input (test_conflict_incremental.ConflictIncrementalTests.test_pdf_classification_must_identify_the_one_input) ... ok
+test_imap_driver_writes_v2_json_and_business_excel (test_pipeline.PipelineDriverTests.test_imap_driver_writes_v2_json_and_business_excel) ... ok
+test_multiple_invoices_do_not_share_mail_level_fields (test_pipeline.PipelineDriverTests.test_multiple_invoices_do_not_share_mail_level_fields) ... ok
+test_pdf_adapter_submits_only_one_file_to_old_ai_logic (test_pipeline.PipelineDriverTests.test_pdf_adapter_submits_only_one_file_to_old_ai_logic) ... ok
+test_single_itinerary_merges_only_into_transport_invoice (test_pipeline.PipelineDriverTests.test_single_itinerary_merges_only_into_transport_invoice) ... ok
+test_t2_ports_run_after_file_processing_in_contract_order (test_pipeline.PipelineDriverTests.test_t2_ports_run_after_file_processing_in_contract_order) ... ok
+test_unimplemented_formats_do_not_create_fake_records (test_pipeline.PipelineDriverTests.test_unimplemented_formats_do_not_create_fake_records) ... ok
+test_zip_duplicate_is_skipped_with_one_file_sequence (test_pipeline.PipelineDriverTests.test_zip_duplicate_is_skipped_with_one_file_sequence) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.269s
+
+OK

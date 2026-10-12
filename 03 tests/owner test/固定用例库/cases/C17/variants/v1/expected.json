@@ -1,0 +1,26 @@
+{
+  "type": "人工标准答案草案，待逐条审核",
+  "case_id": "C17",
+  "variant": "v1",
+  "expected": {
+    "unseen_total": 1,
+    "selected_mails": 1,
+    "file_count": 3,
+    "record_count": 1,
+    "itinerary_count": 2,
+    "excel_rows": 1,
+    "matched_by_invoice": {
+      "发票A.pdf": "行程单A.pdf"
+    },
+    "duplicate_skipped": 0,
+    "alerts_contain": [
+      "金额缺失或格式/精度需核对"
+    ],
+    "field_checks": {
+      "发票A.pdf": {
+        "total_amount": "Not Found"
+      }
+    }
+  },
+  "reason": "发票金额缺失，但完整原名尾缀 A 唯一对应；不代填金额。"
+}

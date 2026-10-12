@@ -1,0 +1,21 @@
+{
+  "id": "C11",
+  "title": "金额或日期有歧义",
+  "priority": "可选",
+  "stages": [
+    "T2-1",
+    "T2-6"
+  ],
+  "source_kind": "合成",
+  "review_status": "待审核",
+  "review_focus": "检查价税合计优先，开票日期不取行程日期。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票 C11",
+      "note": "单价、税额、价税合计及两种日期同时出现。"
+    }
+  ],
+  "optional_note": "单价、税额、价税合计及开票/行程日期是常规票面信息，必选验证并入 C04/C05；保留 C11 编号和历史样本供以后复核。"
+}

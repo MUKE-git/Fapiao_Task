@@ -1,0 +1,43 @@
+[
+  {
+    "mail_id": "Msg1",
+    "mail_uid": "8004",
+    "subject": "电子发票 C04",
+    "mail_date": "2026-09-29 09:30",
+    "files": [
+      {
+        "file_seq": "01",
+        "file_type": "PDF",
+        "original_name": "发票.pdf",
+        "pre_read_type": "Invoice",
+        "pre_read_invoice_no": "26331202610040000123",
+        "pre_read_amount": "116.56",
+        "internal_name": "Msg1_01_发票.pdf",
+        "exported_name": ""
+      }
+    ],
+    "itineraries": [],
+    "records": [
+      {
+        "record_id": "Msg1-01",
+        "kind": "a类",
+        "fields": {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331202610040000123",
+          "total_amount": "116.56",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "source": {
+          "source_file_seq": [
+            "01"
+          ]
+        },
+        "status": "人工待核"
+      }
+    ],
+    "dedup_skipped": [],
+    "error_reason": "AI_API_OFFLINE_FIXTURE(simulated AI unavailable);PDF 单文件分类结果缺失、数量错误或文件名不对应"
+  }
+]

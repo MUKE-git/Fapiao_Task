@@ -1,0 +1,19 @@
+{
+  "id": "C17",
+  "title": "T2-3 缺金额时原名兜底",
+  "priority": "必选",
+  "stages": [
+    "T2-3"
+  ],
+  "source_kind": "合成",
+  "review_status": "待审核",
+  "review_focus": "检查配对关系与缺金额待核同时存在。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票及行程单 C17",
+      "note": "发票金额缺失，但完整原名尾缀 A 唯一对应；不代填金额。"
+    }
+  ]
+}

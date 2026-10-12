@@ -1,0 +1,19 @@
+{
+  "id": "C02",
+  "title": "主题不命中",
+  "priority": "必选",
+  "stages": [
+    "T2-1"
+  ],
+  "source_kind": "合成",
+  "review_status": "待审核",
+  "review_focus": "检查主题筛选在附件处理前发生。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "普通会议通知 C02",
+      "note": "邮件未读并附有明显无关的部门会议通知 PDF；主题没有发票/报销关键词，不得完整 FETCH 附件。"
+    }
+  ]
+}

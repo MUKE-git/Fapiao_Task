@@ -1,0 +1,2620 @@
+[
+  {
+    "case_id": "C01",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 0,
+      "selected_mails": 0,
+      "file_count": 0,
+      "record_count": 0,
+      "itinerary_count": 0,
+      "excel_rows": 0,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 0,
+      "record_count": 0,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {},
+      "all_itinerary_names": [],
+      "records_by_uid": {},
+      "unseen_total": 0,
+      "selected_mails": 0,
+      "excel_rows": 0,
+      "pdf_calls": [],
+      "excel_fields": [],
+      "alerts": [],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [],
+        "full_fetched_uids": [],
+        "records_by_uid": {},
+        "pdf_calls": []
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C02",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 0,
+      "file_count": 0,
+      "record_count": 0,
+      "itinerary_count": 0,
+      "excel_rows": 0,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 0,
+      "record_count": 0,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {},
+      "all_itinerary_names": [],
+      "records_by_uid": {},
+      "unseen_total": 1,
+      "selected_mails": 0,
+      "excel_rows": 0,
+      "pdf_calls": [],
+      "excel_fields": [],
+      "alerts": [],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8002"
+        ],
+        "full_fetched_uids": [],
+        "records_by_uid": {},
+        "pdf_calls": []
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C03",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 0,
+      "record_count": 0,
+      "itinerary_count": 0,
+      "excel_rows": 0,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [
+        "无有效附件"
+      ],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 0,
+      "record_count": 0,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {},
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8003": []
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 0,
+      "pdf_calls": [],
+      "excel_fields": [],
+      "alerts": [
+        "无有效附件"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8003"
+        ],
+        "full_fetched_uids": [
+          "8003"
+        ],
+        "records_by_uid": {
+          "8003": []
+        },
+        "pdf_calls": []
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C04",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "excel_rows": 1,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {
+        "发票.pdf": {
+          "invoice_number": "26331988405429177621",
+          "invoice_date": "2026-09-26",
+          "total_amount": "304.48",
+          "receipt_type": "办公用品"
+        }
+      },
+      "excel_field_checks": {
+        "发票.pdf": {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331988405429177621",
+          "total_amount": "304.48",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方",
+          "travel_time": "",
+          "origin_dest": ""
+        }
+      }
+    },
+    "observed": {
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票.pdf": {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331988405429177621",
+          "total_amount": "304.48",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8004": [
+          "发票.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331988405429177621",
+          "total_amount": 304.48,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8004"
+        ],
+        "full_fetched_uids": [
+          "8004"
+        ],
+        "records_by_uid": {
+          "8004": [
+            "发票.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票.pdf"
+        ]
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C04",
+    "variant": "a",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "excel_rows": 1,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [
+        "缺行程单"
+      ],
+      "field_checks": {
+        "发票.pdf": {
+          "invoice_number": "26331202610040000123",
+          "invoice_date": "2026-09-27",
+          "total_amount": "116.56",
+          "receipt_type": "客运服务费"
+        }
+      },
+      "excel_field_checks": {
+        "发票.pdf": {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331202610040000123",
+          "total_amount": "116.56",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方",
+          "travel_time": "",
+          "origin_dest": ""
+        }
+      }
+    },
+    "observed": {
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票.pdf": {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331202610040000123",
+          "total_amount": "116.56",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8004": [
+          "发票.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331202610040000123",
+          "total_amount": 116.56,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "缺行程单，需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8004"
+        ],
+        "full_fetched_uids": [
+          "8004"
+        ],
+        "records_by_uid": {
+          "8004": [
+            "发票.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C05",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 2,
+      "record_count": 1,
+      "itinerary_count": 1,
+      "excel_rows": 1,
+      "matched_by_invoice": {
+        "发票.pdf": "行程单.pdf"
+      },
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {
+        "发票.pdf": {
+          "invoice_number": "26331148571660833404",
+          "invoice_date": "2026-09-28",
+          "total_amount": "38.93",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站 → 杭州萧山国际机场"
+        }
+      },
+      "excel_field_checks": {
+        "发票.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331148571660833404",
+          "total_amount": "38.93",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站 → 杭州萧山国际机场"
+        }
+      }
+    },
+    "observed": {
+      "file_count": 2,
+      "record_count": 1,
+      "itinerary_count": 1,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {
+        "发票.pdf": "行程单.pdf"
+      },
+      "fields_by_invoice": {
+        "发票.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331148571660833404",
+          "total_amount": "38.93",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站 → 杭州萧山国际机场"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单.pdf"
+      ],
+      "records_by_uid": {
+        "8005": [
+          "发票.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票.pdf",
+        "行程单.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331148571660833404",
+          "total_amount": 38.93,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": "2026-09-25 10:00",
+          "seller": "合成测试销售方",
+          "origin_dest": "杭州东站 → 杭州萧山国际机场"
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8005"
+        ],
+        "full_fetched_uids": [
+          "8005"
+        ],
+        "records_by_uid": {
+          "8005": [
+            "发票.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票.pdf",
+          "行程单.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C06",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "excel_rows": 1,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票.pdf": {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331350602504239155",
+          "total_amount": "82.97",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8006": [
+          "发票.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331350602504239155",
+          "total_amount": 82.97,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8006"
+        ],
+        "full_fetched_uids": [
+          "8006"
+        ],
+        "records_by_uid": {
+          "8006": [
+            "发票.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票.pdf"
+        ]
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C07",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 2,
+      "record_count": 2,
+      "itinerary_count": 0,
+      "excel_rows": 2,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 1,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 2,
+      "record_count": 2,
+      "itinerary_count": 0,
+      "duplicate_skipped": 1,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票甲.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331358875592358614",
+          "total_amount": "70.91",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "发票乙.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331783771999167861",
+          "total_amount": "190.69",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8007": [
+          "发票甲.pdf",
+          "发票乙.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 2,
+      "pdf_calls": [
+        "发票甲.pdf",
+        "发票乙.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331358875592358614",
+          "total_amount": 70.91,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        },
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331783771999167861",
+          "total_amount": 190.69,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8007"
+        ],
+        "full_fetched_uids": [
+          "8007"
+        ],
+        "records_by_uid": {
+          "8007": [
+            "发票甲.pdf",
+            "发票乙.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票甲.pdf",
+          "发票乙.pdf"
+        ]
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C08",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "excel_rows": 1,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "附件01.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331229039876235290",
+          "total_amount": "244.94",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8008": [
+          "附件01.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "附件01.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331229039876235290",
+          "total_amount": 244.94,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8008"
+        ],
+        "full_fetched_uids": [
+          "8008"
+        ],
+        "records_by_uid": {
+          "8008": [
+            "附件01.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "附件01.pdf"
+        ]
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C09",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 1,
+      "record_count": 0,
+      "itinerary_count": 0,
+      "excel_rows": 0,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [
+        "PDF_READ_ERROR"
+      ],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 1,
+      "record_count": 0,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {},
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8009": []
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 0,
+      "pdf_calls": [
+        "发票.pdf"
+      ],
+      "excel_fields": [],
+      "alerts": [
+        "PDF_READ_ERROR",
+        "PDF 类型无法确定，需人工核对",
+        "PDF_READ_ERROR"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8009"
+        ],
+        "full_fetched_uids": [
+          "8009"
+        ],
+        "records_by_uid": {
+          "8009": []
+        },
+        "pdf_calls": [
+          "发票.pdf"
+        ]
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C12",
+    "variant": "partial",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "excel_rows": 1,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [
+        "缺少发票号码"
+      ],
+      "field_checks": {
+        "发票.pdf": {
+          "invoice_number": "Not Found",
+          "total_amount": "262.68"
+        }
+      }
+    },
+    "observed": {
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票.pdf": {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "Not Found",
+          "total_amount": "262.68",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8012": [
+          "发票.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "Not Found",
+          "total_amount": 262.68,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "Msg1-01 缺少发票号码，已写入 Excel，需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8012"
+        ],
+        "full_fetched_uids": [
+          "8012"
+        ],
+        "records_by_uid": {
+          "8012": [
+            "发票.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票.pdf"
+        ]
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C12",
+    "variant": "all_missing",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "excel_rows": 0,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [
+        "均缺失，未写入 Excel"
+      ],
+      "field_checks": {
+        "发票.pdf": {
+          "invoice_number": "Not Found",
+          "invoice_date": "Not Found",
+          "total_amount": "Not Found"
+        }
+      }
+    },
+    "observed": {
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票.pdf": {
+          "invoice_date": "Not Found",
+          "invoice_number": "Not Found",
+          "total_amount": "Not Found",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8012": [
+          "发票.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 0,
+      "pdf_calls": [
+        "发票.pdf"
+      ],
+      "excel_fields": [],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "Msg1-01 开票日期、发票号码、金额均缺失，未写入 Excel，需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8012"
+        ],
+        "full_fetched_uids": [
+          "8012"
+        ],
+        "records_by_uid": {
+          "8012": [
+            "发票.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票.pdf"
+        ]
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C13",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "excel_rows": 1,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [
+        "缺行程单"
+      ],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票.pdf": {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331170435830407067",
+          "total_amount": "333.52",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8013": [
+          "发票.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331170435830407067",
+          "total_amount": 333.52,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "缺行程单，需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8013"
+        ],
+        "full_fetched_uids": [
+          "8013"
+        ],
+        "records_by_uid": {
+          "8013": [
+            "发票.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C14",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "excel_rows": 1,
+      "matched_by_invoice": {
+        "发票.pdf": "行程单甲.pdf"
+      },
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {
+        "发票.pdf": "行程单甲.pdf"
+      },
+      "fields_by_invoice": {
+        "发票.pdf": {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331540109971408975",
+          "total_amount": "100.17",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州宋城（之江路148号）"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单甲.pdf",
+        "行程单乙.pdf"
+      ],
+      "records_by_uid": {
+        "8014": [
+          "发票.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票.pdf",
+        "行程单甲.pdf",
+        "行程单乙.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331540109971408975",
+          "total_amount": 100.17,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": "2026-09-25 10:00",
+          "seller": "合成测试销售方",
+          "origin_dest": "杭州东站→杭州宋城（之江路148号）"
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "T2-3 Msg1-03 行程单未匹配汇入，保留候选供人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8014"
+        ],
+        "full_fetched_uids": [
+          "8014"
+        ],
+        "records_by_uid": {
+          "8014": [
+            "发票.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票.pdf",
+          "行程单甲.pdf",
+          "行程单乙.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C15",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "excel_rows": 1,
+      "matched_by_invoice": {
+        "发票B.pdf": "行程单B.pdf"
+      },
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {
+        "发票B.pdf": "行程单B.pdf"
+      },
+      "fields_by_invoice": {
+        "发票B.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331429265386194320",
+          "total_amount": "258.70",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "浙江省科技馆（西湖文化广场2号）→杭州宋城"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单A.pdf",
+        "行程单B.pdf"
+      ],
+      "records_by_uid": {
+        "8015": [
+          "发票B.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票B.pdf",
+        "行程单A.pdf",
+        "行程单B.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331429265386194320",
+          "total_amount": 258.7,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": "2026-09-25 10:00",
+          "seller": "合成测试销售方",
+          "origin_dest": "浙江省科技馆（西湖文化广场2号）→杭州宋城"
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "T2-3 Msg1-02 行程单未匹配汇入，保留候选供人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8015"
+        ],
+        "full_fetched_uids": [
+          "8015"
+        ],
+        "records_by_uid": {
+          "8015": [
+            "发票B.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票B.pdf",
+          "行程单A.pdf",
+          "行程单B.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C16",
+    "variant": "d049",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "excel_rows": 1,
+      "matched_by_invoice": {
+        "发票C.pdf": "行程单A.pdf"
+      },
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {
+        "发票C.pdf": "行程单A.pdf"
+      },
+      "fields_by_invoice": {
+        "发票C.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331429192087625629",
+          "total_amount": "60.21",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州宋城"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单A.pdf",
+        "行程单D.pdf"
+      ],
+      "records_by_uid": {
+        "8016": [
+          "发票C.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票C.pdf",
+        "行程单A.pdf",
+        "行程单D.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331429192087625629",
+          "total_amount": 60.21,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": "2026-09-25 10:00",
+          "seller": "合成测试销售方",
+          "origin_dest": "杭州东站→杭州宋城"
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "T2-3 Msg1-03 行程单未匹配汇入，保留候选供人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8016"
+        ],
+        "full_fetched_uids": [
+          "8016"
+        ],
+        "records_by_uid": {
+          "8016": [
+            "发票C.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票C.pdf",
+          "行程单A.pdf",
+          "行程单D.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C16",
+    "variant": "d050",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "excel_rows": 1,
+      "matched_by_invoice": {
+        "发票C.pdf": "行程单A.pdf"
+      },
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {
+        "发票C.pdf": "行程单A.pdf"
+      },
+      "fields_by_invoice": {
+        "发票C.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331461668052080012",
+          "total_amount": "120.92",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州宋城"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单A.pdf",
+        "行程单D.pdf"
+      ],
+      "records_by_uid": {
+        "8016": [
+          "发票C.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票C.pdf",
+        "行程单A.pdf",
+        "行程单D.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331461668052080012",
+          "total_amount": 120.92,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": "2026-09-25 10:00",
+          "seller": "合成测试销售方",
+          "origin_dest": "杭州东站→杭州宋城"
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "T2-3 Msg1-03 行程单未匹配汇入，保留候选供人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8016"
+        ],
+        "full_fetched_uids": [
+          "8016"
+        ],
+        "records_by_uid": {
+          "8016": [
+            "发票C.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票C.pdf",
+          "行程单A.pdf",
+          "行程单D.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C16",
+    "variant": "d051_name",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "excel_rows": 1,
+      "matched_by_invoice": {
+        "发票A.pdf": "行程单A.pdf"
+      },
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {
+        "发票A.pdf": "行程单A.pdf"
+      },
+      "fields_by_invoice": {
+        "发票A.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331626229746587002",
+          "total_amount": "138.69",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→杭州宋城"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单A.pdf",
+        "行程单D.pdf"
+      ],
+      "records_by_uid": {
+        "8016": [
+          "发票A.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票A.pdf",
+        "行程单A.pdf",
+        "行程单D.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331626229746587002",
+          "total_amount": 138.69,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": "2026-09-25 10:00",
+          "seller": "合成测试销售方",
+          "origin_dest": "杭州东站→杭州宋城"
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "T2-3 Msg1-03 行程单未匹配汇入，保留候选供人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8016"
+        ],
+        "full_fetched_uids": [
+          "8016"
+        ],
+        "records_by_uid": {
+          "8016": [
+            "发票A.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票A.pdf",
+          "行程单A.pdf",
+          "行程单D.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C16",
+    "variant": "d051_no_name",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "excel_rows": 1,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票C.pdf": {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331145455793714847",
+          "total_amount": "86.74",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单A.pdf",
+        "行程单D.pdf"
+      ],
+      "records_by_uid": {
+        "8016": [
+          "发票C.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票C.pdf",
+        "行程单A.pdf",
+        "行程单D.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-27",
+          "invoice_number": "26331145455793714847",
+          "total_amount": 86.74,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "T2-3 Msg1-01 金额与原名尾缀均未命中，需人工核对",
+        "T2-3 Msg1-02 行程单未匹配汇入，保留候选供人工核对",
+        "T2-3 Msg1-03 行程单未匹配汇入，保留候选供人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8016"
+        ],
+        "full_fetched_uids": [
+          "8016"
+        ],
+        "records_by_uid": {
+          "8016": [
+            "发票C.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票C.pdf",
+          "行程单A.pdf",
+          "行程单D.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C17",
+    "variant": "v1",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "excel_rows": 1,
+      "matched_by_invoice": {
+        "发票A.pdf": "行程单A.pdf"
+      },
+      "duplicate_skipped": 0,
+      "alerts_contain": [
+        "金额缺失或格式/精度需核对"
+      ],
+      "field_checks": {
+        "发票A.pdf": {
+          "total_amount": "Not Found"
+        }
+      }
+    },
+    "observed": {
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {
+        "发票A.pdf": "行程单A.pdf"
+      },
+      "fields_by_invoice": {
+        "发票A.pdf": {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331882617152424518",
+          "total_amount": "Not Found",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "杭州东站→千岛湖镇人民政府"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单A.pdf",
+        "行程单B.pdf"
+      ],
+      "records_by_uid": {
+        "8017": [
+          "发票A.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票A.pdf",
+        "行程单A.pdf",
+        "行程单B.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331882617152424518",
+          "total_amount": "Not Found",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": "2026-09-25 10:00",
+          "seller": "合成测试销售方",
+          "origin_dest": "杭州东站→千岛湖镇人民政府"
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "Msg1-01 缺少金额，已写入 Excel，需人工核对",
+        "T2-3 Msg1-01 已按数量或原名成组，金额缺失或格式/精度需核对",
+        "T2-3 Msg1-03 行程单未匹配汇入，保留候选供人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8017"
+        ],
+        "full_fetched_uids": [
+          "8017"
+        ],
+        "records_by_uid": {
+          "8017": [
+            "发票A.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票A.pdf",
+          "行程单A.pdf",
+          "行程单B.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C18",
+    "variant": "v1",
+    "status": "FAIL",
+    "errors": [
+      "alert missing: 被多张发票竞争"
+    ],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 5,
+      "record_count": 3,
+      "itinerary_count": 2,
+      "excel_rows": 3,
+      "matched_by_invoice": {
+        "发票C.pdf": "行程单C.pdf"
+      },
+      "duplicate_skipped": 0,
+      "alerts_contain": [
+        "被多张发票竞争"
+      ],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 5,
+      "record_count": 3,
+      "itinerary_count": 2,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {
+        "发票C.pdf": "行程单C.pdf"
+      },
+      "fields_by_invoice": {
+        "发票A.pdf": {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331456513317974903",
+          "total_amount": "98.31",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "发票B.pdf": {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331989083246556926",
+          "total_amount": "98.47",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        },
+        "发票C.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331585693637935814",
+          "total_amount": "107.74",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方",
+          "travel_time": "2026-09-25 10:00",
+          "origin_dest": "临安汽车东站→杭州东站"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单X.pdf",
+        "行程单C.pdf"
+      ],
+      "records_by_uid": {
+        "8018": [
+          "发票A.pdf",
+          "发票B.pdf",
+          "发票C.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 3,
+      "pdf_calls": [
+        "发票A.pdf",
+        "发票B.pdf",
+        "发票C.pdf",
+        "行程单X.pdf",
+        "行程单C.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331456513317974903",
+          "total_amount": 98.31,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        },
+        {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331989083246556926",
+          "total_amount": 98.47,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        },
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331585693637935814",
+          "total_amount": 107.74,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": "2026-09-25 10:00",
+          "seller": "合成测试销售方",
+          "origin_dest": "临安汽车东站→杭州东站"
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "T2-3 Msg1-01 多张发票拟关联同一行程单 Msg1-04（Msg1-01、Msg1-02），一对一关系冲突且无唯一明确尾缀，需人工核对",
+        "T2-3 Msg1-02 多张发票拟关联同一行程单 Msg1-04（Msg1-01、Msg1-02），一对一关系冲突且无唯一明确尾缀，需人工核对",
+        "T2-3 Msg1-04 行程单未匹配汇入，保留候选供人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8018"
+        ],
+        "full_fetched_uids": [
+          "8018"
+        ],
+        "records_by_uid": {
+          "8018": [
+            "发票A.pdf",
+            "发票B.pdf",
+            "发票C.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票A.pdf",
+          "发票B.pdf",
+          "发票C.pdf",
+          "行程单X.pdf",
+          "行程单C.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C19",
+    "variant": "same_amount",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "excel_rows": 1,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [
+        "候选无法唯一确定"
+      ],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票C.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331289689000870570",
+          "total_amount": "263.18",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单A.pdf",
+        "行程单B.pdf"
+      ],
+      "records_by_uid": {
+        "8019": [
+          "发票C.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票C.pdf",
+        "行程单A.pdf",
+        "行程单B.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331289689000870570",
+          "total_amount": 263.18,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "T2-3 Msg1-01 候选无法唯一确定（Msg1-02、Msg1-03），需人工核对",
+        "T2-3 Msg1-02 行程单未匹配汇入，保留候选供人工核对",
+        "T2-3 Msg1-03 行程单未匹配汇入，保留候选供人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8019"
+        ],
+        "full_fetched_uids": [
+          "8019"
+        ],
+        "records_by_uid": {
+          "8019": [
+            "发票C.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票C.pdf",
+          "行程单A.pdf",
+          "行程单B.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C19",
+    "variant": "no_evidence",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "excel_rows": 1,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [
+        "金额与原名尾缀均未命中"
+      ],
+      "field_checks": {}
+    },
+    "observed": {
+      "file_count": 3,
+      "record_count": 1,
+      "itinerary_count": 2,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票C.pdf": {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331638222555199577",
+          "total_amount": "64.75",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [
+        "行程单A.pdf",
+        "行程单B.pdf"
+      ],
+      "records_by_uid": {
+        "8019": [
+          "发票C.pdf"
+        ]
+      },
+      "unseen_total": 1,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票C.pdf",
+        "行程单A.pdf",
+        "行程单B.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331638222555199577",
+          "total_amount": 64.75,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "客运服务费",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对",
+        "T2-3 Msg1-01 金额与原名尾缀均未命中，需人工核对",
+        "T2-3 Msg1-02 行程单未匹配汇入，保留候选供人工核对",
+        "T2-3 Msg1-03 行程单未匹配汇入，保留候选供人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8019"
+        ],
+        "full_fetched_uids": [
+          "8019"
+        ],
+        "records_by_uid": {
+          "8019": [
+            "发票C.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票C.pdf",
+          "行程单A.pdf",
+          "行程单B.pdf"
+        ]
+      },
+      "route_transfer_checked": true,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C22",
+    "variant": "all_miss",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 2,
+      "selected_mails": 0,
+      "file_count": 0,
+      "record_count": 0,
+      "itinerary_count": 0,
+      "excel_rows": 0,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {},
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8201",
+          "8202"
+        ],
+        "full_fetched_uids": [],
+        "records_by_uid": {},
+        "pdf_calls": []
+      }
+    },
+    "observed": {
+      "file_count": 0,
+      "record_count": 0,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {},
+      "all_itinerary_names": [],
+      "records_by_uid": {},
+      "unseen_total": 2,
+      "selected_mails": 0,
+      "excel_rows": 0,
+      "pdf_calls": [],
+      "excel_fields": [],
+      "alerts": [],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8201",
+          "8202"
+        ],
+        "full_fetched_uids": [],
+        "records_by_uid": {},
+        "pdf_calls": []
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C22",
+    "variant": "miss_then_hit",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 2,
+      "selected_mails": 1,
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "excel_rows": 1,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {
+        "发票甲.pdf": {
+          "invoice_number": "26331461520399771704",
+          "total_amount": "97.49"
+        }
+      },
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8211",
+          "8212"
+        ],
+        "full_fetched_uids": [
+          "8212"
+        ],
+        "records_by_uid": {
+          "8212": [
+            "发票甲.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票甲.pdf"
+        ]
+      }
+    },
+    "observed": {
+      "file_count": 1,
+      "record_count": 1,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票甲.pdf": {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331461520399771704",
+          "total_amount": "97.49",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8212": [
+          "发票甲.pdf"
+        ]
+      },
+      "unseen_total": 2,
+      "selected_mails": 1,
+      "excel_rows": 1,
+      "pdf_calls": [
+        "发票甲.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331461520399771704",
+          "total_amount": 97.49,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8211",
+          "8212"
+        ],
+        "full_fetched_uids": [
+          "8212"
+        ],
+        "records_by_uid": {
+          "8212": [
+            "发票甲.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票甲.pdf"
+        ]
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  },
+  {
+    "case_id": "C22",
+    "variant": "hit_miss_hit",
+    "status": "PASS",
+    "errors": [],
+    "expected": {
+      "unseen_total": 3,
+      "selected_mails": 2,
+      "file_count": 2,
+      "record_count": 2,
+      "itinerary_count": 0,
+      "excel_rows": 2,
+      "matched_by_invoice": {},
+      "duplicate_skipped": 0,
+      "alerts_contain": [],
+      "field_checks": {
+        "发票甲.pdf": {
+          "invoice_number": "26331780465373588813",
+          "total_amount": "355.29"
+        },
+        "发票乙.pdf": {
+          "invoice_number": "26331751770250313413",
+          "total_amount": "289.87"
+        }
+      },
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8221",
+          "8222",
+          "8223"
+        ],
+        "full_fetched_uids": [
+          "8221",
+          "8223"
+        ],
+        "records_by_uid": {
+          "8221": [
+            "发票甲.pdf"
+          ],
+          "8223": [
+            "发票乙.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票甲.pdf",
+          "发票乙.pdf"
+        ]
+      }
+    },
+    "observed": {
+      "file_count": 2,
+      "record_count": 2,
+      "itinerary_count": 0,
+      "duplicate_skipped": 0,
+      "matched_by_invoice": {},
+      "fields_by_invoice": {
+        "发票甲.pdf": {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331780465373588813",
+          "total_amount": "355.29",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        },
+        "发票乙.pdf": {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331751770250313413",
+          "total_amount": "289.87",
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "seller": "合成测试销售方"
+        }
+      },
+      "all_itinerary_names": [],
+      "records_by_uid": {
+        "8221": [
+          "发票甲.pdf"
+        ],
+        "8223": [
+          "发票乙.pdf"
+        ]
+      },
+      "unseen_total": 3,
+      "selected_mails": 2,
+      "excel_rows": 2,
+      "pdf_calls": [
+        "发票甲.pdf",
+        "发票乙.pdf"
+      ],
+      "excel_fields": [
+        {
+          "invoice_date": "2026-09-26",
+          "invoice_number": "26331780465373588813",
+          "total_amount": 355.29,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        },
+        {
+          "invoice_date": "2026-09-28",
+          "invoice_number": "26331751770250313413",
+          "total_amount": 289.87,
+          "invoice_type": "电子发票（普通发票）",
+          "receipt_type": "办公用品",
+          "travel_time": null,
+          "seller": "合成测试销售方",
+          "origin_dest": null
+        }
+      ],
+      "alerts": [
+        "写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对",
+        "差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"
+      ],
+      "imap_events": [
+        "LOGIN",
+        "SELECT INBOX",
+        "UID SEARCH UNSEEN",
+        "STATUS INBOX",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])",
+        "UID FETCH (BODY.PEEK[])",
+        "LOGOUT"
+      ],
+      "imap_error": null,
+      "mail_checks": {
+        "header_fetched_uids": [
+          "8221",
+          "8222",
+          "8223"
+        ],
+        "full_fetched_uids": [
+          "8221",
+          "8223"
+        ],
+        "records_by_uid": {
+          "8221": [
+            "发票甲.pdf"
+          ],
+          "8223": [
+            "发票乙.pdf"
+          ]
+        },
+        "pdf_calls": [
+          "发票甲.pdf",
+          "发票乙.pdf"
+        ]
+      },
+      "route_transfer_checked": false,
+      "route_transfer_errors": []
+    },
+    "proof_level": "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别"
+  }
+]

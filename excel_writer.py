@@ -8,11 +8,13 @@ append_to_summary_excel：把本轮所有「处理成功」邮件的 AI 结果�
 from __future__ import annotations
 
 import os
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
 from openpyxl import Workbook, load_workbook
 
 from config import SUMMARY_COLUMNS
+from data_model import normalize_amount
 from utils import sanitize_excel_date_display
 
 
@@ -32,15 +34,21 @@ def append_to_summary_excel(
         if ws.cell(row=1, column=1).value in (None, ""):
             for j, (header, _) in enumerate(SUMMARY_COLUMNS, start=1):
                 ws.cell(row=1, column=j, value=header)
-        row_idx = 2
-        while ws.cell(row=row_idx, column=1).value not in (None, ""):
-            row_idx += 1
+        row_idx = max(2, ws.max_row + 1)
         for item in rows:
             for j, (_, key) in enumerate(SUMMARY_COLUMNS, start=1):
                 val = item.get(key, "Not Found")
                 if key == "invoice_date":
                     val = sanitize_excel_date_display(val)
-                ws.cell(row=row_idx, column=j, value=val)
+                if key == "total_amount":
+                    amount = normalize_amount(val)
+                    if isinstance(amount, Decimal):
+                        val = float(amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+                    cell = ws.cell(row=row_idx, column=j, value=val)
+                    if isinstance(val, (float, int)):
+                        cell.number_format = "0.00"
+                else:
+                    ws.cell(row=row_idx, column=j, value=val)
             row_idx += 1
         wb.save(summary_path)
         return None, summary_path

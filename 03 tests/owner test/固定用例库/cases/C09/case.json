@@ -1,0 +1,19 @@
+{
+  "id": "C09",
+  "title": "不可读 PDF",
+  "priority": "必选",
+  "stages": [
+    "T2-1"
+  ],
+  "source_kind": "合成",
+  "review_status": "待审核",
+  "review_focus": "检查错误可定位，文件登记保留且无虚构发票行。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票 C09",
+      "note": "附件以 PDF 扩展名提交，但字节故意损坏；不能猜造字段。"
+    }
+  ]
+}

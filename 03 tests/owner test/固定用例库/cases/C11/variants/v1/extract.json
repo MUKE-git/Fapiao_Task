@@ -1,0 +1,19 @@
+{
+  "type": "受控逐文件提取结果；不是 AI 或真实 PDF 处理器的实测输出",
+  "documents": [
+    {
+      "original_name": "发票.pdf",
+      "role": "Invoice",
+      "fields": {
+        "invoice_date": "2026-09-26",
+        "invoice_number": "26331243849362314463",
+        "total_amount": "134.62",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "办公用品",
+        "seller": "合成测试销售方"
+      },
+      "error_reason": "",
+      "source_sha256": "686e0548a0935399f0f0dd434eb21e7cf1c237ff7db2a476a27c131939a818d4"
+    }
+  ]
+}

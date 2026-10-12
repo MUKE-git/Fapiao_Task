@@ -1,0 +1,23 @@
+{
+  "folder": "INBOX",
+  "unseen_uids": [
+    "8201",
+    "8202"
+  ],
+  "messages": 2,
+  "unseen": 2,
+  "mails": [
+    {
+      "uid": "8201",
+      "raw_path": "mail/01_8201.eml",
+      "subject": "部门会议通知 C22",
+      "date_header": "Mon, 12 Oct 2026 09:30:00 +0800"
+    },
+    {
+      "uid": "8202",
+      "raw_path": "mail/02_8202.eml",
+      "subject": "项目周会安排 C22",
+      "date_header": "Mon, 12 Oct 2026 09:30:00 +0800"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "path": "00_raw.eml",
+    "name": "原始邮件",
+    "source": "RFC822/MIME",
+    "bytes": 101697,
+    "sha256": "4b074b6c82f7448ea4ae9bbee6303f6979b3c563e764e397aada7513c97b138f"
+  },
+  {
+    "path": "attachments/direct/发票C.pdf",
+    "name": "发票C.pdf",
+    "source": "MIME",
+    "bytes": 25560,
+    "sha256": "3a5625559a1beaea98c9bc1bbe8725891a17f56a95091eb5a618fae3618270f5"
+  },
+  {
+    "path": "attachments/direct/行程单A.pdf",
+    "name": "行程单A.pdf",
+    "source": "MIME",
+    "bytes": 23970,
+    "sha256": "64f66bf2688ad9820084d0d90bf6e5cfc742d352ce3f66df8aa04abf9e659c14"
+  },
+  {
+    "path": "attachments/direct/行程单D.pdf",
+    "name": "行程单D.pdf",
+    "source": "MIME",
+    "bytes": 24909,
+    "sha256": "2618a6a5dac4b275dbd5315e6e96203ce5dff53fd0ce6a6aac9fa975616cb4e1"
+  }
+]

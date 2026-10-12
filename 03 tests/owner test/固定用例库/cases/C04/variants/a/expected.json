@@ -1,0 +1,39 @@
+{
+  "type": "人工标准答案草案，待逐条审核",
+  "case_id": "C04",
+  "variant": "a",
+  "expected": {
+    "unseen_total": 1,
+    "selected_mails": 1,
+    "file_count": 1,
+    "record_count": 1,
+    "itinerary_count": 0,
+    "excel_rows": 1,
+    "matched_by_invoice": {},
+    "duplicate_skipped": 0,
+    "alerts_contain": [
+      "缺行程单"
+    ],
+    "field_checks": {
+      "发票.pdf": {
+        "invoice_number": "26331202610040000123",
+        "invoice_date": "2026-09-27",
+        "total_amount": "116.56",
+        "receipt_type": "客运服务费"
+      }
+    },
+    "excel_field_checks": {
+      "发票.pdf": {
+        "invoice_date": "2026-09-27",
+        "invoice_number": "26331202610040000123",
+        "total_amount": "116.56",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "客运服务费",
+        "seller": "合成测试销售方",
+        "travel_time": "",
+        "origin_dest": ""
+      }
+    }
+  },
+  "reason": "a 类客运发票含明细、价税合计和行程时间；本变体不附行程单，发票本身仍应入表。"
+}

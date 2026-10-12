@@ -1,15 +1,15 @@
 """
-T2-2 数据底座 · 静态 Schema 层（由新建而来，契约 = §3 数据模型 / 字段表.txt）。
+T2-2 数据底座 · 静态 Schema 层（契约 = §3 数据模型 / 字段表.txt）。
 
 本文件只定义「结构」与「枚举」与「序列化」：
-- 4 实体 dataclass：邮件 / 文件 / 发票 / 行程单（字段、类型、默认值对齐《字段表.txt》）
+- 邮件 / 文件 / 发票 / 行程单实体及其序列化
 - 枚举常量：file_type / pre_read_type / kind / status
 - 嵌套结构：records.fields / records.source / records.matched_itinerary / dedup_skipped
 - 序列化函数：mail_to_dict → 契约 §5.3 task_debug.json 顶层结构
 
 职责边界（T2-2 底座思想）：
 - 本文件 = 静态层，不含组装逻辑 / AI 调用 / 匹配算法 / pipeline 编排。
-- 组装逻辑（文件序号生成、files/records 构造、kind 判定、1:1 配对）见 records_builder.py。
+- 组装与匹配由各阶段模块负责，本文件仅承载数据。
 - 字段运行时校验（20 位票号、金额 >0、日期格式）属 T2-6 字段校验差异化，不在本层。
 - 不碰 invoice_pipeline.py（T2-1 重写）/ ai_client.py（§7 冻结）/ T2-3 多对多匹配。
 """
@@ -17,6 +17,7 @@ T2-2 数据底座 · 静态 Schema 层（由新建而来，契约 = §3 数据�
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from decimal import Decimal, InvalidOperation
 from typing import List, Optional, Union
 
 
@@ -53,6 +54,33 @@ STATUSES = (STATUS_COMPLETE, STATUS_MISSING_VOUCHER, STATUS_MANUAL_REVIEW)
 NOT_FOUND = "Not Found"
 
 
+def normalize_amount(value: object) -> Decimal | str:
+    """保留金额的小数位数；非法输入原样保留，供 T2-6 区分格式错误与缺失。"""
+    if value is None or str(value).strip() in ("", NOT_FOUND):
+        return NOT_FOUND
+    raw = str(value).strip()
+    cleaned = raw.replace("¥", "").replace("￥", "").replace(",", "").strip()
+    try:
+        amount = Decimal(cleaned)
+    except InvalidOperation:
+        return raw
+    return amount if amount.is_finite() else raw
+
+
+def amount_to_json(value: object) -> str:
+    """JSON 金额统一为十进制字符串，含旧 float 输入时也避免二进制尾差。"""
+    amount = normalize_amount(value)
+    return format(amount, "f") if isinstance(amount, Decimal) else amount
+
+
+def amount_requires_review(value: object) -> bool:
+    """只判金额本身是否非法或超过四位；缺失由 T2-6 单独校验。"""
+    amount = normalize_amount(value)
+    if amount == NOT_FOUND:
+        return False
+    return not isinstance(amount, Decimal) or amount <= 0 or amount.as_tuple().exponent < -4
+
+
 # ---------------------------------------------------------------------------
 # 4 实体 dataclass
 # ---------------------------------------------------------------------------
@@ -66,10 +94,12 @@ class FileRecord:
     """
     file_seq: str                                  # char(2) 01-99，邮件内 UNIQUE
     file_type: str = FILE_TYPE_OTHER                # PDF/XML/OFD/图片/其他
-    original_name: str = ""                         # 附件原始名（varchar 100）
+    original_name: str = ""                         # 完整 MIME 解码原名
     pre_read_type: str = PRE_READ_UNKNOWN           # Invoice/Itinerary/Unknown
     pre_read_invoice_no: str = NOT_FOUND            # 可空，20 位数字串
-    pre_read_amount: Union[float, str] = NOT_FOUND  # 可空，decimal(16,2)
+    pre_read_amount: Union[Decimal, float, str] = NOT_FOUND
+    internal_name: str = ""                         # 当前内部落盘文件名
+    exported_name: str = ""                         # T3-1 导出前留空
 
 
 @dataclass
@@ -90,7 +120,16 @@ class MatchedItinerary:
     多对多匹配引擎属 T2-3，本对象只承载命中结果。
     """
     file_seq: str = ""                                       # 行程单文件序号
-    match_amount: Union[float, str] = NOT_FOUND              # 行程单票面金额
+    match_amount: Union[Decimal, float, str] = NOT_FOUND     # 行程单票面金额
+
+
+@dataclass
+class ItineraryRecord:
+    """独立保存的行程单候选；匹配与否均保留在邮件 JSON 中。"""
+    record_id: str = ""                                      # mail_id + 文件序号
+    match_amount: Union[Decimal, float, str] = NOT_FOUND
+    travel_time: str = NOT_FOUND
+    origin_dest: str = NOT_FOUND
 
 
 @dataclass
@@ -102,8 +141,8 @@ class InvoiceFields:
     """
     invoice_date: str = NOT_FOUND                           # date YYYY-MM-DD
     invoice_number: str = NOT_FOUND                         # varchar(20) 20位纯数字 UNIQUE
-    total_amount: Union[float, str] = NOT_FOUND             # decimal(16,2)
-    invoice_type: str = NOT_FOUND                           # varchar(20) 可空
+    total_amount: Union[Decimal, float, str] = NOT_FOUND
+    invoice_type: str = ""                                  # 非必填，缺失留空
     receipt_type: str = NOT_FOUND                           # varchar(50) 二级类目
     seller: str = NOT_FOUND                                 # varchar(50) trim+去逗号
     travel_time: str = NOT_FOUND                            # datetime YYYY-MM-DD HH:mm（a类汇入）
@@ -114,15 +153,15 @@ class InvoiceFields:
 class InvoiceRecord:
     """发票实体：一张发票一条记录（D1：一发票一笔）。
 
-    record_id = Msg{n}-{m}，全局定位键（mail_id + 文件序号）。
+    record_id = Msg{n}-{m}，本轮定位键（mail_id + 文件序号）。
     matched_itinerary 仅 a 类匹配成功后填；b 类/未匹配 a 类为 None（序列化时省略）。
     """
     record_id: str = ""
-    kind: str = KIND_B                                       # a类/b类
+    kind: str = ""                                           # a类/b类；票面类型不明时留空
     fields: InvoiceFields = field(default_factory=InvoiceFields)
     source: SourceMeta = field(default_factory=SourceMeta)
     matched_itinerary: Optional[MatchedItinerary] = None
-    status: str = STATUS_COMPLETE
+    status: str = STATUS_MANUAL_REVIEW
 
 
 @dataclass
@@ -152,6 +191,7 @@ class MailRecord:
     records: List[InvoiceRecord] = field(default_factory=list)
     dedup_skipped: List[DedupSkipped] = field(default_factory=list)
     error_reason: str = ""
+    itineraries: List[ItineraryRecord] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -166,7 +206,18 @@ def _file_to_dict(f: FileRecord) -> dict:
         "original_name": f.original_name,
         "pre_read_type": f.pre_read_type,
         "pre_read_invoice_no": f.pre_read_invoice_no,
-        "pre_read_amount": f.pre_read_amount,
+        "pre_read_amount": amount_to_json(f.pre_read_amount),
+        "internal_name": f.internal_name,
+        "exported_name": f.exported_name,
+    }
+
+
+def _itinerary_to_dict(itinerary: ItineraryRecord) -> dict:
+    return {
+        "record_id": itinerary.record_id,
+        "match_amount": amount_to_json(itinerary.match_amount),
+        "travel_time": itinerary.travel_time,
+        "origin_dest": itinerary.origin_dest,
     }
 
 
@@ -179,7 +230,7 @@ def _record_to_dict(r: InvoiceRecord) -> dict:
     fields: dict = {
         "invoice_date": r.fields.invoice_date,
         "invoice_number": r.fields.invoice_number,
-        "total_amount": r.fields.total_amount,
+        "total_amount": amount_to_json(r.fields.total_amount),
         "invoice_type": r.fields.invoice_type,
         "receipt_type": r.fields.receipt_type,
         "seller": r.fields.seller,
@@ -199,7 +250,7 @@ def _record_to_dict(r: InvoiceRecord) -> dict:
     if r.matched_itinerary is not None:
         out["matched_itinerary"] = {
             "file_seq": r.matched_itinerary.file_seq,
-            "match_amount": r.matched_itinerary.match_amount,
+            "match_amount": amount_to_json(r.matched_itinerary.match_amount),
         }
     out["status"] = r.status
     return out
@@ -208,7 +259,7 @@ def _record_to_dict(r: InvoiceRecord) -> dict:
 def mail_to_dict(mail: MailRecord) -> dict:
     """邮件 → 契约 §5.3 task_debug.json 顶层条目 dict。
 
-    输出顺序：mail_id / mail_uid / subject / mail_date / files / records / dedup_skipped / error_reason。
+    输出顺序：邮件元数据 / files / itineraries / records / dedup_skipped / error_reason。
     """
     return {
         "mail_id": mail.mail_id,
@@ -216,6 +267,7 @@ def mail_to_dict(mail: MailRecord) -> dict:
         "subject": mail.subject,
         "mail_date": mail.mail_date,
         "files": [_file_to_dict(f) for f in mail.files],
+        "itineraries": [_itinerary_to_dict(i) for i in mail.itineraries],
         "records": [_record_to_dict(r) for r in mail.records],
         "dedup_skipped": [
             {"filename": d.filename, "reason": d.reason} for d in mail.dedup_skipped

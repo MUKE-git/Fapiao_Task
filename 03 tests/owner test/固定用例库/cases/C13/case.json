@@ -1,0 +1,20 @@
+{
+  "id": "C13",
+  "title": "交通类发票无行程单",
+  "priority": "必选",
+  "stages": [
+    "T2-3",
+    "T2-6"
+  ],
+  "source_kind": "合成",
+  "review_status": "待审核",
+  "review_focus": "检查记录、Excel 行、空匹配关系和缺行程单提示。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票 C13",
+      "note": "a 类发票关键字段完整，同封没有行程单。"
+    }
+  ]
+}

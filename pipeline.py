@@ -22,9 +22,9 @@ import dashscope
 from attachment_processor import collect_mail_files
 from config import RunConfig, TRANSPORT_RECEIPT_KEYWORDS, ensure_output_dirs, should_send_netease_id
 from data_model import (
-    InvoiceFields, InvoiceRecord, KIND_A, KIND_B, MailRecord, NOT_FOUND,
-    PRE_READ_INVOICE, PRE_READ_ITINERARY, STATUS_MANUAL_REVIEW, SourceMeta,
-    mail_to_dict,
+    InvoiceFields, InvoiceRecord, ItineraryRecord, KIND_A, KIND_B, MailRecord, NOT_FOUND,
+    PRE_READ_INVOICE, PRE_READ_ITINERARY, STATUS_COMPLETE, STATUS_MANUAL_REVIEW, SourceMeta,
+    amount_requires_review, mail_to_dict, normalize_amount,
 )
 from excel_writer import append_to_summary_excel
 from pdf_processor import process_pdf
@@ -51,14 +51,6 @@ def _mail_date(value: str | None) -> str:
         return ""
 
 
-def _number(value: Any) -> float | str:
-    try:
-        result = float(str(value).replace("¥", "").replace("￥", "").replace(",", ""))
-        return round(result, 2) if result > 0 else NOT_FOUND
-    except (TypeError, ValueError):
-        return NOT_FOUND
-
-
 def _alert(mail: MailRecord, reason: str, file_seq: str = "", filename: str = "",
            date_header: str = "") -> dict:
     return {"mail_subject": mail.subject, "mail_date": mail.mail_date,
@@ -72,20 +64,36 @@ def _invoice_record(mail: MailRecord, result: DocumentResult) -> InvoiceRecord:
     fields = InvoiceFields(
         invoice_date=str(data.get("invoice_date") or NOT_FOUND),
         invoice_number=str(data.get("invoice_number") or NOT_FOUND),
-        total_amount=_number(data.get("total_amount")),
-        invoice_type=str(data.get("invoice_type") or NOT_FOUND),
+        total_amount=normalize_amount(data.get("total_amount")),
+        invoice_type=("" if data.get("invoice_type") in (None, "", NOT_FOUND)
+                      else str(data["invoice_type"])),
         receipt_type=clean_receipt_type(str(data.get("receipt_type") or NOT_FOUND)),
         seller=str(data.get("seller") or NOT_FOUND),
     )
-    kind = (KIND_A if any(key in fields.receipt_type for key in TRANSPORT_RECEIPT_KEYWORDS)
+    receipt_missing = fields.receipt_type in ("", NOT_FOUND)
+    kind = ("" if receipt_missing else
+            KIND_A if any(key in fields.receipt_type for key in TRANSPORT_RECEIPT_KEYWORDS)
             else KIND_B)
     record = InvoiceRecord(
         record_id=f"{mail.mail_id}-{result.file_seq}", kind=kind,
         fields=fields, source=SourceMeta(result.source_file_seq or [result.file_seq]),
+        status=STATUS_COMPLETE,
     )
-    if result.error_reason:
+    if result.error_reason or receipt_missing or amount_requires_review(fields.total_amount):
         record.status = STATUS_MANUAL_REVIEW
     return record
+
+
+def _itinerary_record(mail: MailRecord, result: DocumentResult) -> ItineraryRecord:
+    """保存单文件行程单显式字段；匹配算法由 T2-3 端口负责。"""
+    data = result.fields
+    amount = data.get("match_amount", data.get("total_amount", NOT_FOUND))
+    return ItineraryRecord(
+        record_id=f"{mail.mail_id}-{result.file_seq}",
+        match_amount=normalize_amount(amount),
+        travel_time=str(data.get("travel_time") or NOT_FOUND),
+        origin_dest=str(data.get("origin_dest") or NOT_FOUND),
+    )
 
 
 def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
@@ -129,6 +137,7 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
         if result.role == PRE_READ_INVOICE:
             mail.records.append(_invoice_record(mail, result))
         elif result.role == PRE_READ_ITINERARY:
+            mail.itineraries.append(_itinerary_record(mail, result))
             outcome.itineraries.append(result)
         else:
             outcome.alerts.append(_alert(mail, "PDF 类型无法确定，需人工核对",
@@ -138,6 +147,29 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
         outcome.alerts.append(_alert(mail, "无有效附件", date_header=header))
     if mail.error_reason:
         outcome.alerts.append(_alert(mail, mail.error_reason, date_header=header))
+    for record in mail.records:
+        if not record.kind:
+            source_seq = record.source.source_file_seq[0] if record.source.source_file_seq else ""
+            source_file = files_by_seq.get(source_seq)
+            outcome.alerts.append(_alert(
+                mail, f"{record.record_id} 票面类型缺失，行程类型待人工核对",
+                source_seq, source_file.meta.original_name if source_file else "", header,
+            ))
+        if amount_requires_review(record.fields.total_amount):
+            source_seq = record.source.source_file_seq[0] if record.source.source_file_seq else ""
+            source_file = files_by_seq.get(source_seq)
+            outcome.alerts.append(_alert(
+                mail, f"{record.record_id} 金额格式或精度需人工核对",
+                source_seq, source_file.meta.original_name if source_file else "", header,
+            ))
+    for itinerary in mail.itineraries:
+        if amount_requires_review(itinerary.match_amount):
+            source_seq = itinerary.record_id[len(mail.mail_id) + 1:]
+            source_file = files_by_seq.get(source_seq)
+            outcome.alerts.append(_alert(
+                mail, f"{itinerary.record_id} 行程单金额格式或精度需人工核对",
+                source_seq, source_file.meta.original_name if source_file else "", header,
+            ))
     return outcome
 
 
@@ -165,12 +197,29 @@ def _check_source_chain(mails: list[MailRecord]) -> None:
         known = {f.file_seq for f in mail.files}
         if len(known) != len(mail.files):
             raise ValueError(f"{mail.mail_id} 文件序号重复")
+        itinerary_ids = [item.record_id for item in mail.itineraries]
+        if len(itinerary_ids) != len(set(itinerary_ids)):
+            raise ValueError(f"{mail.mail_id} 行程单编号重复")
+        for itinerary in mail.itineraries:
+            if not itinerary.record_id.startswith(f"{mail.mail_id}-") or itinerary.record_id[len(mail.mail_id) + 1:] not in known:
+                raise ValueError(f"{itinerary.record_id} 行程单来源链断裂")
+        itineraries_by_id = {item.record_id: item for item in mail.itineraries}
         for record in mail.records:
             expected = f"{mail.mail_id}-{record.source.source_file_seq[0]}" if record.source.source_file_seq else ""
             if record.record_id != expected or not set(record.source.source_file_seq) <= known:
                 raise ValueError(f"{record.record_id} 来源链断裂")
             if record.matched_itinerary and record.matched_itinerary.file_seq not in known:
                 raise ValueError(f"{record.record_id} 行程单来源链断裂")
+            if record.matched_itinerary and itineraries_by_id:
+                matched_id = f"{mail.mail_id}-{record.matched_itinerary.file_seq}"
+                itinerary = itineraries_by_id.get(matched_id)
+                if itinerary is None:
+                    raise ValueError(f"{record.record_id} 匹配的行程单未保存")
+                matched_amount = normalize_amount(record.matched_itinerary.match_amount)
+                itinerary_amount = normalize_amount(itinerary.match_amount)
+                if (matched_amount != NOT_FOUND and itinerary_amount != NOT_FOUND
+                        and matched_amount != itinerary_amount):
+                    raise ValueError(f"{record.record_id} 匹配金额与行程单条目不一致")
 
 
 def _excel_rows(mails: list[MailRecord]) -> list[dict]:
@@ -178,6 +227,8 @@ def _excel_rows(mails: list[MailRecord]) -> list[dict]:
     for mail in mails:
         for record in mail.records:
             fields = record.fields
+            if len(_missing_excel_keys(record)) == 3:
+                continue
             rows.append({
                 "invoice_date": fields.invoice_date,
                 "invoice_number": fields.invoice_number,
@@ -193,6 +244,15 @@ def _excel_rows(mails: list[MailRecord]) -> list[dict]:
                                 and fields.origin_dest != NOT_FOUND else ""),
             })
     return rows
+
+
+def _missing_excel_keys(record: InvoiceRecord) -> list[str]:
+    fields = record.fields
+    values = {"开票日期": fields.invoice_date, "发票号码": fields.invoice_number,
+              "金额": fields.total_amount}
+    return [name for name, value in values.items()
+            if value is None or (isinstance(value, str)
+                                 and value.strip().lower() in ("", NOT_FOUND.lower()))]
 
 
 def _write_debug(cfg: RunConfig, mails: list[MailRecord]) -> None:
@@ -301,6 +361,21 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
             stats["not_found_alerts"].append({"mail_subject": "本轮结果",
                 "flags": ["差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"]})
         _check_source_chain(mails)
+
+        for mail in mails:
+            files_by_seq = {item.file_seq: item for item in mail.files}
+            for record in mail.records:
+                missing = _missing_excel_keys(record)
+                if not missing:
+                    continue
+                record.status = STATUS_MANUAL_REVIEW
+                source_seq = record.source.source_file_seq[0] if record.source.source_file_seq else ""
+                source = files_by_seq.get(source_seq)
+                reason = (f"{record.record_id} 开票日期、发票号码、金额均缺失，未写入 Excel，需人工核对"
+                          if len(missing) == 3 else
+                          f"{record.record_id} 缺少{'、'.join(missing)}，已写入 Excel，需人工核对")
+                stats["not_found_alerts"].append(_alert(
+                    mail, reason, source_seq, source.original_name if source else ""))
 
         excel_error, path = append_to_summary_excel(_excel_rows(mails), cfg.summary_excel_file)
         if excel_error:

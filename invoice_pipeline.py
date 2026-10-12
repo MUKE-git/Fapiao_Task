@@ -228,7 +228,9 @@ def run_pipeline(
         # #region agent log
         def _imap_ingest(hid: str, msg: str, d: Dict[str, Any]) -> None:
             try:
-                logp = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"debug-{run_id}.log")
+                log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "04 logs")
+                os.makedirs(log_dir, exist_ok=True)
+                logp = os.path.join(log_dir, f"debug-{run_id}.log")
                 with open(logp, "a", encoding="utf-8") as wf:
                     wf.write(
                         json.dumps(

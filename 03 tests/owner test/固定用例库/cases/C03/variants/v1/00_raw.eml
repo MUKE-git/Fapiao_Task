@@ -1,0 +1,10 @@
+Subject: =?utf-8?b?55S15a2Q5Y+R56Wo?= C03
+From: fixture-sender@example.test
+To: fixture-reviewer@example.test
+Date: Tue, 29 Sep 2026 09:30:00 +0800
+Message-ID: <case-31e49e89193dab19@example.test>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+
+合成测试邮件。附件仅供固定用例审核。

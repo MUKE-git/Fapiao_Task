@@ -1,0 +1,19 @@
+{
+  "id": "C18",
+  "title": "T2-3 多票竞争一单",
+  "priority": "必选",
+  "stages": [
+    "T2-3"
+  ],
+  "source_kind": "合成",
+  "review_status": "待审核",
+  "review_focus": "检查竞争双方都无 matched_itinerary，独立组成功。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票及行程单 C18",
+      "note": "A/B 均先拟配 X，冲突撤回；C/C 独立配对。"
+    }
+  ]
+}

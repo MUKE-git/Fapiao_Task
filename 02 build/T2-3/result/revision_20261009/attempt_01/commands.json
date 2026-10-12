@@ -1,0 +1,53 @@
+[
+  {
+    "args": [
+      "C:\\Users\\lenovo\\anaconda3\\python.exe",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "02 build/T2-3",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "cwd": "C:\\Users\\lenovo\\Desktop\\AI_Player\\fapiao3.0",
+    "exit_code": 1,
+    "log": "t2_3_dev.log"
+  },
+  {
+    "args": [
+      "C:\\Users\\lenovo\\anaconda3\\python.exe",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "02 build/T2-1",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "cwd": "C:\\Users\\lenovo\\Desktop\\AI_Player\\fapiao3.0",
+    "exit_code": 1,
+    "log": "t2_1_dev_regression.log"
+  },
+  {
+    "args": [
+      "C:\\Users\\lenovo\\anaconda3\\python.exe",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "02 build/T2-2",
+      "-p",
+      "test_incremental.py",
+      "-v"
+    ],
+    "cwd": "C:\\Users\\lenovo\\Desktop\\AI_Player\\fapiao3.0",
+    "exit_code": 1,
+    "log": "t2_2_dev_regression.log"
+  }
+]

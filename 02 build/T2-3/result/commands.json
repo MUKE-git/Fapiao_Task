@@ -1,0 +1,26 @@
+[
+  {
+    "name": "T2-3研发",
+    "command": "python -B -m unittest discover -s \"02 build/T2-3\" -p \"test_*.py\" -v",
+    "exit_code": 0,
+    "log": "t2_3_dev.log"
+  },
+  {
+    "name": "T2-1研发回归",
+    "command": "python -B -m unittest discover -s \"02 build/T2-1\" -p \"test_*.py\" -v",
+    "exit_code": 0,
+    "log": "t2_1_dev_regression.log"
+  },
+  {
+    "name": "T2-2研发回归",
+    "command": "python -B -m unittest discover -s \"02 build/T2-2\" -p \"test_incremental.py\" -v",
+    "exit_code": 0,
+    "log": "t2_2_dev_regression.log"
+  },
+  {
+    "name": "现有T2-1验收用例研发复跑",
+    "command": "python -B -m unittest discover -s \"03 tests/T2-1/scripts\" -p \"test_t2_1_acceptance.py\" -v",
+    "exit_code": 1,
+    "log": "t2_1_existing_acceptance.log"
+  }
+]

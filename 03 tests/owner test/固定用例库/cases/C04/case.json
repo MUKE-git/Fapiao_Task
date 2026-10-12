@@ -1,0 +1,26 @@
+{
+  "id": "C04",
+  "title": "普通发票字段提取：a/b 类",
+  "priority": "必选",
+  "stages": [
+    "T2-1",
+    "T2-2"
+  ],
+  "source_kind": "合成",
+  "review_status": "待审核",
+  "review_focus": "逐项核对两类发票的数量、单价、税额与价税合计，并核对 Excel 各列。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票 C04",
+      "note": "v1 为 b 类普通发票，发票明细齐全，不需要行程单。"
+    },
+    {
+      "id": "a",
+      "path": "variants/a",
+      "subject": "电子发票 C04",
+      "note": "a 类客运发票明细齐全；未附行程单仍保留发票记录和缺单提示。"
+    }
+  ]
+}

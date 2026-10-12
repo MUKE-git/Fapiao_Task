@@ -13,6 +13,7 @@ AI 审计与重命名模块（由 invoice_pipeline.py 拆分而来，契约 = A 
 from __future__ import annotations
 
 import json
+from decimal import Decimal
 import os
 import time
 from typing import Any, Dict, List, Optional, Tuple
@@ -60,7 +61,9 @@ def _rename_pdfs_with_audit(
     # #region agent log
     def _dbg(loc: str, msg: str, data_d: Dict[str, Any], hid: str) -> None:
         try:
-            p = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"debug-{run_id}.log")
+            log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "04 logs")
+            os.makedirs(log_dir, exist_ok=True)
+            p = os.path.join(log_dir, f"debug-{run_id}.log")
             with open(p, "a", encoding="utf-8") as df:
                 df.write(
                     json.dumps(
@@ -247,7 +250,7 @@ def call_ai_audit_and_rename(
                 raw = response.output.choices[0].get("message", {}).get("content", "")
             res_text = (raw or "").replace("```json", "").replace("```", "").strip()
             try:
-                data = json.loads(res_text)
+                data = json.loads(res_text, parse_float=Decimal)
             except Exception:
                 # 步骤 B-失败：JSON 解析不了 → 用本机正则兜底一版「伪 AI 结果」
                 data = build_fallback_audit_result(task_info.get("files", []))
@@ -261,8 +264,10 @@ def call_ai_audit_and_rename(
             missing = [f for f in expected_fields if f not in data]
             if missing:
                 for f in missing:
-                    data[f] = "Not Found" if f != "file_classifications" else []
-                error_reason = (error_reason + ";AI_MISSING_FIELDS:" + ",".join(missing)).strip(";")
+                    data[f] = [] if f == "file_classifications" else "" if f == "invoice_type" else "Not Found"
+                required_missing = [f for f in missing if f != "invoice_type"]
+                if required_missing:
+                    error_reason = (error_reason + ";AI_MISSING_FIELDS:" + ",".join(required_missing)).strip(";")
             if any(data.get(k) in (None, "", "Not Found") for k in ["invoice_date", "invoice_number", "total_amount"]):
                 error_reason = (error_reason + ";FIELD_NOT_FOUND").strip(";")
             mm, manual_u = _rename_pdfs_with_audit(task_info, data, mail_subject, mail_date_hint, run_id)
