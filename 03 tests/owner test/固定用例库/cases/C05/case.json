@@ -7,7 +7,7 @@
     "T2-3"
   ],
   "source_kind": "合成",
-  "review_status": "待审核",
+  "review_status": "已审核通过",
   "review_focus": "核对打车发票价税合计、开票日期与行程时间，并核对行程单匹配和 Excel 八列。",
   "variants": [
     {

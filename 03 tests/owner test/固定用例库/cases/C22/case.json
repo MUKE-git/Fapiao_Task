@@ -6,7 +6,7 @@
     "T2-1"
   ],
   "source_kind": "合成",
-  "review_status": "待审核",
+  "review_status": "已审核通过",
   "review_focus": "逐封判断主题；仅完整获取命中邮件，跳过不命中邮件后继续处理，并保持邮件与附件、记录的对应关系。",
   "variants": [
     {

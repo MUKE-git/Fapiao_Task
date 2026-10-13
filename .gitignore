@@ -16,3 +16,6 @@ __pycache__/
 
 # 密钥配置
 .streamlit/secrets.toml
+
+# 固定用例库的本地运行结果（可重新生成）
+/03 tests/owner test/固定用例库/result/

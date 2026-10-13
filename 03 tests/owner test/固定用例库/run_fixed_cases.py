@@ -380,7 +380,7 @@ def execute_variant(case_id: str, code: str, *, real_pdf: bool = False) -> dict:
     return {"case_id": case_id, "variant": code,
             "status": "PASS" if not errors else "FAIL",
             "errors": errors, "expected": expected, "observed": observed,
-            "proof_level": ("真实邮件解析/PDF/匹配/输出整链路；邮箱固定输入、AI模拟失败；与冻结草案比较，差异待审核"
+            "proof_level": ("真实邮件解析/PDF/匹配/输出整链路；邮箱固定输入、AI模拟失败；与已审核标准答案比较，运行差异待分析"
                             if real_pdf else "受控 PDF 返回值的离线主流程和 T2-3 验证；非真实 PDF/AI 识别")}
 
 
@@ -419,7 +419,7 @@ def main() -> None:
             lines.append(f"| {item['case_id']} / {item['variant']} | [打开]({rel}/pre_read.json) | "
                          f"[打开]({rel}/final.json) | {excel} |")
     lines += ["", f"通过 {sum(item['status'] == 'PASS' for item in results)}/{len(results)} 个变体。",
-              "人工审核状态仍为待审核。", ""]
+              "18 条必选用例已由用户审核通过；运行 PASS/FAIL 独立记录。", ""]
     (result_dir / f"{basename}.md").write_text("\n".join(lines), encoding="utf-8")
     print(f"passed={sum(item['status'] == 'PASS' for item in results)}/{len(results)}")
     for item in results:

@@ -2,7 +2,7 @@
 
 - 优先级：必选
 - 样本性质：合成；没有真实用户数据
-- 审核状态：待审核
+- 审核状态：已审核通过
 - 对应任务：T2-1
 - 本例审核重点：逐封筛选和继续处理；邮件原件、附件、记录必须按 UID 对应。
 - PDF 来源：会议通知复用 C02 的合成样本；普通发票分别使用本例独立生成的合成样本，并封装进各自邮件原件；各变体的票号和金额不同。
@@ -11,9 +11,9 @@
 
 | 变体 | 模拟邮箱状态 | 邮件原件与附件 | 清单、受控提取草案、预期 |
 | --- | --- | --- | --- |
-| all_miss | [邮箱状态](variants/all_miss/imap_state.json) | 8201：[邮件原件](variants/all_miss/mail/01_8201.eml) · [附件](variants/all_miss/attachments/direct/8201_%E9%83%A8%E9%97%A8%E4%BC%9A%E8%AE%AE%E9%80%9A%E7%9F%A5.pdf)<br>8202：[邮件原件](variants/all_miss/mail/02_8202.eml) · [附件](variants/all_miss/attachments/direct/8202_%E9%83%A8%E9%97%A8%E4%BC%9A%E8%AE%AE%E9%80%9A%E7%9F%A5.pdf) | [输入清单](variants/all_miss/input_inventory.json) · [受控提取草案](variants/all_miss/extract.json) · [预期草案](variants/all_miss/expected.json) |
-| miss_then_hit | [邮箱状态](variants/miss_then_hit/imap_state.json) | 8211：[邮件原件](variants/miss_then_hit/mail/01_8211.eml) · [附件](variants/miss_then_hit/attachments/direct/8211_%E9%83%A8%E9%97%A8%E4%BC%9A%E8%AE%AE%E9%80%9A%E7%9F%A5.pdf)<br>8212：[邮件原件](variants/miss_then_hit/mail/02_8212.eml) · [附件](variants/miss_then_hit/attachments/direct/8212_%E5%8F%91%E7%A5%A8%E7%94%B2.pdf) | [输入清单](variants/miss_then_hit/input_inventory.json) · [受控提取草案](variants/miss_then_hit/extract.json) · [预期草案](variants/miss_then_hit/expected.json) |
-| hit_miss_hit | [邮箱状态](variants/hit_miss_hit/imap_state.json) | 8221：[邮件原件](variants/hit_miss_hit/mail/01_8221.eml) · [附件](variants/hit_miss_hit/attachments/direct/8221_%E5%8F%91%E7%A5%A8%E7%94%B2.pdf)<br>8222：[邮件原件](variants/hit_miss_hit/mail/02_8222.eml) · [附件](variants/hit_miss_hit/attachments/direct/8222_%E9%83%A8%E9%97%A8%E4%BC%9A%E8%AE%AE%E9%80%9A%E7%9F%A5.pdf)<br>8223：[邮件原件](variants/hit_miss_hit/mail/03_8223.eml) · [附件](variants/hit_miss_hit/attachments/direct/8223_%E5%8F%91%E7%A5%A8%E4%B9%99.pdf) | [输入清单](variants/hit_miss_hit/input_inventory.json) · [受控提取草案](variants/hit_miss_hit/extract.json) · [预期草案](variants/hit_miss_hit/expected.json) |
+| all_miss | [邮箱状态](variants/all_miss/imap_state.json) | 8201：[邮件原件](variants/all_miss/mail/01_8201.eml) · [附件](variants/all_miss/attachments/direct/8201_%E9%83%A8%E9%97%A8%E4%BC%9A%E8%AE%AE%E9%80%9A%E7%9F%A5.pdf)<br>8202：[邮件原件](variants/all_miss/mail/02_8202.eml) · [附件](variants/all_miss/attachments/direct/8202_%E9%83%A8%E9%97%A8%E4%BC%9A%E8%AE%AE%E9%80%9A%E7%9F%A5.pdf) | [输入清单](variants/all_miss/input_inventory.json) · [受控提取草案](variants/all_miss/extract.json) · [已审核预期](variants/all_miss/expected.json) |
+| miss_then_hit | [邮箱状态](variants/miss_then_hit/imap_state.json) | 8211：[邮件原件](variants/miss_then_hit/mail/01_8211.eml) · [附件](variants/miss_then_hit/attachments/direct/8211_%E9%83%A8%E9%97%A8%E4%BC%9A%E8%AE%AE%E9%80%9A%E7%9F%A5.pdf)<br>8212：[邮件原件](variants/miss_then_hit/mail/02_8212.eml) · [附件](variants/miss_then_hit/attachments/direct/8212_%E5%8F%91%E7%A5%A8%E7%94%B2.pdf) | [输入清单](variants/miss_then_hit/input_inventory.json) · [受控提取草案](variants/miss_then_hit/extract.json) · [已审核预期](variants/miss_then_hit/expected.json) |
+| hit_miss_hit | [邮箱状态](variants/hit_miss_hit/imap_state.json) | 8221：[邮件原件](variants/hit_miss_hit/mail/01_8221.eml) · [附件](variants/hit_miss_hit/attachments/direct/8221_%E5%8F%91%E7%A5%A8%E7%94%B2.pdf)<br>8222：[邮件原件](variants/hit_miss_hit/mail/02_8222.eml) · [附件](variants/hit_miss_hit/attachments/direct/8222_%E9%83%A8%E9%97%A8%E4%BC%9A%E8%AE%AE%E9%80%9A%E7%9F%A5.pdf)<br>8223：[邮件原件](variants/hit_miss_hit/mail/03_8223.eml) · [附件](variants/hit_miss_hit/attachments/direct/8223_%E5%8F%91%E7%A5%A8%E4%B9%99.pdf) | [输入清单](variants/hit_miss_hit/input_inventory.json) · [受控提取草案](variants/hit_miss_hit/extract.json) · [已审核预期](variants/hit_miss_hit/expected.json) |
 
 ## 逐条审核
 
@@ -27,4 +27,4 @@
 
 | 审核人 | 日期 | 结论（通过/退回/暂缓） | 依据与修改意见 |
 | --- | --- | --- | --- |
-| 待填写 | 待填写 | 待审核 | 待填写 |
+| 用户 | 2026-10-12 | 已审核通过 | 用户确认本例纳入首批必选用例。 |

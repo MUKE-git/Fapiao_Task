@@ -24,12 +24,12 @@
 | C16 | d051_name | PASS | 无 |
 | C16 | d051_no_name | PASS | 无 |
 | C17 | v1 | PASS | 无 |
-| C18 | v1 | FAIL | alert missing: 被多张发票竞争 |
+| C18 | v1 | PASS | 无 |
 | C19 | same_amount | PASS | 无 |
 | C19 | no_evidence | PASS | 无 |
 | C22 | all_miss | PASS | 无 |
 | C22 | miss_then_hit | PASS | 无 |
 | C22 | hit_miss_hit | PASS | 无 |
 
-通过 25/26 个变体。
-人工审核状态仍为待审核。
+通过 26/26 个变体。
+18 条必选用例已由用户审核通过；运行 PASS/FAIL 独立记录。

@@ -16,12 +16,12 @@
 | 04 PDF 预读 | [本地分类](<C:/Users/lenovo/.codex/worktrees/8423/fapiao3.0/local_mail_inspection/uid_1747702824_20261008_162303/04_local_classification.json>)；[发票文字](<C:/Users/lenovo/.codex/worktrees/8423/fapiao3.0/local_mail_inspection/uid_1747702824_20261008_162303/04_pdf_text_01.txt>)、[行程单文字](<C:/Users/lenovo/.codex/worktrees/8423/fapiao3.0/local_mail_inspection/uid_1747702824_20261008_162303/04_pdf_text_02.txt>) | PDF 字节 → 提取文字与本地角色判断 | [C05 受控逐文件结果](cases/C05/variants/v1/extract.json)位于其后续接口，**不等于真实预读输出** |
 | 05 AI 请求 | [构造的 AI 输入](<C:/Users/lenovo/.codex/worktrees/8423/fapiao3.0/local_mail_inspection/uid_1747702824_20261008_162303/05_ai_user_input.txt>) | 第 04 步文字和类型 → 待发送提示；当时没有实际 AI 响应 | 离线用例不调用 AI；没有对应响应快照 |
 | 06 本地兜底 | [兜底结果](<C:/Users/lenovo/.codex/worktrees/8423/fapiao3.0/local_mail_inspection/uid_1747702824_20261008_162303/06_local_fallback.json>) | 第 04 步文字 → 旧版本地规则结果；与第 05 步是两条分支 | [C05 `extract.json`](cases/C05/variants/v1/extract.json)是预设接口返回，**不是此兜底结果** |
-| 最终预期 / 实际 | 48.31 元邮件尚无已审核标准答案，也未用当前项目完整运行 | 逐文件结果 → 匹配、Excel/JSON；分别比较“应该”和“实际” | [C05 预期草案](cases/C05/variants/v1/expected.json)；[离线实际结果](result/latest.json) |
+| 最终预期 / 实际 | 48.31 元邮件尚无已审核标准答案，也未用当前项目完整运行 | 逐文件结果 → 匹配、Excel/JSON；分别比较“应该”和“实际” | [C05 已审核预期](cases/C05/variants/v1/expected.json)；[离线实际结果](result/latest.json) |
 
 [48.31 元邮件原解释](<C:/Users/lenovo/.codex/worktrees/8423/fapiao3.0/local_mail_inspection/uid_1747702824_20261008_162303/07_walkthrough.md>)包含更多背景。上述真实邮件链接指向本机旧工作树的私有检查目录；该目录若被清理，链接会失效。
 
 C04 保留原 v1 路径并新增 a 类变体；C05 补完整打车票面。C11 保留编号与材料，移至可选；其余必选用例仍按原顺序审核。C10、C20、C21 暂不制作。
-所有输入均为**合成样本**；全部人工标准答案为**待审核草案**，没有真实邮箱凭据或用户邮件。
+所有输入均为**合成样本**；18 条必选用例的预期已由用户审核通过；可选 C11 仍待审核，没有真实邮箱凭据或用户邮件。
 原始输入、附件与 SHA-256、受控逐文件结果、标准答案、审核页分开保存；运行结果另存，不覆盖标准答案。
 
 <a id="case-index"></a>
@@ -29,24 +29,24 @@ C04 保留原 v1 路径并新增 a 类变体；C05 补完整打车票面。C11 �
 
 | 用例 | 场景 | 变体 | 任务 | 审核 |
 | --- | --- | --- | --- | --- |
-| [C01](cases/C01/review.md) | 无未读邮件 | v1 | T2-1 | 待审核 |
-| [C02](cases/C02/review.md) | 主题不命中 | v1 | T2-1 | 待审核 |
-| [C03](cases/C03/review.md) | 命中主题但无 PDF | v1 | T2-1 | 待审核 |
-| [C04](cases/C04/review.md) | 普通发票字段提取：a/b 类 | v1（b 类）、a（a 类） | T2-1、T2-2 | 待审核 |
-| [C05](cases/C05/review.md) | 单张发票与单份行程单同封 | v1 | T2-1、T2-3 | 待审核 |
-| [C06](cases/C06/review.md) | ZIP 根目录 PDF | v1 | T2-1、T2-5 | 待审核 |
-| [C07](cases/C07/review.md) | 多附件及重复文件 | v1 | T2-1 | 待审核 |
-| [C08](cases/C08/review.md) | 无类型提示的附件名 | v1 | T2-1、T2-5 | 待审核 |
-| [C09](cases/C09/review.md) | 不可读 PDF | v1 | T2-1 | 待审核 |
-| [C12](cases/C12/review.md) | 关键字段缺失 | partial, all_missing | T2-1、T2-6 | 待审核 |
-| [C13](cases/C13/review.md) | 交通类发票无行程单 | v1 | T2-3、T2-6 | 待审核 |
-| [C14](cases/C14/review.md) | T2-3 金额层级 | v1 | T2-3 | 待审核 |
-| [C15](cases/C15/review.md) | T2-3 同层原名消歧 | v1 | T2-3、T2-5 | 待审核 |
-| [C16](cases/C16/review.md) | T2-3 容差边界与原名下一步 | d049, d050, d051_name, d051_no_name | T2-3 | 待审核 |
-| [C17](cases/C17/review.md) | T2-3 缺金额时原名兜底 | v1 | T2-3 | 待审核 |
-| [C18](cases/C18/review.md) | T2-3 多票竞争一单 | v1 | T2-3 | 待审核 |
-| [C19](cases/C19/review.md) | T2-3 无法唯一匹配 | same_amount, no_evidence | T2-3 | 待审核 |
-| [C22](cases/C22/review.md) | 多封未读邮件的主题筛选 | all_miss, miss_then_hit, hit_miss_hit | T2-1 | 待审核 |
+| [C01](cases/C01/review.md) | 无未读邮件 | v1 | T2-1 | 已审核通过 |
+| [C02](cases/C02/review.md) | 主题不命中 | v1 | T2-1 | 已审核通过 |
+| [C03](cases/C03/review.md) | 命中主题但无 PDF | v1 | T2-1 | 已审核通过 |
+| [C04](cases/C04/review.md) | 普通发票字段提取：a/b 类 | v1（b 类）、a（a 类） | T2-1、T2-2 | 已审核通过 |
+| [C05](cases/C05/review.md) | 单张发票与单份行程单同封 | v1 | T2-1、T2-3 | 已审核通过 |
+| [C06](cases/C06/review.md) | ZIP 根目录 PDF | v1 | T2-1、T2-5 | 已审核通过 |
+| [C07](cases/C07/review.md) | 多附件及重复文件 | v1 | T2-1 | 已审核通过 |
+| [C08](cases/C08/review.md) | 无类型提示的附件名 | v1 | T2-1、T2-5 | 已审核通过 |
+| [C09](cases/C09/review.md) | 不可读 PDF | v1 | T2-1 | 已审核通过 |
+| [C12](cases/C12/review.md) | 关键字段缺失 | partial, all_missing | T2-1、T2-6 | 已审核通过 |
+| [C13](cases/C13/review.md) | 交通类发票无行程单 | v1 | T2-3、T2-6 | 已审核通过 |
+| [C14](cases/C14/review.md) | T2-3 金额层级 | v1 | T2-3 | 已审核通过 |
+| [C15](cases/C15/review.md) | T2-3 同层原名消歧 | v1 | T2-3、T2-5 | 已审核通过 |
+| [C16](cases/C16/review.md) | T2-3 容差边界与原名下一步 | d049, d050, d051_name, d051_no_name | T2-3 | 已审核通过 |
+| [C17](cases/C17/review.md) | T2-3 缺金额时原名兜底 | v1 | T2-3 | 已审核通过 |
+| [C18](cases/C18/review.md) | T2-3 多票竞争一单 | v1 | T2-3 | 已审核通过 |
+| [C19](cases/C19/review.md) | T2-3 无法唯一匹配 | same_amount, no_evidence | T2-3 | 已审核通过 |
+| [C22](cases/C22/review.md) | 多封未读邮件的主题筛选 | all_miss, miss_then_hit, hit_miss_hit | T2-1 | 已审核通过 |
 
 ## 可选用例
 
@@ -57,7 +57,7 @@ C04 保留原 v1 路径并新增 a 类变体；C05 补完整打车票面。C11 �
 - 单封邮件例的 `00_raw.eml` 和 `imap_state.json` 是固定输入；C22 由 `imap_state.json` 按 UID 指向多份 `.eml`。`extract.json` 是受控 PDF 接口返回草案。
 - 主流程与 T2-3 可以在受控提取条件下验证；真实 PDF 分类与字段识别须单独运行并记录，不得由受控返回值冒充通过。
 - PDF 页上印有‘合成测试’，票号、时间、金额和单位均为虚构；原件不用于报销。
-- 审核时逐例检查输入、环节输出、异常、副作用和来源。审核通过后才计入覆盖率。
+- 审核时逐例检查输入、环节输出、异常、副作用和来源。审核通过表示用例预期被确认；测试通过率另按运行结果统计。
 - `build_synthetic_cases.py` 仅用于首次生成；它拒绝覆盖 `cases/`，防止破坏人工审核结果。
 
 ## 离线复跑
@@ -92,7 +92,7 @@ python -B "03 tests/owner test/固定用例库/run_fixed_cases.py" --pdf-mode lo
 
 邮箱只返回固定 EML，项目实际执行附件解码、PDF 预读、分类、字段提取、匹配和 JSON/Excel 输出。`process_pdf` 不再被预填结果替换；AI 调用模拟失败，因此这里验证的是本地兜底整链路，不包含真实邮箱连接或真实 AI 服务。
 
-[整链路报告](result/local_flow_latest.md)提供每个变体的预读、最终 JSON、Excel 链接；[机器报告](result/local_flow_latest.json)保留实际调用检查和与冻结草案的差异。`extract.json` 只用于输入校验及预期对照，不作为 PDF 处理结果喂给后续环节。原有草案是受控提取条件下的预期，仍待逐项审核，不自动改成实际值。
+[整链路报告](result/local_flow_latest.md)提供每个变体的预读、最终 JSON、Excel 链接；[机器报告](result/local_flow_latest.json)保留实际调用检查和与冻结草案的差异。`extract.json` 只用于输入校验及预期对照，不作为 PDF 处理结果喂给后续环节。已审核预期仍是在受控提取条件下的标准答案；本地整链路差异须逐项分析，不自动改成实际值。
 
 不加参数仍运行原受控模式；两种模式的报告分别保存。原 `local_pdf_latest.md` 仍是逐 PDF 环节报告。
 

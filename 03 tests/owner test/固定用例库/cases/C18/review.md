@@ -2,23 +2,23 @@
 
 - 优先级：必选
 - 样本性质：合成；没有真实用户数据
-- 审核状态：待审核
+- 审核状态：已审核通过
 - 对应任务：T2-3
 - 本例审核重点：检查竞争双方都无 matched_itinerary，独立组成功。
 
-| 变体 | 邮箱状态 / 邮件原件 | 原始附件（ZIP 内文件也列出） | 输入清单 / 受控提取草案 | 预期草案 |
+| 变体 | 邮箱状态 / 邮件原件 | 原始附件（ZIP 内文件也列出） | 输入清单 / 受控提取草案 | 已审核预期 |
 | --- | --- | --- | --- | --- |
-| v1 | [模拟邮箱状态](variants/v1/imap_state.json) · [邮件原件](variants/v1/00_raw.eml) | [发票A.pdf](variants/v1/attachments/direct/%E5%8F%91%E7%A5%A8A.pdf) · [发票B.pdf](variants/v1/attachments/direct/%E5%8F%91%E7%A5%A8B.pdf) · [发票C.pdf](variants/v1/attachments/direct/%E5%8F%91%E7%A5%A8C.pdf) · [行程单X.pdf](variants/v1/attachments/direct/%E8%A1%8C%E7%A8%8B%E5%8D%95X.pdf) · [行程单C.pdf](variants/v1/attachments/direct/%E8%A1%8C%E7%A8%8B%E5%8D%95C.pdf) | [附件清单](variants/v1/input_inventory.json) · [受控提取草案](variants/v1/extract.json) | [预期草案](variants/v1/expected.json) |
+| v1 | [模拟邮箱状态](variants/v1/imap_state.json) · [邮件原件](variants/v1/00_raw.eml) | [发票A.pdf](variants/v1/attachments/direct/%E5%8F%91%E7%A5%A8A.pdf) · [发票B.pdf](variants/v1/attachments/direct/%E5%8F%91%E7%A5%A8B.pdf) · [发票C.pdf](variants/v1/attachments/direct/%E5%8F%91%E7%A5%A8C.pdf) · [行程单X.pdf](variants/v1/attachments/direct/%E8%A1%8C%E7%A8%8B%E5%8D%95X.pdf) · [行程单C.pdf](variants/v1/attachments/direct/%E8%A1%8C%E7%A8%8B%E5%8D%95C.pdf) | [附件清单](variants/v1/input_inventory.json) · [受控提取草案](variants/v1/extract.json) | [已审核预期](variants/v1/expected.json) |
 
-> 受控提取草案是用例随附的固定字段输入，供相应阶段测试使用；它不是程序本次运行产生的结果。预期草案记录希望逐项审核的结果。运行报告应单独保存。
+> 受控提取草案是用例随附的固定字段输入，供相应阶段测试使用；它不是程序本次运行产生的结果。已审核预期记录用户确认的标准答案；测试运行结果另行核对。运行报告应单独保存。
 
 ## 逐条审核
 
 1. 按上表逐个打开邮箱状态、邮件原件和附件。邮箱状态说明模拟邮箱当前有哪些未读邮件；邮件原件是 RFC 822/MIME 邮件文件；input_inventory 清单记录邮件及附件的路径、来源、字节数和 SHA-256。核对清单指向的文件确实存在且对应。
-2. 本例审核重点：核对 3 张发票与 2 份行程单。C 与行程单 C 有唯一依据，应配对；A、B 对剩余 X 形成竞争，不能让两张发票同时占用同一行程单，也不能凭空选择其中一张。审核竞争提示、未配对关系和三条发票记录/行。
-3. 对照对应变体的受控提取草案与预期草案。核实预期里的数量、关联关系、提示和字段值是否符合本例输入及业务规则；不要把草案当成已运行结果，也不要覆盖它。需要审核真实运行结果时，应查看单独保存的运行报告。
+2. 本例审核重点：核对 3 张发票与 2 份行程单。C 与行程单 C 有唯一依据，应配对；A、B 对剩余 X 形成竞争，不能让两张发票同时占用同一行程单，也不能凭空选择其中一张。审核竞争提示、未配对关系和三条发票记录/行。冲突提示写作“被多张发票竞争”或“多张发票拟关联同一行程单”均可；检查共同关键词“多张发票”。
+3. 对照对应变体的受控提取草案与已审核预期。核实预期里的数量、关联关系、提示和字段值是否符合本例输入及业务规则；不要把草案当成已运行结果，也不要覆盖它。需要审核真实运行结果时，应查看单独保存的运行报告。
 4. 在下表填写审核意见。若认为输入或预期需要修改，写明文件、具体字段、修改理由；不要只写有问题。
 
 | 审核人 | 日期 | 结论（通过/退回/暂缓） | 依据与修改意见 |
 | --- | --- | --- | --- |
-| 待填写 | 待填写 | 待审核 | 待填写 |
+| 用户 | 2026-10-12 | 已审核通过 | 用户确认本例纳入首批必选用例。 |

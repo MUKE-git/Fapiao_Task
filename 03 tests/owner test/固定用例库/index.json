@@ -1,7 +1,7 @@
 {
   "scope": "18 条必选；C11 改为可选并保留编号，C10/C20/C21 暂不制作。C04 含 a/b 两个变体。",
   "source_kind": "全部合成",
-  "review_status": "全部待审核",
+  "review_status": "18 条必选已审核通过；可选 C11 待审核",
   "cases": [
     {
       "id": "C01",

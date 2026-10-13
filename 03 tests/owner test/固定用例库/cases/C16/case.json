@@ -6,7 +6,7 @@
     "T2-3"
   ],
   "source_kind": "合成",
-  "review_status": "待审核",
+  "review_status": "已审核通过",
   "review_focus": "0.49/0.50 进入容差层；0.51 不入该层，但唯一同尾缀可兜底。",
   "variants": [
     {

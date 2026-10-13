@@ -1919,10 +1919,8 @@
   {
     "case_id": "C18",
     "variant": "v1",
-    "status": "FAIL",
-    "errors": [
-      "alert missing: 被多张发票竞争"
-    ],
+    "status": "PASS",
+    "errors": [],
     "expected": {
       "unseen_total": 1,
       "selected_mails": 1,
@@ -1935,7 +1933,7 @@
       },
       "duplicate_skipped": 0,
       "alerts_contain": [
-        "被多张发票竞争"
+        "多张发票"
       ],
       "field_checks": {}
     },

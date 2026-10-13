@@ -6,7 +6,7 @@
     "T2-1"
   ],
   "source_kind": "合成",
-  "review_status": "待审核",
+  "review_status": "已审核通过",
   "review_focus": "检查邮箱状态、附件/PDF 调用次数和空输出。",
   "variants": [
     {
