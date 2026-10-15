@@ -25,6 +25,7 @@ def build_fallback_audit_result(files):
             itinerary_text += "\n" + txt
 
     amount = "Not Found"
+    match_amount = "Not Found"
     invoice_no = "Not Found"
     invoice_date = "Not Found"
     travel_time = "Not Found"
@@ -38,6 +39,15 @@ def build_fallback_audit_result(files):
         m_amt = re.search(r"合\s*计[^\n]{0,30}?[¥￥]\s*([0-9]+(?:\.[0-9]+)?)", invoice_text)
     if m_amt:
         amount = m_amt.group(1)
+
+    # 行程单金额是独立字段；只接受行程单自身明确标注的总金额，不能借发票价税合计。
+    m_match = re.search(
+        r"(?:报销金额|匹配金额|费用合计|合计金额|总金额|实付金额|订单金额|总费用)"
+        r"[ \t]*[:：]?[ \t]*[¥￥]?[ \t]*([0-9]+(?:\.[0-9]+)?)",
+        itinerary_text,
+    )
+    if m_match:
+        match_amount = m_match.group(1)
 
     m_no = re.search(r"发票号码[:：]?\s*([0-9]{8,})", invoice_text)
     if m_no:
@@ -94,6 +104,7 @@ def build_fallback_audit_result(files):
 
     return {
         "total_amount": amount,
+        "match_amount": match_amount,
         "invoice_number": invoice_no,
         "invoice_date": invoice_date,
         "travel_time": travel_time,

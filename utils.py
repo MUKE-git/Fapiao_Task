@@ -44,12 +44,13 @@ def clean_receipt_type(raw: str) -> str:
     """清洗票面类型：*A*B 格式取二级类目 B，同时去掉 Windows 非法字符。"""
     if not raw:
         return raw
-    # 匹配 *一级类目*二级类目 格式，取二级类目
-    m = re.match(r'\*[^*]+\*(.+)', raw)
-    if m:
-        cleaned = m.group(1).strip()
+    value = raw.strip()
+    # 有星号前缀时必须有非空的二级类目；不把缺失 B 的 *A* 清洗成 A。
+    if value.startswith("*"):
+        m = re.fullmatch(r'\*[^*]+\*([^*]+)', value)
+        cleaned = m.group(1).strip() if m else ""
     else:
-        cleaned = raw.strip()
+        cleaned = value
     return re.sub(r'[\\/:*?"<>|]', '', cleaned)
 
 

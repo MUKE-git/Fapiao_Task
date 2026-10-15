@@ -1,9 +1,0 @@
-warning: in the working copy of '01 docs/01 project/计划分工.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of '01 docs/01 project/重构方案.md', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'ai_client.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'attachment_processor.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'data_model.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'excel_writer.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'invoice_pipeline.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'pdf_processor.py', LF will be replaced by CRLF the next time Git touches it
-warning: in the working copy of 'pipeline.py', LF will be replaced by CRLF the next time Git touches it

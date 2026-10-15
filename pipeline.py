@@ -42,6 +42,7 @@ class MessageOutcome:
     itineraries: list[DocumentResult] = field(default_factory=list)
     mismatches: list[dict] = field(default_factory=list)
     alerts: list[dict] = field(default_factory=list)
+    failed_files: list[dict] = field(default_factory=list)
 
 
 def _mail_date(value: str | None) -> str:
@@ -61,16 +62,20 @@ def _alert(mail: MailRecord, reason: str, file_seq: str = "", filename: str = ""
 def _invoice_record(mail: MailRecord, result: DocumentResult) -> InvoiceRecord:
     """把单文件处理结果映射到冻结数据模型，不跨文件借字段。"""
     data = result.fields
+    invoice_type = data.get("invoice_type")
+    receipt_type = data.get("receipt_type")
+    seller = data.get("seller")
     fields = InvoiceFields(
         invoice_date=str(data.get("invoice_date") or NOT_FOUND),
         invoice_number=str(data.get("invoice_number") or NOT_FOUND),
         total_amount=normalize_amount(data.get("total_amount")),
-        invoice_type=("" if data.get("invoice_type") in (None, "", NOT_FOUND)
-                      else str(data["invoice_type"])),
-        receipt_type=clean_receipt_type(str(data.get("receipt_type") or NOT_FOUND)),
-        seller=str(data.get("seller") or NOT_FOUND),
+        invoice_type="" if invoice_type in (None, "", NOT_FOUND) else invoice_type,
+        receipt_type=(clean_receipt_type(receipt_type) if isinstance(receipt_type, str)
+                      else NOT_FOUND if receipt_type is None else receipt_type),
+        seller=NOT_FOUND if seller is None or seller == "" else seller,
     )
-    receipt_missing = fields.receipt_type in ("", NOT_FOUND)
+    receipt_missing = (not isinstance(fields.receipt_type, str)
+                       or fields.receipt_type in ("", NOT_FOUND))
     kind = ("" if receipt_missing else
             KIND_A if any(key in fields.receipt_type for key in TRANSPORT_RECEIPT_KEYWORDS)
             else KIND_B)
@@ -79,7 +84,8 @@ def _invoice_record(mail: MailRecord, result: DocumentResult) -> InvoiceRecord:
         fields=fields, source=SourceMeta(result.source_file_seq or [result.file_seq]),
         status=STATUS_COMPLETE,
     )
-    if result.error_reason or receipt_missing or amount_requires_review(fields.total_amount):
+    if (result.error_reason or receipt_missing or amount_requires_review(fields.total_amount)
+            or not isinstance(fields.invoice_type, str) or not isinstance(fields.seller, str)):
         record.status = STATUS_MANUAL_REVIEW
     return record
 
@@ -87,6 +93,7 @@ def _invoice_record(mail: MailRecord, result: DocumentResult) -> InvoiceRecord:
 def _itinerary_record(mail: MailRecord, result: DocumentResult) -> ItineraryRecord:
     """保存单文件行程单显式字段；匹配算法由 T2-3 端口负责。"""
     data = result.fields
+    # 兼容 T2-2 已确认的同文件旧结果；每个 DocumentResult 仅来自当前行程单。
     amount = data.get("match_amount", data.get("total_amount", NOT_FOUND))
     return ItineraryRecord(
         record_id=f"{mail.mail_id}-{result.file_seq}",
@@ -98,10 +105,12 @@ def _itinerary_record(mail: MailRecord, result: DocumentResult) -> ItineraryReco
 
 def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
                     cfg: RunConfig, run_id: str = "",
-                    ports: StagePorts | None = None) -> MessageOutcome:
+                    ports: StagePorts | None = None,
+                    existing_mail: MailRecord | None = None) -> MessageOutcome:
     """单封邮件的分流与结果组装；可用合成邮件离线验证。"""
-    mail = MailRecord(mail_id=mail_id, mail_uid=mail_uid,
-                      subject=decode_str(msg.get("Subject")), mail_date=_mail_date(msg.get("Date")))
+    mail = existing_mail if existing_mail is not None else MailRecord(
+        mail_id=mail_id, mail_uid=mail_uid,
+        subject=decode_str(msg.get("Subject")), mail_date=_mail_date(msg.get("Date")))
     outcome = MessageOutcome(mail)
     header = (msg.get("Date") or "").strip()
     ports = ports or load_stage_ports()
@@ -109,17 +118,28 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
     files_by_seq = {item.meta.file_seq: item for item in files}
     results: list[DocumentResult] = []
     for item in files:
-        if item.meta.file_type == "PDF":
-            result = process_pdf(item, cfg, mail.subject, mail.mail_date, run_id)
-        else:
-            handler = (ports.document_handlers or {}).get(item.meta.file_type)
-            if handler is None:
-                outcome.alerts.append(_alert(
-                    mail, f"{item.meta.file_type} 文件已登记，本阶段尚未提取，请人工核对",
-                    item.meta.file_seq, item.meta.original_name, header,
-                ))
-                continue
-            result = handler(item, cfg, mail.subject, mail.mail_date, run_id)
+        try:
+            if item.meta.file_type == "PDF":
+                result = process_pdf(item, cfg, mail.subject, mail.mail_date, run_id)
+            else:
+                handler = (ports.document_handlers or {}).get(item.meta.file_type)
+                if handler is None:
+                    outcome.alerts.append(_alert(
+                        mail, f"{item.meta.file_type} 文件已登记，本阶段尚未提取，请人工核对",
+                        item.meta.file_seq, item.meta.original_name, header,
+                    ))
+                    continue
+                result = handler(item, cfg, mail.subject, mail.mail_date, run_id)
+            if not isinstance(result, DocumentResult):
+                raise TypeError("处理器未返回文件级 DocumentResult")
+        except Exception as exc:
+            reason = f"FILE_PROCESSING_EXCEPTION:{item.meta.file_seq}:{type(exc).__name__}:{exc}"
+            mail.error_reason = (mail.error_reason + ";" + reason).strip(";")
+            outcome.alerts.append(_alert(mail, reason, item.meta.file_seq,
+                                         item.meta.original_name, header))
+            outcome.failed_files.append({"file_seq": item.meta.file_seq,
+                                         "filename": item.meta.original_name, "reason": reason})
+            continue
         results.append(result)
         outcome.mismatches.extend(result.mismatches)
         if result.error_reason:
@@ -151,8 +171,10 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
         if not record.kind:
             source_seq = record.source.source_file_seq[0] if record.source.source_file_seq else ""
             source_file = files_by_seq.get(source_seq)
+            receipt_reason = ("票面类型缺失" if record.fields.receipt_type in ("", NOT_FOUND)
+                              else "票面类型无效")
             outcome.alerts.append(_alert(
-                mail, f"{record.record_id} 票面类型缺失，行程类型待人工核对",
+                mail, f"{record.record_id} {receipt_reason}，行程类型待人工核对",
                 source_seq, source_file.meta.original_name if source_file else "", header,
             ))
         if amount_requires_review(record.fields.total_amount):
@@ -191,26 +213,60 @@ def _apply_matching(outcomes: list[MessageOutcome], ports: StagePorts) -> None:
             outcome.alerts.append(_alert(mail, "行程单匹配尚待 T2-3 接入，需人工核对"))
 
 
-def _check_source_chain(mails: list[MailRecord]) -> None:
-    """输出前检查行级来源确实指向同邮件已登记文件。"""
+def _check_source_chain(mails: list[MailRecord], cfg: RunConfig | None = None) -> None:
+    """输出前检查编号、记录引用及实际落盘文件组成可双向追查的来源链。"""
+    mail_ids: set[str] = set()
+    mail_uids: set[str] = set()
+    record_ids: set[str] = set()
+    internal_names: set[str] = set()
+    extract_dir = os.path.realpath(cfg.extract_dir) if cfg is not None else ""
     for mail in mails:
+        if not re.fullmatch(r"Msg(?:[1-9]|[1-9]\d|1[0-4]\d|150)", mail.mail_id):
+            raise ValueError(f"{mail.mail_id} 邮件编号不符合本轮格式")
+        if mail.mail_id in mail_ids:
+            raise ValueError(f"{mail.mail_id} 邮件编号重复")
+        mail_ids.add(mail.mail_id)
+        if cfg is not None and (not mail.mail_uid.isdigit() or mail.mail_uid in mail_uids):
+            raise ValueError(f"{mail.mail_id} IMAP UID 缺失、格式错误或重复")
+        mail_uids.add(mail.mail_uid)
         known = {f.file_seq for f in mail.files}
         if len(known) != len(mail.files):
             raise ValueError(f"{mail.mail_id} 文件序号重复")
+        for index, file in enumerate(mail.files, 1):
+            if index > 99 or file.file_seq != f"{index:02d}":
+                raise ValueError(f"{mail.mail_id} 文件序号不连续或超出 01–99")
+            if cfg is not None:
+                name = file.internal_name
+                if (not name or len(name) > 120 or os.path.basename(name) != name
+                        or not name.startswith(f"{mail.mail_id}_{file.file_seq}_")):
+                    raise ValueError(f"{mail.mail_id}-{file.file_seq} 内部文件名无效")
+                if name in internal_names:
+                    raise ValueError(f"{name} 内部文件名重复")
+                internal_names.add(name)
+                path = os.path.realpath(os.path.join(extract_dir, name))
+                if os.path.dirname(path) != extract_dir or not os.path.isfile(path):
+                    raise ValueError(f"{mail.mail_id}-{file.file_seq} 内部文件不存在或不在本轮目录")
         itinerary_ids = [item.record_id for item in mail.itineraries]
         if len(itinerary_ids) != len(set(itinerary_ids)):
             raise ValueError(f"{mail.mail_id} 行程单编号重复")
         for itinerary in mail.itineraries:
             if not itinerary.record_id.startswith(f"{mail.mail_id}-") or itinerary.record_id[len(mail.mail_id) + 1:] not in known:
                 raise ValueError(f"{itinerary.record_id} 行程单来源链断裂")
+            if itinerary.record_id in record_ids:
+                raise ValueError(f"{itinerary.record_id} 记录编号重复")
+            record_ids.add(itinerary.record_id)
         itineraries_by_id = {item.record_id: item for item in mail.itineraries}
         for record in mail.records:
             expected = f"{mail.mail_id}-{record.source.source_file_seq[0]}" if record.source.source_file_seq else ""
-            if record.record_id != expected or not set(record.source.source_file_seq) <= known:
+            if (record.record_id != expected or not set(record.source.source_file_seq) <= known
+                    or len(record.source.source_file_seq) != len(set(record.source.source_file_seq))):
                 raise ValueError(f"{record.record_id} 来源链断裂")
+            if record.record_id in record_ids:
+                raise ValueError(f"{record.record_id} 记录编号重复")
+            record_ids.add(record.record_id)
             if record.matched_itinerary and record.matched_itinerary.file_seq not in known:
                 raise ValueError(f"{record.record_id} 行程单来源链断裂")
-            if record.matched_itinerary and itineraries_by_id:
+            if record.matched_itinerary:
                 matched_id = f"{mail.mail_id}-{record.matched_itinerary.file_seq}"
                 itinerary = itineraries_by_id.get(matched_id)
                 if itinerary is None:
@@ -226,6 +282,8 @@ def _excel_rows(mails: list[MailRecord]) -> list[dict]:
     rows: list[dict] = []
     for mail in mails:
         for record in mail.records:
+            if record.record_id in mail.excel_skip_record_ids:
+                continue
             fields = record.fields
             if len(_missing_excel_keys(record)) == 3:
                 continue
@@ -267,12 +325,13 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
         "unseen_total": 0, "skipped_no_invoice_keyword": 0,
         "invoice_keyword_mails": 0, "manual_unknown_alerts": [],
         "not_found_alerts": [], "imap_mailbox_status": None, "imap_error": None,
+        "failed_mails": [], "run_error": None, "excel_error": None,
     }
     if not (cfg.dashscope_api_key or "").strip():
         return [], {**stats, "error": "no_api_key"}
     ensure_output_dirs(cfg)
     dashscope.api_key = cfg.dashscope_api_key.strip()
-    ports = load_stage_ports()
+    ports = load_stage_ports(cfg)
     outcomes: list[MessageOutcome] = []
     client = None
     run_id = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -329,14 +388,37 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
             stats["imap_mailbox_status"] = {"error": str(exc)}
 
         for index, uid in enumerate(uids, 1):
-            header = email.message_from_bytes(fetch(uid, "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"))
-            subject = decode_str(header.get("Subject"))
-            if not any(keyword in subject for keyword in KEYWORDS):
-                stats["skipped_no_invoice_keyword"] += 1
-                continue
-            stats["invoice_keyword_mails"] += 1
-            message = email.message_from_bytes(fetch(uid, "(BODY.PEEK[])"))
-            outcome = process_message(message, f"Msg{index}", uid.decode("ascii"), cfg, run_id, ports)
+            mail_id = f"Msg{index}"
+            uid_text = uid.decode("ascii", errors="replace")
+            subject = ""
+            date_header = ""
+            partial_mail = MailRecord(mail_id=mail_id, mail_uid=uid_text)
+            try:
+                header = email.message_from_bytes(fetch(uid, "(BODY.PEEK[HEADER.FIELDS (SUBJECT DATE)])"))
+                subject = decode_str(header.get("Subject"))
+                date_header = (header.get("Date") or "").strip()
+                if not any(keyword in subject for keyword in KEYWORDS):
+                    stats["skipped_no_invoice_keyword"] += 1
+                    continue
+                stats["invoice_keyword_mails"] += 1
+                partial_mail.subject = subject
+                partial_mail.mail_date = _mail_date(date_header)
+                message = email.message_from_bytes(fetch(uid, "(BODY.PEEK[])"))
+                outcome = process_message(message, mail_id, uid_text, cfg, run_id, ports,
+                                          existing_mail=partial_mail)
+                if outcome.failed_files:
+                    stats["failed_mails"].append({"mail_id": mail_id, "mail_uid": uid_text,
+                                                   "failed_files": outcome.failed_files})
+            except Exception as exc:
+                reason = f"MAIL_PROCESSING_EXCEPTION:{type(exc).__name__}:{exc}"
+                partial_mail.error_reason = (partial_mail.error_reason + ";" + reason).strip(";")
+                for record in partial_mail.records:
+                    record.status = STATUS_MANUAL_REVIEW
+                outcome = MessageOutcome(partial_mail)
+                outcome.alerts.append(_alert(partial_mail, reason, date_header=date_header))
+                stats["failed_mails"].append({"mail_id": mail_id, "mail_uid": uid_text,
+                                               "reason": reason})
+                log(f"{mail_id} 处理失败，已保留已有记录并继续下一封：{exc}")
             outcomes.append(outcome)
             log(f"已登记 {outcome.mail.mail_id}：{len(outcome.mail.files)} 个文件，"
                 f"{len(outcome.mail.records)} 笔 PDF 发票")
@@ -345,6 +427,8 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
         mails = [outcome.mail for outcome in outcomes]
         if ports.arbitrate_records is not None:
             mails = ports.arbitrate_records(mails)
+            for mail in mails:
+                stats["not_found_alerts"].extend(mail.arbitration_alerts)
         elif any(mail.records for mail in mails):
             for mail in mails:
                 for record in mail.records:
@@ -360,7 +444,7 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
                     record.status = STATUS_MANUAL_REVIEW
             stats["not_found_alerts"].append({"mail_subject": "本轮结果",
                 "flags": ["差异化字段校验尚待 T2-6 接入；当前记录均需人工核对"]})
-        _check_source_chain(mails)
+        _check_source_chain(mails, cfg)
 
         for mail in mails:
             files_by_seq = {item.file_seq: item for item in mail.files}
@@ -379,6 +463,7 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
 
         excel_error, path = append_to_summary_excel(_excel_rows(mails), cfg.summary_excel_file)
         if excel_error:
+            stats["excel_error"] = excel_error
             for mail in mails:
                 mail.error_reason = (mail.error_reason + ";" + excel_error).strip(";")
             log(f"Excel 写入失败：{excel_error}")
@@ -390,7 +475,21 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
     except (imaplib.IMAP4.error, OSError, ValueError) as exc:
         stats["imap_error"] = str(exc)
         log(f"处理失败：{exc}")
+        for outcome in outcomes:
+            for record in outcome.mail.records:
+                record.status = STATUS_MANUAL_REVIEW
         _write_debug(cfg, [outcome.mail for outcome in outcomes])
+    except Exception as exc:
+        stats["run_error"] = f"{type(exc).__name__}: {exc}"
+        log(f"本轮后处理失败，已保留部分记录：{exc}")
+        for outcome in outcomes:
+            for record in outcome.mail.records:
+                record.status = STATUS_MANUAL_REVIEW
+            stats["not_found_alerts"].extend(outcome.alerts)
+        try:
+            _write_debug(cfg, [outcome.mail for outcome in outcomes])
+        except Exception as write_exc:
+            stats["run_error"] += f";JSON_WRITE_ERROR:{write_exc}"
     finally:
         if client:
             try:

@@ -10,6 +10,7 @@ from __future__ import annotations
 import email
 import hashlib
 import os
+import re
 import zipfile
 from dataclasses import dataclass
 from io import BytesIO
@@ -70,6 +71,16 @@ _FILE_TYPES = {".pdf": "PDF", ".xml": "XML", ".ofd": "OFD",
                ".bmp": "图片", ".webp": "图片"}
 _MAX_ZIP_FILES = 50
 _MAX_ZIP_BYTES = 15 * 1024 * 1024
+_MAX_INTERNAL_NAME = 120
+_MIME_EXTENSIONS = {
+    "application/pdf": ".pdf", "application/xml": ".xml", "text/xml": ".xml",
+    "application/ofd": ".ofd", "image/png": ".png", "image/jpeg": ".jpg",
+    "image/bmp": ".bmp", "image/webp": ".webp", "application/zip": ".zip",
+    "application/x-zip-compressed": ".zip",
+}
+_WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {
+    f"{prefix}{number}" for prefix in ("COM", "LPT") for number in range(1, 10)
+}
 
 
 @dataclass(frozen=True)
@@ -79,14 +90,50 @@ class CollectedFile:
     path: str
 
 
-def _safe_attachment_name(name: str, seq: int) -> str:
-    ext = os.path.splitext(name)[1].lower()
-    cleaned = clean_filename(os.path.basename(name.replace("\\", "/")), seq)
-    if cleaned.startswith("Attachment_") and ext:
-        cleaned = f"Attachment_{seq}{ext}"
-    elif cleaned.startswith("Attachment_"):
-        cleaned = f"Attachment_{seq}"
-    return cleaned[:180]
+def _safe_storage_path(directory: str, prefix: str, original_name: str,
+                       seq: int, extension_hint: str = "") -> str:
+    """按实际完整文件名的 120 字符上限选一个不会覆盖旧文件的路径。"""
+    basename = original_name.replace("\\", "/").rsplit("/", 1)[-1]
+    stem, extension = os.path.splitext(basename)
+    if not extension and basename.lower() in {*_FILE_TYPES, ".zip"}:
+        stem, extension = "", basename
+    extension = extension or extension_hint
+    # Windows 文件名规则只作用于存盘名，original_name 始终原样保留。
+    stem = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", stem).strip().rstrip(". ")
+    extension = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", extension).rstrip(". ")
+    if not stem or stem.upper() in _WINDOWS_RESERVED or "\ufffd" in stem:
+        stem = f"Attachment_{seq}"
+    digest = hashlib.sha256(original_name.encode("utf-8")).hexdigest()[:8]
+    collision = 0
+    while True:
+        suffix = f"({collision})" if collision else ""
+        budget = _MAX_INTERNAL_NAME - len(prefix) - len(extension) - len(suffix)
+        if budget < 1:
+            raise ValueError("附件扩展名或编号过长，无法满足内部文件名 120 字符上限")
+        if len(stem) > budget:
+            marker = f"_{digest}"
+            if budget <= len(marker):
+                raise ValueError("附件扩展名或编号过长，无法保留超长名摘要")
+            short_stem = stem[:budget - len(marker)].rstrip(". ") + marker
+        else:
+            short_stem = stem
+        candidate = os.path.join(directory, f"{prefix}{short_stem}{suffix}{extension}")
+        if not os.path.lexists(candidate):
+            return candidate
+        collision += 1
+
+
+def _write_unique_file(directory: str, prefix: str, original_name: str,
+                       seq: int, content: bytes, extension_hint: str = "") -> str:
+    """独占创建最终路径，避免并发创建同名文件时覆盖已有内容。"""
+    while True:
+        path = _safe_storage_path(directory, prefix, original_name, seq, extension_hint)
+        try:
+            with open(path, "xb") as out:
+                out.write(content)
+            return path
+        except FileExistsError:
+            continue
 
 
 def collect_mail_files(msg: email.message.Message, mail: MailRecord,
@@ -101,7 +148,8 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
     zip_file_count = 0
     zip_total_bytes = 0
 
-    def add_file(name: str, content: bytes, source: str) -> None:
+    def add_file(name: str, content: bytes, source: str,
+                 extension_hint: str = "") -> None:
         nonlocal zip_file_count, zip_total_bytes
         if source.startswith("ZIP:"):
             zip_file_count += 1
@@ -112,18 +160,14 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
         if digest in seen_hashes:
             mail.dedup_skipped.append(DedupSkipped(name, f"同邮件内容重复（{source}）"))
             return
-        seen_hashes.add(digest)
         seq = len(mail.files) + 1
         if seq > 99:
             raise ValueError("单邮件文件数超过 99，无法分配两位文件序号")
         seq_text = f"{seq:02d}"
-        suffix = os.path.splitext(name)[1].lower()
-        safe_name = _safe_attachment_name(name, seq)
-        path = build_non_conflicting_path(
-            os.path.join(cfg.extract_dir, f"{mail.mail_id}_{seq_text}_{safe_name}")
-        )
-        with open(path, "wb") as out:
-            out.write(content)
+        path = _write_unique_file(cfg.extract_dir, f"{mail.mail_id}_{seq_text}_",
+                                  name, seq, content, extension_hint)
+        seen_hashes.add(digest)
+        suffix = os.path.splitext(path)[1].lower()
         meta = FileRecord(file_seq=seq_text,
                           file_type=_FILE_TYPES.get(suffix, "其他"), original_name=name,
                           internal_name=os.path.basename(path))
@@ -158,22 +202,20 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
         if part.is_multipart():
             continue
         raw_name = part.get_filename()
-        if not raw_name:
+        if raw_name is None and part.get_content_disposition() != "attachment":
             continue
-        name = decode_str(raw_name)
+        name = decode_str(raw_name) if raw_name else ""
         content = part.get_payload(decode=True)
         if content is None:
             continue
-        if name.lower().endswith(".zip"):
-            path = build_non_conflicting_path(
-                os.path.join(cfg.zips_dir, f"{mail.mail_id}_{_safe_attachment_name(name, 1)}")
-            )
-            with open(path, "wb") as out:
-                out.write(content)
+        extension_hint = _MIME_EXTENSIONS.get(part.get_content_type().lower(), "")
+        if name.lower().endswith(".zip") or (not name and extension_hint == ".zip"):
+            path = _write_unique_file(cfg.zips_dir, f"{mail.mail_id}_",
+                                      name, 1, content, extension_hint)
             unpack_zip(name, content, 1)
         else:
             try:
-                add_file(name, content, "直接附件")
+                add_file(name, content, "直接附件", extension_hint)
             except ValueError as exc:
                 mail.error_reason = (mail.error_reason + f";ATTACHMENT_LIMIT:{exc}").strip(";")
                 break

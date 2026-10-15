@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 from importlib import import_module
 from pathlib import Path
 from typing import Callable, Optional
@@ -46,11 +47,12 @@ def _optional(module_name: str, function_name: str):
     return function
 
 
-def load_stage_ports() -> StagePorts:
+def load_stage_ports(cfg: RunConfig | None = None) -> StagePorts:
     """T2-3/4/6 按各自任务实现后即可接入，不依赖 T1 快照。"""
+    arbitrator = _optional("dedup_arbitrator", "arbitrate_records")
     return StagePorts(
         match_itineraries=_optional("itinerary_matcher", "match_itineraries"),
-        arbitrate_records=_optional("dedup_arbitrator", "arbitrate_records"),
+        arbitrate_records=partial(arbitrator, cfg=cfg) if arbitrator and cfg else arbitrator,
         validate_records=_optional("field_validator", "validate_records"),
         document_handlers={
             file_type: handler for file_type, handler in (

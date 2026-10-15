@@ -29,7 +29,9 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
     fallback_input = [{"identified_type": pre_type, "text_snapshot": text[:3000]}]
     pre_read = build_fallback_audit_result(fallback_input)
     file.meta.pre_read_invoice_no = str(pre_read.get("invoice_number") or NOT_FOUND)
-    file.meta.pre_read_amount = normalize_amount(pre_read.get("total_amount"))
+    file.meta.pre_read_amount = normalize_amount(
+        pre_read.get("match_amount") if pre_type == "Itinerary" else pre_read.get("total_amount")
+    )
 
     # 旧接口同时重命名传入 PDF。隔离副本，保证正式存盘名持续携带 file_seq。
     with tempfile.TemporaryDirectory(prefix="fapiao_pdf_") as temp_dir:

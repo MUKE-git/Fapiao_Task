@@ -1,0 +1,19 @@
+test_ai_api_response_json_shape_is_parsed (test_dedup_arbitrator.DedupArbitratorTests.test_ai_api_response_json_shape_is_parsed) ... ok
+test_ai_cannot_choose_when_both_pdfs_support_their_own_conflicting_values (test_dedup_arbitrator.DedupArbitratorTests.test_ai_cannot_choose_when_both_pdfs_support_their_own_conflicting_values) ... ok
+test_ai_must_support_every_changed_required_field (test_dedup_arbitrator.DedupArbitratorTests.test_ai_must_support_every_changed_required_field) ... ok
+test_conflict_ai_selects_existing_candidate_only_with_source_evidence (test_dedup_arbitrator.DedupArbitratorTests.test_conflict_ai_selects_existing_candidate_only_with_source_evidence) ... ok
+test_conflict_reads_each_source_pdf_text_then_calls_ai_once (test_dedup_arbitrator.DedupArbitratorTests.test_conflict_reads_each_source_pdf_text_then_calls_ai_once) ... ok
+test_different_numbers_and_missing_excel_keys_follow_existing_filter (test_dedup_arbitrator.DedupArbitratorTests.test_different_numbers_and_missing_excel_keys_follow_existing_filter) ... ok
+test_duplicate_inside_conflict_keeps_one_per_different_variant (test_dedup_arbitrator.DedupArbitratorTests.test_duplicate_inside_conflict_keeps_one_per_different_variant) ... ok
+test_empty_number_never_merges_but_same_invalid_string_does (test_dedup_arbitrator.DedupArbitratorTests.test_empty_number_never_merges_but_same_invalid_string_does) ... ok
+test_run_pipeline_writes_one_excel_row_but_both_json_sources (test_dedup_arbitrator.DedupArbitratorTests.test_run_pipeline_writes_one_excel_row_but_both_json_sources) ... ok
+test_same_mail_duplicate_keeps_both_sources_and_matched_itinerary (test_dedup_arbitrator.DedupArbitratorTests.test_same_mail_duplicate_keeps_both_sources_and_matched_itinerary) ... ok
+test_same_required_fields_skip_later_excel_only_across_mails (test_dedup_arbitrator.DedupArbitratorTests.test_same_required_fields_skip_later_excel_only_across_mails) ... ok
+test_stage_port_and_real_excel_writer_receive_selected_rows (test_dedup_arbitrator.DedupArbitratorTests.test_stage_port_and_real_excel_writer_receive_selected_rows) ... ok
+test_third_value_or_unsupported_quote_keeps_conflicting_rows_for_review (test_dedup_arbitrator.DedupArbitratorTests.test_third_value_or_unsupported_quote_keeps_conflicting_rows_for_review) ... ok
+test_unreadable_related_pdf_keeps_conflict_for_manual_review (test_dedup_arbitrator.DedupArbitratorTests.test_unreadable_related_pdf_keeps_conflict_for_manual_review) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.184s
+
+OK

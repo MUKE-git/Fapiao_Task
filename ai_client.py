@@ -46,7 +46,8 @@ def _rename_pdfs_with_audit(
     run_id: str = "",
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """按「原名>AI>正文」解析类型后重命名；仅当三种类型依据不一致时加「（待人工核查）」。"""
-    amount_text = format_amount_text(data.get("total_amount", "0"))
+    invoice_amount_text = format_amount_text(data.get("total_amount", "0"))
+    itinerary_amount_text = format_amount_text(data.get("match_amount", "Not Found"))
     inv_date_raw = str(data.get("invoice_date", "")).strip()
     if not inv_date_raw or inv_date_raw == "Not Found":
         inv_date_raw = "未知日期"
@@ -113,11 +114,11 @@ def _rename_pdfs_with_audit(
 
         if eff_n == "Invoice":
             inv_type = clean_receipt_type(str(data.get("receipt_type") or data.get("invoice_type") or "发票"))
-            base = f"{inv_type}+{inv_date_raw}+{amount_text}元"
+            base = f"{inv_type}+{inv_date_raw}+{invoice_amount_text}元"
         elif eff_n == "Itinerary":
-            base = f"行程单+{travel_date_raw}+{amount_text}元"
+            base = f"行程单+{travel_date_raw}+{itinerary_amount_text}元"
         else:
-            base = f"票据+{inv_date_raw}+{amount_text}元"
+            base = f"票据+{inv_date_raw}+{invoice_amount_text}元"
         new_name = f"{base}{tag}.pdf"
         raw_new = os.path.join(os.path.dirname(old), new_name)
         new = build_non_conflicting_path(raw_new)
@@ -142,6 +143,35 @@ def call_ai_audit_and_rename(
     mail_date_hint: str = "",
     run_id: str = "",
 ) -> Tuple[Optional[dict], str, List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def document_role(data: dict) -> str:
+        # 本次调用只有一个文件；原名/正文预读已确定时，字段归属与 PDF 处理器一致。
+        files = task_info.get("files") or []
+        role = normalize_doc_role(files[0].get("identified_type")) if files else "Unknown"
+        if role == "Unknown":
+            classifications = data.get("file_classifications") or []
+            if isinstance(classifications, list) and len(classifications) == 1 and isinstance(classifications[0], dict):
+                role = normalize_doc_role(classifications[0].get("role"))
+        return role
+
+    def missing_keys(data: dict) -> list[str]:
+        role = document_role(data)
+        if role == "Itinerary":
+            expected = ("match_amount", "travel_time", "origin_dest", "file_classifications")
+        elif role == "Invoice":
+            expected = ("total_amount", "invoice_number", "invoice_date", "invoice_type",
+                        "receipt_type", "seller", "file_classifications")
+        else:
+            expected = ("file_classifications",)
+        return [field for field in expected if field not in data]
+
+    def core_missing(data: dict) -> bool:
+        role = document_role(data)
+        if role == "Unknown":
+            return False
+        keys = (("match_amount", "travel_time", "origin_dest") if role == "Itinerary"
+                else ("invoice_date", "invoice_number", "total_amount"))
+        return any(data.get(key) in (None, "", "Not Found") for key in keys)
+
     # 步骤 A：把同一封邮件下的多个 PDF 片段拼成一段给模型的「内容」
     combined_content = ""
     for file in task_info["files"]:
@@ -167,33 +197,38 @@ def call_ai_audit_and_rename(
    - 必须从【发票】文本中提取。
    - 寻找“价税合计（小写）”或“合 计”字样后的数值 。
    - 如果发票包含多个金额（如单价、税额、抵扣额），请务必只提取最终的【价税合计】。
-2. **发票号码 (invoice_number)**：
+   - 行程单没有发票价税合计时填写 "Not Found"，不得用行程单金额填充此字段。
+2. **行程单匹配金额 (match_amount)**：
+   - 必须从【当前行程单】自身的票面总金额提取，保留原有小数位；可见标签可能是“报销金额”“费用合计”“总金额”“实付金额”等。
+   - 多段行程时取明确标注的整单金额，不取某一段费用；没有可确认总额时填写 "Not Found"。
+   - 发票文件填写 "Not Found"，不得复制发票价税合计或另一文件的金额。
+3. **发票号码 (invoice_number)**：
    - 从【发票】文本中提取。
    - 通常位于“发票号码”关键词之后，是一串长数字 。
    - 通常位于文件右上部分 。
-3. **开票日期 (invoice_date)**：
+4. **开票日期 (invoice_date)**：
    - 从【发票】文本中提取。
    - 通常位于“开票日期”关键词之后 。
    - 通常位于文件右上部分，发票号码下方 。
    - 格式统一转化为 YYYY-MM-DD（例如 2026-03-09） 。
-4. **出行时间 (travel_time)**：
+5. **出行时间 (travel_time)**：
    - 必须从【行程单】文本中提取。
    - 重点寻找“上车时间”、“用车时间”或“入口时间” 。
    - **核心逻辑**：如果行程单包含多段行程（多行数据），请务必只提取【第一笔行程】的起始时间 。
    - 忽略“申请日期”或“打印日期” 。
-5. **发票类型 (invoice_type)**：
+6. **发票类型 (invoice_type)**：
    - 从【发票】文本中提取。
    - 如“增值税电子普通发票”、“增值税专用发票”、“增值税普通发票”等。
    - 通常位于票面顶部标题区域。
-6. **票面类型 (receipt_type)**：
+7. **票面类型 (receipt_type)**：
    - 从【发票】文本中提取。
    - 即发票的服务/货物名称，如“客运服务费”、“餐饮服务费”、“住宿服务费”等。
    - 通常位于“货物或应税劳务、服务名称”或“*服务名称*”之后。
-7. **销售方 (seller)**：
+8. **销售方 (seller)**：
    - 从【发票】文本中提取。
    - 即开票方企业名称，通常位于“销售方名称”或“销售方”之后。
    - 提取完整的公司全称。
-8. **出发地/目的地 (origin_dest)**：
+9. **出发地/目的地 (origin_dest)**：
    - 必须从【行程单】文本中提取。
    - 格式为“出发地 → 目的地”，如“北京 → 上海”、“杭州东站 → 南京南站”。
    - 若行程单包含多段行程，只提取第一段的起终点。
@@ -209,17 +244,17 @@ def call_ai_audit_and_rename(
 # Output Format (Example JSON)
 {
   "total_amount": 14.76,
+  "match_amount": "Not Found",
   "invoice_number": "26327000000491302024",
   "invoice_date": "2026-03-09",
-  "travel_time": "2026-02-27 09:18",
+  "travel_time": "Not Found",
   "invoice_type": "增值税电子普通发票",
   "receipt_type": "客运服务费",
   "seller": "某某出行科技有限公司",
-  "origin_dest": "杭州东站 → 萧山国际机场",
+  "origin_dest": "Not Found",
   "data_source": "T3_Chuxing",
   "file_classifications": [
-    {"file": "Msg123_发票.pdf", "role": "Invoice"},
-    {"file": "Msg123_行程单.pdf", "role": "Itinerary"}
+    {"file": "Msg123_发票.pdf", "role": "Invoice"}
   ]
 }"""
 
@@ -255,20 +290,15 @@ def call_ai_audit_and_rename(
                 # 步骤 B-失败：JSON 解析不了 → 用本机正则兜底一版「伪 AI 结果」
                 data = build_fallback_audit_result(task_info.get("files", []))
                 error_reason = "JSON_PARSE_ERROR;USE_FALLBACK"
-            # 确保所有期望字段存在，缺失的补默认值并记录
-            expected_fields = [
-                "total_amount", "invoice_number", "invoice_date", "travel_time",
-                "invoice_type", "receipt_type", "seller",
-                "origin_dest", "file_classifications",
-            ]
-            missing = [f for f in expected_fields if f not in data]
+            # 按当前文件角色检查必需字段；行程单不能因缺少发票字段而误报。
+            missing = missing_keys(data)
             if missing:
                 for f in missing:
                     data[f] = [] if f == "file_classifications" else "" if f == "invoice_type" else "Not Found"
                 required_missing = [f for f in missing if f != "invoice_type"]
                 if required_missing:
                     error_reason = (error_reason + ";AI_MISSING_FIELDS:" + ",".join(required_missing)).strip(";")
-            if any(data.get(k) in (None, "", "Not Found") for k in ["invoice_date", "invoice_number", "total_amount"]):
+            if core_missing(data):
                 error_reason = (error_reason + ";FIELD_NOT_FOUND").strip(";")
             mm, manual_u = _rename_pdfs_with_audit(task_info, data, mail_subject, mail_date_hint, run_id)
             return data, error_reason, mm, manual_u
@@ -279,7 +309,7 @@ def call_ai_audit_and_rename(
         if message:
             error_reason += f"({message})"
         data = build_fallback_audit_result(task_info.get("files", []))
-        if any(data.get(k) in (None, "", "Not Found") for k in ["invoice_date", "invoice_number", "total_amount"]):
+        if core_missing(data):
             error_reason = (error_reason + ";FIELD_NOT_FOUND").strip(";")
         mm, manual_u = _rename_pdfs_with_audit(task_info, data, mail_subject, mail_date_hint, run_id)
         return data, error_reason, mm, manual_u

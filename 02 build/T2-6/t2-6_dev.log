@@ -1,0 +1,20 @@
+test_a_checks_merged_itinerary_and_keeps_decimal_precision (test_field_validator.FieldValidatorTests.test_a_checks_merged_itinerary_and_keeps_decimal_precision) ... ok
+test_a_marks_record_when_matched_itinerary_amount_invalid (test_field_validator.FieldValidatorTests.test_a_marks_record_when_matched_itinerary_amount_invalid) ... ok
+test_a_missing_match_and_itinerary_invalid_fields (test_field_validator.FieldValidatorTests.test_a_missing_match_and_itinerary_invalid_fields) ... ok
+test_a_rejects_wrong_merge_and_preserves_prior_status (test_field_validator.FieldValidatorTests.test_a_rejects_wrong_merge_and_preserves_prior_status) ... ok
+test_all_three_excel_keys_missing_excludes_only_excel (test_field_validator.FieldValidatorTests.test_all_three_excel_keys_missing_excludes_only_excel) ... ok
+test_b_rejects_stale_itinerary_link_without_validating_travel_values (test_field_validator.FieldValidatorTests.test_b_rejects_stale_itinerary_link_without_validating_travel_values) ... ok
+test_controlled_pipeline_a_merges_only_itinerary_travel_fields (test_field_validator.FieldValidatorTests.test_controlled_pipeline_a_merges_only_itinerary_travel_fields) ... ok
+test_controlled_pipeline_writes_record_specific_reason_and_excel_row (test_field_validator.FieldValidatorTests.test_controlled_pipeline_writes_record_specific_reason_and_excel_row) ... ok
+test_invalid_date_number_amount_and_optional_type (test_field_validator.FieldValidatorTests.test_invalid_date_number_amount_and_optional_type) ... ok
+test_optional_type_and_seller_normalization (test_field_validator.FieldValidatorTests.test_optional_type_and_seller_normalization) ... ok
+test_port_attached_and_complete_b_ignores_travel_fields (test_field_validator.FieldValidatorTests.test_port_attached_and_complete_b_ignores_travel_fields) ... ok
+test_receipt_missing_or_overlong_leaves_kind_unknown (test_field_validator.FieldValidatorTests.test_receipt_missing_or_overlong_leaves_kind_unknown) ... ok
+test_repeat_validation_does_not_duplicate_saved_reasons (test_field_validator.FieldValidatorTests.test_repeat_validation_does_not_duplicate_saved_reasons) ... ok
+test_required_missing_and_partial_row_remains (test_field_validator.FieldValidatorTests.test_required_missing_and_partial_row_remains) ... ok
+test_text_fields_do_not_accept_numeric_values (test_field_validator.FieldValidatorTests.test_text_fields_do_not_accept_numeric_values) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.156s
+
+OK

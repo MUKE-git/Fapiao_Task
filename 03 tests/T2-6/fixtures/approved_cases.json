@@ -1,0 +1,23 @@
+{
+  "approval": "用户确认：T2-6甲～辛全部通过",
+  "common": {"invoice_date": "2026-10-15", "invoice_number": "26327000000775232739", "total_amount": "100.00", "invoice_type": "", "receipt_type": "办公用品", "seller": "甲公司"},
+  "cases": [
+    {"id": "甲", "mails": [{"uid": "701", "invoice": {"travel_time": "2026-10-15 09:00", "origin_dest": "错误残留→不应汇入"}}], "statuses": ["complete"], "kinds": ["b类"], "excel_from": [0], "issues": []},
+    {"id": "乙", "mails": [{"uid": "701", "invoice": {"receipt_type": "客运服务费"}, "itinerary": {"match_amount": "900.00", "travel_time": "2026-10-15 09:05", "origin_dest": "杭州→上海"}}], "statuses": ["complete"], "kinds": ["a类"], "excel_from": [0], "issues": []},
+    {"id": "丙1", "mails": [{"uid": "701", "invoice": {"invoice_date": "", "invoice_number": "", "total_amount": ""}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [], "issues": ["开票日期缺失", "发票号码缺失", "报销金额缺失"]},
+    {"id": "丙2", "mails": [{"uid": "701", "invoice": {"invoice_date": ""}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [0], "issues": ["开票日期缺失"]},
+    {"id": "丁1", "mails": [{"uid": "701", "invoice": {"invoice_date": "2026-02-30"}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [0], "issues": ["开票日期不是有效日期"]},
+    {"id": "丁2", "mails": [{"uid": "701", "invoice": {"invoice_number": "2632700000077523273"}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [0], "issues": ["发票号码须为 20 位数字"]},
+    {"id": "丁3", "mails": [{"uid": "701", "invoice": {"total_amount": "0"}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [0], "issues": ["报销金额须大于 0"]},
+    {"id": "丁4", "mails": [{"uid": "701", "invoice": {"total_amount": "1.00001"}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [0], "issues": ["报销金额小数超过 4 位"]},
+    {"id": "丁5", "mails": [{"uid": "701", "invoice": {"total_amount": "100000000000000"}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [0], "issues": ["报销金额超出 decimal(18,4) 范围"]},
+    {"id": "丁6", "mails": [{"uid": "701", "invoice": {"invoice_type": "普通发票普通发票普通发票普通发票普通发票普"}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [0], "issues": ["发票类型超过 20 字符"]},
+    {"id": "丁7", "mails": [{"uid": "701", "invoice": {"seller": "甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲甲"}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [0], "issues": ["销售方超过 50 字符"]},
+    {"id": "戊1", "mails": [{"uid": "701", "invoice": {"receipt_type": "*运输服务*客运服务费"}, "itinerary": {"match_amount": "100.00", "travel_time": "2026-10-15 09:05", "origin_dest": "杭州→上海"}}], "statuses": ["complete"], "kinds": ["a类"], "excel_from": [0], "issues": []},
+    {"id": "戊2", "mails": [{"uid": "701", "invoice": {"receipt_type": "*运输服务*"}}], "statuses": ["人工待核"], "kinds": [""], "excel_from": [0], "issues": ["票面类型缺失"]},
+    {"id": "己1", "mails": [{"uid": "701", "invoice": {"seller": 123}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [0], "issues": ["销售方类型无效"]},
+    {"id": "己2", "mails": [{"uid": "701", "invoice": {"receipt_type": 123}}], "statuses": ["人工待核"], "kinds": [""], "excel_from": [0], "issues": ["票面类型类型无效"]},
+    {"id": "庚", "mails": [{"uid": "701", "invoice": {"total_amount": "1,2,3"}}], "statuses": ["人工待核"], "kinds": ["b类"], "excel_from": [0], "issues": ["报销金额不是有效十进制金额"]},
+    {"id": "辛", "mails": [{"uid": "701", "invoice": {"seller": "Not Found"}}, {"uid": "702", "invoice": {"seller": "Not Found"}}], "statuses": ["人工待核", "人工待核"], "kinds": ["b类", "b类"], "excel_from": [0], "issues": ["销售方缺失"], "duplicate": true}
+  ]
+}

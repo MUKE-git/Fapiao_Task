@@ -23,14 +23,14 @@
 文件	pre_read_invoice_no	预读票号	string	否	预读粗抓的发票号码	varchar(20)，纯数字；可空	Not Found	26317000002959474309	数据侧↔凭证侧对应锚点
 文件	pre_read_amount	预读金额	decimal(18,4)，JSON十进制字符串	否	预读粗抓的金额	>0；可空	Not Found	102.39	保留原始精度
 文件	internal_name	内部文件名	string	是	内部落盘文件定位	完整名称最多120字符	NULL	Msg3_01_客运服务.pdf	不以导出命名覆盖内部文件
-文件	exported_name	导出文件名	string	否	用户压缩包内文件名	业务命名；完整名称最多120字符	空字符串	客运服务+2026-08-17+53.93元.pdf	导出前可空，导出后保存名称映射
+文件	exported_name	导出文件名	string	否	用户压缩包内文件名	仅选中并实际交付的发票/行程单 PDF 填写业务名；完整名称最多120字符	空字符串	客运服务+2026-08-17+53.93元.pdf	未交付的来源保持空值；转换来源填生成的 PDF 名称
 发票	record_id	文件编号	string	是	记录唯一标识	格式 Msg{n}-{m}，UNIQUE	NULL	Msg3-01	mail_id+文件序号,本轮定位键
-发票	kind	行程类型ab	enum	是	发票类别	a类 / b类；票面类型缺失或无效时暂空并人工待核	NULL	a类	a类=交通需行程单，判定见 §3.1
+发票	kind	行程类型ab	enum	是	发票类别	a类 / b类；票面类型缺失或格式无效时暂空并人工待核	NULL	a类	a类=交通需行程单，判定见 §3.1
 发票	invoice_date	发票日期	date	是	开票日期	date，YYYY-MM-DD	Not Found	2026-08-17	本地规则校验
 发票	invoice_number	发票号码	string	是	发票号码	20位纯数字；候选可重复，去重仅限本轮；缺失须标记	Not Found	26327000000775232739	去重判重依据
 发票	total_amount	报销金额	decimal(18,4)，JSON十进制字符串	是	报销金额（价税合计）	>0，与价税合计一致	Not Found	293.52	行程单匹配首要锚点
 发票	invoice_type	发票类型	string	否	发票种类	varchar(20)，如「电子发票（普通发票）」；有值才校验	空字符串	电子发票（普通发票）	不用于判定a/b类
-发票	receipt_type	票面类型	string	是	服务/货物名称	varchar(50)，二级类目（*A*B 取 B）	Not Found	客运服务费	a类判定依据
+发票	receipt_type	票面类型	string	是	发票项目名称（服务/货物名称）	varchar(50)，*A*B 清理星号及分类简称后取 B；不做有效值清单或票面位置核验	Not Found	客运服务费	a类判定依据
 发票	seller	销售方	string	是	开票方企业名称	varchar(50)，trim + 去中英文逗号	Not Found	郑州哈拜网络科技有限公司天津分公司	
 发票	status	状态	enum	是	记录处理结论	complete / 缺凭证 / 人工待核	complete	complete	非 complete 触发前端人工核查
 行程单	record_id	文件编号	string	是	行程单对应文件的本轮定位	格式 Msg{n}-{m}，UNIQUE	NULL	Msg3-02	仅本轮唯一
@@ -42,7 +42,7 @@
 3.4 业务规则
 
 - 发票必填：日期、号码、金额、票面类型、销售方；缺失标记，有值查规则。发票类型非必填，缺失留空，有值查规则。
-- a/b 根据有效票面类型命中 TRANSPORT_RECEIPT_KEYWORDS 判定；对“费”字容错。票面类型缺失/无效时分类暂空并人工待核，不能默认 b 类。
+- a/b 根据通过文字类型、必填及长度检查的票面类型命中 TRANSPORT_RECEIPT_KEYWORDS 判定；对“费”字容错。票面类型缺失或格式无效时分类暂空并人工待核，不能默认 b 类；不检查项目名称是否属于税务清单，也不核验其在 PDF 中的位置。
 - b 类不校验旅行字段；a 类校验时间与起终点是否从行程单汇入。
 - 行程单仅四字段：record_id、match_amount、travel_time、origin_dest，全部持久保存在每封邮件的 itineraries 数组中，包括未匹配项。不保存或提取企业名称。
 - 单邮件恰好一票一单自动成组，不要求金额一致或完整；其他数量组合按金额→完整解码原名匹配，不能唯一确定则人工待核。单对单也遵守 a 类汇入及入表规则。
@@ -51,7 +51,7 @@
 - 同邮件 MD5 去重复附件；本轮同票号去重仲裁：一致保留一条，不一致 XML 优先（T3），否则 AI 二次仲裁或人工待核。空票号不作为共同票号合并，不查历史文件。
 - 用户 Excel 固定八列，行程单只汇入时间与起终点，不另建表、不追加独立行。内部校验表沿用现有布局并删除行程单企业名称列。
 - 本轮编号可在下一轮重新开始，每轮使用独立输出目录。
-- files 的 internal_name 与 exported_name 保存内部名、用户导出名对应；导出前 exported_name 可空。完整实际文件名最多120字符，含编号/扩展名/重名后缀，超长主体截断加短摘要；original_name 完整保留。
+- files 的 internal_name 与 exported_name 保存内部名、用户导出名对应；仅选中并实际交付的 PDF 来源填写 exported_name，未交付来源保持空值。完整实际文件名最多120字符，含编号/扩展名/重名后缀，超长主体截断加短摘要；original_name 完整保留。内部名不表示文件存在于用户交付包中。
 - 单次 AI 输入一个文件，file_classifications 只返回对应的一项；匹配由程序完成。
 
 3.5 JSON 结构及样例

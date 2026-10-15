@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
+import re
 from typing import List, Optional, Union
 
 
@@ -59,7 +60,12 @@ def normalize_amount(value: object) -> Decimal | str:
     if value is None or str(value).strip() in ("", NOT_FOUND):
         return NOT_FOUND
     raw = str(value).strip()
-    cleaned = raw.replace("¥", "").replace("￥", "").replace(",", "").strip()
+    cleaned = raw.replace("¥", "").replace("￥", "").strip()
+    if "," in cleaned:
+        # 只接受完整的千位分组；不能把 1,2,3 静默改写成 123。
+        if not re.fullmatch(r"[+-]?[0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]+)?", cleaned):
+            return raw
+        cleaned = cleaned.replace(",", "")
     try:
         amount = Decimal(cleaned)
     except InvalidOperation:
@@ -90,7 +96,7 @@ class FileRecord:
     """文件实体：邮件内每个附件/凭证文件。
 
     字段对齐《字段表.txt》「文件」实体。
-    file_seq 为邮件内唯一两位数字串（01-99），与 mail_id 拼成全局定位键 Msg{n}-{m}。
+    file_seq 为邮件内唯一两位数字串（01-99），与 mail_id 拼成本轮定位键 Msg{n}-{m}。
     """
     file_seq: str                                  # char(2) 01-99，邮件内 UNIQUE
     file_type: str = FILE_TYPE_OTHER                # PDF/XML/OFD/图片/其他
@@ -192,6 +198,10 @@ class MailRecord:
     dedup_skipped: List[DedupSkipped] = field(default_factory=list)
     error_reason: str = ""
     itineraries: List[ItineraryRecord] = field(default_factory=list)
+    # T2-4 运行时写表选择与提示；mail_to_dict 不序列化这两个控制字段。
+    # 原始 records 始终完整保留在 task_debug.json。
+    excel_skip_record_ids: set[str] = field(default_factory=set, repr=False, compare=False)
+    arbitration_alerts: List[dict] = field(default_factory=list, repr=False, compare=False)
 
 
 # ---------------------------------------------------------------------------

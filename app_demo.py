@@ -144,6 +144,9 @@ if submitted:
                 mismatches, stats = run_pipeline(cfg, log=log)
 
             imap_err = stats.get("imap_error")
+            run_err = stats.get("run_error")
+            excel_err = stats.get("excel_error")
+            failed_mails = stats.get("failed_mails") or []
             if imap_err:
                 st.error(f"IMAP 错误：{imap_err}")
                 hint = _imap_error_hint(imap_err)
@@ -155,7 +158,14 @@ if submitted:
                 ut = stats.get("unseen_total", 0)
                 ikw = stats.get("invoice_keyword_mails", 0)
 
-                if ut == 0:
+                if run_err:
+                    st.error(f"本轮后处理失败，已保存可恢复的部分 JSON；请核对后重试：{run_err}")
+                if excel_err:
+                    st.error(f"汇总表未成功写入：{excel_err}")
+                if failed_mails:
+                    st.warning(f"有 {len(failed_mails)} 封邮件处理失败；其他邮件仍继续处理。失败邮件已按 UID 保存在 JSON，请人工核对。")
+
+                if ut == 0 and not run_err:
                     st.warning("当前收件箱（IMAP **INBOX**）**没有未读邮件**，未处理任何附件。")
                     ims = stats.get("imap_mailbox_status") or {}
                     nmsg = ims.get("messages")
@@ -180,14 +190,14 @@ if submitted:
                         )
                     st.session_state.pop("last_zip_bytes", None)
                     st.session_state.pop("last_zip_name", None)
-                elif ikw == 0:
+                elif ikw == 0 and not failed_mails and not run_err:
                     st.warning(
                         f"检测到 **{ut}** 封未读邮件，但主题中**均不含发票/报销相关关键词**，未下载、未解压附件。"
                         "（仅处理主题含「发票」「报销」「报销凭证」「电子发票」「开票」的邮件。）"
                     )
                     st.session_state.pop("last_zip_bytes", None)
                     st.session_state.pop("last_zip_name", None)
-                else:
+                elif not (run_err or excel_err or failed_mails):
                     st.success("本轮脚本已结束。")
 
                 manual_u = stats.get("manual_unknown_alerts") or []
@@ -234,34 +244,38 @@ if submitted:
                             f"  - AI 分类：`{at}`（规范化：{m.get('ai_normalized', '')}）"
                         )
 
-                if not imap_err and ikw > 0:
-                    arc = safe_desktop_subfolder(output_folder) or "Invoice_Task"
-                    zip_bytes = zip_directory_to_bytes(cfg.base_path, arc)
-                    zip_name = f"fapiao_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
-                    st.session_state["last_zip_bytes"] = zip_bytes
-                    st.session_state["last_zip_name"] = zip_name
+            # 即使整轮失败，只要已有 JSON，也允许下载已处理的部分记录。
+            if os.path.isfile(cfg.debug_file):
+                arc = safe_desktop_subfolder(output_folder) or "Invoice_Task"
+                zip_bytes = zip_directory_to_bytes(cfg.base_path, arc)
+                zip_name = f"fapiao_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
+                st.session_state["last_zip_bytes"] = zip_bytes
+                st.session_state["last_zip_name"] = zip_name
+                st.session_state["last_zip_partial"] = bool(imap_err or run_err or excel_err or failed_mails)
 
-                    if use_temp and output_root:
-                        try:
-                            shutil.rmtree(output_root, ignore_errors=True)
-                        except OSError:
-                            pass
+                if use_temp and output_root:
+                    try:
+                        shutil.rmtree(output_root, ignore_errors=True)
+                    except OSError:
+                        pass
 
-                    if use_temp:
-                        st.info(
-                            "输出已打包为 zip；汇总表见包内 **发票信息汇总表.xlsx**（列顺序：发票日期、发票号码、报销金额等 10 列），"
-                            "调试信息见 **task_debug.json**。（临时目录已清理，请以本下载为准。）"
-                        )
-                    else:
-                        st.info(
-                            f"输出目录：`{cfg.base_path}`\n\n"
-                            f"调试 JSON：`{cfg.debug_file}`\n\n"
-                            "也可点击下方按钮下载 zip 备份。"
-                        )
+                if use_temp:
+                    st.info(
+                        "输出已打包为 zip；调试信息见 **task_debug.json**。"
+                        "若汇总表已成功生成，包内 **发票信息汇总表.xlsx** 为八列业务字段。"
+                        "（临时目录已清理，请以本下载为准。）"
+                    )
+                else:
+                    st.info(
+                        f"输出目录：`{cfg.base_path}`\n\n"
+                        f"调试 JSON：`{cfg.debug_file}`\n\n"
+                        "也可点击下方按钮下载 zip 备份。"
+                    )
 
 if st.session_state.get("last_zip_bytes"):
     st.download_button(
-        label="下载本轮输出（zip）",
+        label=("下载部分结果供核对（zip）" if st.session_state.get("last_zip_partial")
+               else "下载本轮输出（zip）"),
         data=st.session_state["last_zip_bytes"],
         file_name=st.session_state.get("last_zip_name") or "fapiao_output.zip",
         mime="application/zip",
