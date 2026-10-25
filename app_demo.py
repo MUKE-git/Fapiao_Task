@@ -1,23 +1,16 @@
-"""
-Streamlit Demo：填写邮箱后在本机桌面或临时目录生成结果，并可下载 zip 包。
-启动: streamlit run app_demo.py
-"""
+"""Streamlit entry: process one run in a temporary directory and deliver a checked ZIP."""
 from __future__ import annotations
 
 import os
+import json
 import shutil
 import tempfile
 from datetime import datetime
-from typing import Optional
 
 import streamlit as st
 
-from invoice_pipeline import (
-    RunConfig,
-    _imap_error_hint,
-    safe_desktop_subfolder,
-    zip_directory_to_bytes,
-)
+from invoice_pipeline import RunConfig, _imap_error_hint
+from delivery_exporter import build_delivery_zip
 from pipeline import run_pipeline
 
 
@@ -41,37 +34,63 @@ def _dashscope_model() -> str:
         return "qwen-plus"
 
 
-def _use_cloud_output(force: bool) -> bool:
-    """是否使用临时目录 + 打包下载（Streamlit Cloud / 环境变量 / 用户勾选）。"""
-    if force:
-        return True
-    e = os.environ
-    if e.get("FAPIAO_USE_TEMP_OUTPUT", "").strip().lower() in ("1", "true", "yes"):
-        return True
-    base = (e.get("STREAMLIT_SERVER_BASE_URL") or "") + (e.get("STREAMLIT_SERVER_BASE_URL_PATH") or "")
-    if "streamlit.app" in base.lower() or "streamlitcloud" in base.lower():
-        return True
-    if e.get("STREAMLIT_SHARING_BASE_URL"):
-        return True
-    return False
+def _render_mail_alerts(mails: list[dict], alerts: list[dict], mismatches: list[dict]) -> None:
+    """One visible notice per mail; keep file-level reasons in its details."""
+    by_id = {str(mail.get("mail_id")): mail for mail in mails}
+    grouped: dict[str, list[str]] = {}
+
+    def mail_for(item: dict) -> tuple[str, dict] | None:
+        mail_id = str(item.get("mail_id") or "")
+        if mail_id in by_id:
+            return mail_id, by_id[mail_id]
+        matches = [(key, mail) for key, mail in by_id.items()
+                   if mail.get("subject") == item.get("mail_subject")]
+        return matches[0] if len(matches) == 1 else None
+
+    for alert in alerts:
+        target = mail_for(alert)
+        if target is None:
+            continue
+        mail_id, mail = target
+        for reason in alert.get("flags") or []:
+            reason = str(reason)
+            # A companion XML/OFD registration is diagnostic when usable PDF records
+            # already cover the mail; it is not a separate user action.
+            if "文件已登记，本阶段尚未提取" in reason and mail.get("records") and all(
+                record.get("kind") != "a类" or record.get("matched_itinerary")
+                for record in mail.get("records") or []
+            ):
+                continue
+            file_name = alert.get("filename") or ""
+            detail = f"{file_name}：{reason}" if file_name else reason
+            if detail not in grouped.setdefault(mail_id, []):
+                grouped[mail_id].append(detail)
+
+    for mismatch in mismatches:
+        target = mail_for(mismatch)
+        if target is None:
+            continue
+        mail_id, _mail = target
+        detail = f"{mismatch.get('filename') or '文件'}：发票/行程单类别判断不一致，需核对原件"
+        if detail not in grouped.setdefault(mail_id, []):
+            grouped[mail_id].append(detail)
+
+    for mail in mails:
+        mail_id = str(mail.get("mail_id"))
+        reasons = grouped.get(mail_id) or []
+        if not reasons:
+            continue
+        subject = mail.get("subject") or "（无主题）"
+        mail_date = mail.get("mail_date") or "（邮件时间不可用）"
+        st.warning(f"邮件「{subject}」有 {len(reasons)} 项需要核对。邮件时间：{mail_date}")
+        with st.expander("查看该邮件的文件和原因"):
+            for reason in reasons:
+                st.write(reason)
 
 
 st.set_page_config(page_title="发票邮件处理 Demo", layout="centered")
 st.title("发票邮件处理 Demo")
-
-with st.expander("高级选项"):
-    force_temp = st.checkbox(
-        "强制使用临时目录并打包下载（本机测试 zip 流程）",
-        value=False,
-        help="不勾选时：在 Streamlit Community Cloud 等环境会自动使用临时目录；本机默认仍写入桌面。",
-    )
-
-if _use_cloud_output(force_temp):
-    st.caption(
-        "当前为「临时目录 + 下载」模式：处理完成后请下载 zip；服务器不会长期保存您的文件。"
-    )
-else:
-    st.caption("请在您本机运行本程序；生成文件将保存在您本机桌面上的指定文件夹。")
+st.caption("本轮在独立临时目录处理；完成后下载交付 ZIP。")
 
 IMAP_PRESETS = {
     "163 邮箱": "imap.163.com",
@@ -91,11 +110,6 @@ with st.form("mail_form"):
         imap_host = IMAP_PRESETS[imap_choice]
     imap_user = st.text_input("邮箱账号")
     imap_password = st.text_input("邮箱授权码（或密码）", type="password")
-    output_folder = st.text_input(
-        "输出文件夹名",
-        value="Invoice_Task",
-        help="本机模式下为桌面下的子文件夹名；临时目录模式下为任务子目录名。",
-    )
     use_netease = st.checkbox(
         "这是网易邮箱（163/126/yeah）",
         value=False,
@@ -105,6 +119,9 @@ with st.form("mail_form"):
     submitted = st.form_submit_button("开始处理")
 
 if submitted:
+    # 每次提交都只展示本轮结果，避免校验失败时沿用上轮下载按钮。
+    for key in ("last_zip_bytes", "last_zip_name", "last_zip_partial"):
+        st.session_state.pop(key, None)
     if not imap_user.strip() or not imap_password:
         st.error("请填写邮箱账号与授权码。")
     else:
@@ -119,34 +136,56 @@ if submitted:
                 "  **引号内不能为空**；若曾清空过该文件，请重新粘贴 Key。"
             )
         else:
-            use_temp = _use_cloud_output(force_temp)
-            output_root: Optional[str] = None
-            if use_temp:
-                output_root = tempfile.mkdtemp(prefix="fapiao_")
+            output_root = tempfile.mkdtemp(prefix="fapiao_")
 
             cfg = RunConfig(
                 imap_host=imap_host.strip(),
                 imap_user=imap_user.strip(),
                 imap_password=imap_password,
-                output_folder_name=output_folder,
+                output_folder_name="Invoice_Task",
                 use_netease_id=use_netease,
                 dashscope_api_key=api_key,
                 dashscope_model=_dashscope_model(),
                 output_root=output_root,
             )
 
-            with st.status("正在处理…", expanded=True) as status:
+            with st.status("正在处理…", expanded=False) as status:
 
                 def log(msg: str) -> None:
                     status.write(msg)
                     print(msg, flush=True)  # 双写到 stdout，让 Streamlit Cloud App logs 也能看到
 
-                mismatches, stats = run_pipeline(cfg, log=log)
+                try:
+                    mismatches, stats = run_pipeline(cfg, log=log)
+                except Exception:
+                    shutil.rmtree(output_root, ignore_errors=True)
+                    raise
 
             imap_err = stats.get("imap_error")
             run_err = stats.get("run_error")
             excel_err = stats.get("excel_error")
             failed_mails = stats.get("failed_mails") or []
+            registered_count = 0
+            record_count = 0
+            debug_error = None
+            debug_mails: list[dict] = []
+            if os.path.isfile(cfg.debug_file):
+                try:
+                    with open(cfg.debug_file, encoding="utf-8") as debug_input:
+                        debug_mails = json.load(debug_input)
+                    if not isinstance(debug_mails, list):
+                        raise ValueError("顶层不是邮件列表")
+                    registered_count = len(debug_mails)
+                    record_count = sum(len(mail.get("records") or []) for mail in debug_mails)
+                except (OSError, ValueError, TypeError, AttributeError) as exc:
+                    debug_error = str(exc)
+            st.info(
+                f"本轮统计：IMAP 未读 **{stats.get('unseen_total', 0)}** 封；"
+                f"主题命中 **{stats.get('invoice_keyword_mails', 0)}** 封；"
+                f"JSON 登记 **{registered_count}** 封；发票记录 **{record_count}** 笔。"
+            )
+            if debug_error:
+                st.error(f"无法读取本轮 task_debug.json：{debug_error}")
             if imap_err:
                 st.error(f"IMAP 错误：{imap_err}")
                 hint = _imap_error_hint(imap_err)
@@ -197,80 +236,25 @@ if submitted:
                     )
                     st.session_state.pop("last_zip_bytes", None)
                     st.session_state.pop("last_zip_name", None)
-                elif not (run_err or excel_err or failed_mails):
-                    st.success("本轮脚本已结束。")
-
-                manual_u = stats.get("manual_unknown_alerts") or []
-                if manual_u:
+                elif record_count == 0:
                     st.warning(
-                        "**以下文件在「附件原名 / PDF 正文 / AI」三种类型依据上存在不一致，已加「（待人工核查）」；请对照原邮件核对：**"
+                        "本轮没有生成发票记录。下载包仅供排查，请核对 task_debug.json 中的 "
+                        "files、records 和 error_reason；这不代表发票处理成功。"
                     )
-                    for u in manual_u:
-                        st.markdown(
-                            f"- **{u.get('filename', '')}**  \n"
-                            f"  - 邮件主题：`{u.get('mail_subject', '')}`  \n"
-                            f"  - 邮件日期：`{u.get('mail_date', '')}`  \n"
-                            f"  - 采用类型：`{u.get('type_used', '')}`  \n"
-                            f"  - AI 角色（若有）：`{u.get('ai_role_used') or '（无）'}`"
-                        )
+                _render_mail_alerts(debug_mails, stats.get("not_found_alerts") or [], mismatches)
 
-                nf = stats.get("not_found_alerts") or []
-                if nf:
-                    st.warning(
-                        "**以下邮件存在未识别字段、兜底未抽全或 AI 调用异常；请到邮箱中按「邮件时间 / 主题」打开原邮件，自行核对附件 PDF：**"
-                    )
-                    for n in nf:
-                        st.markdown(
-                            f"- **主题：** `{n.get('mail_subject', '')}`  \n"
-                            f"  - 邮件时间（Date 头）：`{n.get('mail_date_header', '')}`  \n"
-                            f"  - 解析日期：`{n.get('mail_date', '')}`  \n"
-                            f"  - 说明：`{'; '.join(n.get('flags', []))}`"
-                        )
-
-                if mismatches:
-                    st.warning(
-                        f"**以下 {len(mismatches)} 个文件需要人工确认**："
-                        "「附件原名优先合并后的类型」与 AI 的 file_classifications 不一致（重命名仍以原名>AI>正文为准）。"
-                    )
-                    for m in mismatches:
-                        sub = m.get("mail_subject") or "（无主题）"
-                        fn = m.get("filename", "")
-                        lt = m.get("local_type", "")
-                        at = m.get("ai_type", "")
-                        st.markdown(
-                            f"- **{fn}**  \n"
-                            f"  - 邮件主题：`{sub}`  \n"
-                            f"  - 本机分类：`{lt}`（规范化：{m.get('local_normalized', '')}）  \n"
-                            f"  - AI 分类：`{at}`（规范化：{m.get('ai_normalized', '')}）"
-                        )
-
-            # 即使整轮失败，只要已有 JSON，也允许下载已处理的部分记录。
-            if os.path.isfile(cfg.debug_file):
-                arc = safe_desktop_subfolder(output_folder) or "Invoice_Task"
-                zip_bytes = zip_directory_to_bytes(cfg.base_path, arc)
-                zip_name = f"fapiao_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
-                st.session_state["last_zip_bytes"] = zip_bytes
-                st.session_state["last_zip_name"] = zip_name
-                st.session_state["last_zip_partial"] = bool(imap_err or run_err or excel_err or failed_mails)
-
-                if use_temp and output_root:
-                    try:
-                        shutil.rmtree(output_root, ignore_errors=True)
-                    except OSError:
-                        pass
-
-                if use_temp:
-                    st.info(
-                        "输出已打包为 zip；调试信息见 **task_debug.json**。"
-                        "若汇总表已成功生成，包内 **发票信息汇总表.xlsx** 为八列业务字段。"
-                        "（临时目录已清理，请以本下载为准。）"
-                    )
-                else:
-                    st.info(
-                        f"输出目录：`{cfg.base_path}`\n\n"
-                        f"调试 JSON：`{cfg.debug_file}`\n\n"
-                        "也可点击下方按钮下载 zip 备份。"
-                    )
+            try:
+                if not (imap_err or run_err or excel_err or debug_error) and os.path.isfile(cfg.debug_file):
+                    zip_bytes = build_delivery_zip(cfg)
+                    st.session_state["last_zip_bytes"] = zip_bytes
+                    st.session_state["last_zip_name"] = (
+                        f"fapiao_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip")
+                    st.session_state["last_zip_partial"] = bool(failed_mails or record_count == 0)
+                    st.success("本轮交付包已生成：汇总表、调试 JSON 和业务命名的发票/行程单 PDF。")
+            except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+                st.error(f"本次交付包未能生成：{exc}")
+            finally:
+                shutil.rmtree(output_root, ignore_errors=True)
 
 if st.session_state.get("last_zip_bytes"):
     st.download_button(

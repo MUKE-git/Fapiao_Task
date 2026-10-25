@@ -92,7 +92,8 @@ def build_fallback_audit_result(files):
         itinerary_text
     )
     if m_time:
-        travel_time = f"{_normalize_date_text(m_time.group(1))} {m_time.group(2)}"
+        hour, minute = m_time.group(2).split(":")[:2]
+        travel_time = f"{_normalize_date_text(m_time.group(1))} {hour.zfill(2)}:{minute}"
 
     # 出发地/目的地：从行程单表格中提取起点和终点
     m_od = re.search(r"([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)\s*[-—→至到]\s*([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)", itinerary_text)

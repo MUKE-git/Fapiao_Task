@@ -52,7 +52,8 @@ def resolve_effective_type_for_rename(f: dict, ai_role: Optional[str]) -> str:
 def triple_type_disagreement(f: dict, ai_role: Optional[str]) -> bool:
     """
     三种依据：① 附件原名关键词 ② PDF 正文 local_pdf_type ③ AI 的 file_classifications。
-    规范化后若参与比较的取值超过一种（Invoice/Itinerary/Unknown），则视为不相符，文件名需加「（待人工核查）」。
+    仅在明确的 Invoice 与 Itinerary 判断相反时提示；Unknown 表示依据不足，
+    不等于一个相反的类别结论。
     原名无法识别（无关键词）时不作为独立一票，仅比较正文与 AI；无 AI 时仅比较原名与正文（若原名也无提示则无法构成「多方」分歧，不加后缀）。
     """
     name_hint = classify_type_from_attachment_name((f.get("attachment_original_name") or "").strip())
@@ -66,7 +67,7 @@ def triple_type_disagreement(f: dict, ai_role: Optional[str]) -> bool:
     vals.append(local_n)
     if ai_n is not None:
         vals.append(ai_n)
-    return len(set(vals)) > 1
+    return len({value for value in vals if value != "Unknown"}) > 1
 
 
 def normalize_doc_role(label: Optional[str]) -> str:

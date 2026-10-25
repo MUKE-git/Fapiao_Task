@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
+from decimal import Decimal
 
 from ai_client import call_ai_audit_and_rename
 from attachment_processor import CollectedFile, local_inspect_pdf
@@ -16,6 +17,19 @@ from data_model import NOT_FOUND, PRE_READ_UNKNOWN, normalize_amount
 from fallback_extractor import build_fallback_audit_result
 from processor_contracts import DocumentResult
 from type_classifier import merge_type_from_name_and_local, normalize_doc_role
+
+
+def _preserve_invoice_amount_scale(data: dict, pre_read_amount: object, role: str) -> dict:
+    """Keep PDF text's trailing zeroes only when the AI chose the same value."""
+    if role != "Invoice":
+        return data
+    local = normalize_amount(pre_read_amount)
+    chosen = normalize_amount(data.get("total_amount"))
+    if not (isinstance(local, Decimal) and isinstance(chosen, Decimal)
+            and local.is_finite() and chosen.is_finite() and local > 0
+            and local == chosen and -4 <= local.as_tuple().exponent < chosen.as_tuple().exponent):
+        return data
+    return {**data, "total_amount": format(local, "f")}
 
 
 def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
@@ -69,6 +83,8 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
     ai_role = (normalize_doc_role(ai_roles[0].get("role"))
                if valid_classification else PRE_READ_UNKNOWN)
     role = pre_type if pre_type != PRE_READ_UNKNOWN else ai_role
+    if isinstance(audit, dict):
+        data = _preserve_invoice_amount_scale(data, file.meta.pre_read_amount, role)
     return DocumentResult(file_seq=file.meta.file_seq, role=role, fields=data,
                           source_file_seq=[file.meta.file_seq], error_reason=error,
                           mismatches=mismatches, manual_unknown=manual)

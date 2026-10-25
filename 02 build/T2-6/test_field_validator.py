@@ -17,7 +17,7 @@ from data_model import (
 )
 from field_validator import validate_records
 from itinerary_matcher import match_itineraries
-from pipeline import _excel_rows, run_pipeline
+from pipeline import _excel_rows, _itinerary_record, _travel_time_to_minute, run_pipeline
 from processor_contracts import DocumentResult
 from stage_ports import StagePorts, load_stage_ports
 
@@ -40,6 +40,29 @@ def fixture(kind: str = "b类", receipt: str = "办公用品") -> MailRecord:
 
 
 class FieldValidatorTests(unittest.TestCase):
+    def test_second_precision_is_normalized_at_itinerary_ingress(self):
+        mail = fixture("a类", "客运服务费")
+        mail.files.append(FileRecord("02", original_name="行程单.pdf"))
+        result = DocumentResult(file_seq="02", role="Itinerary", fields={
+            "match_amount": "123.4567", "travel_time": "2026-10-01 09:05:28",
+            "origin_dest": "杭州→上海"}, source_file_seq=["02"])
+        itinerary = _itinerary_record(mail, result)
+        mail.itineraries.append(itinerary)
+        record = mail.records[0]
+        record.matched_itinerary = MatchedItinerary("02", Decimal("123.4567"))
+        record.fields.travel_time = itinerary.travel_time
+        record.fields.origin_dest = itinerary.origin_dest
+        self.assertEqual(itinerary.travel_time, "2026-10-01 09:05")
+        self.assertEqual(validate_records(mail), [])
+        self.assertEqual(mail_to_dict(mail)["records"][0]["fields"]["travel_time"],
+                         "2026-10-01 09:05")
+
+    def test_invalid_second_precision_is_not_silently_accepted(self):
+        for raw in ("2026-02-30 09:05:28", "2026-10-01 25:05:28",
+                    "2026-10-01 09:05:99", "2026-10-01 09:05:28x"):
+            with self.subTest(raw=raw):
+                self.assertEqual(_travel_time_to_minute(raw), raw)
+
     def test_port_attached_and_complete_b_ignores_travel_fields(self):
         mail = fixture()
         mail.records[0].fields.travel_time = "坏时间"

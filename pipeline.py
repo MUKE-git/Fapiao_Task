@@ -52,9 +52,21 @@ def _mail_date(value: str | None) -> str:
         return ""
 
 
+def _travel_time_to_minute(value: object) -> str:
+    """仅把有效的秒级行程时间降至已约定的分钟精度；无效值留给 T2-6 报错。"""
+    raw = str(value or NOT_FOUND)
+    if re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}", raw):
+        try:
+            return datetime.strptime(raw, "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M")
+        except ValueError:
+            pass
+    return raw
+
+
 def _alert(mail: MailRecord, reason: str, file_seq: str = "", filename: str = "",
            date_header: str = "") -> dict:
-    return {"mail_subject": mail.subject, "mail_date": mail.mail_date,
+    return {"mail_id": mail.mail_id, "mail_uid": mail.mail_uid,
+            "mail_subject": mail.subject, "mail_date": mail.mail_date,
             "mail_date_header": date_header, "file_seq": file_seq,
             "filename": filename, "flags": [reason]}
 
@@ -98,7 +110,7 @@ def _itinerary_record(mail: MailRecord, result: DocumentResult) -> ItineraryReco
     return ItineraryRecord(
         record_id=f"{mail.mail_id}-{result.file_seq}",
         match_amount=normalize_amount(amount),
-        travel_time=str(data.get("travel_time") or NOT_FOUND),
+        travel_time=_travel_time_to_minute(data.get("travel_time")),
         origin_dest=str(data.get("origin_dest") or NOT_FOUND),
     )
 
@@ -141,6 +153,9 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
                                          "filename": item.meta.original_name, "reason": reason})
             continue
         results.append(result)
+        for mismatch in result.mismatches:
+            mismatch.setdefault("mail_id", mail.mail_id)
+            mismatch.setdefault("mail_uid", mail.mail_uid)
         outcome.mismatches.extend(result.mismatches)
         if result.error_reason:
             mail.error_reason = (mail.error_reason + ";" + result.error_reason).strip(";")
@@ -428,6 +443,9 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
         if ports.arbitrate_records is not None:
             mails = ports.arbitrate_records(mails)
             for mail in mails:
+                for alert in mail.arbitration_alerts:
+                    alert.setdefault("mail_id", mail.mail_id)
+                    alert.setdefault("mail_uid", mail.mail_uid)
                 stats["not_found_alerts"].extend(mail.arbitration_alerts)
         elif any(mail.records for mail in mails):
             for mail in mails:
@@ -437,7 +455,11 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
                 "flags": ["写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对"]})
         if ports.validate_records is not None:
             for mail in mails:
-                stats["not_found_alerts"].extend(ports.validate_records(mail))
+                alerts = ports.validate_records(mail)
+                for alert in alerts:
+                    alert.setdefault("mail_id", mail.mail_id)
+                    alert.setdefault("mail_uid", mail.mail_uid)
+                stats["not_found_alerts"].extend(alerts)
         elif any(mail.records for mail in mails):
             for mail in mails:
                 for record in mail.records:
