@@ -1,0 +1,51 @@
+{
+  "author": "测试工程师制作、待用户审核",
+  "review_status": "测试工程师制作、待用户审核",
+  "case_id": "T3_XML_ONLY_SYNTHETIC",
+  "basis": "合成 XML 可见字段；PRD US-5/US-7 与重构方案仅 XML 分支；在程序运行前制定",
+  "controlled_replacement": "只替换 XML 文件级处理结果；邮件解析、附件编号、跨格式端口、T2 仲裁/校验、JSON/Excel 实际运行",
+  "json": {
+    "mails": [
+      {
+        "mail_id": "Msg1",
+        "mail_uid": "9101",
+        "subject": "测试电子发票 XML",
+        "mail_date": "2026-10-26 09:00",
+        "files": [
+          {"file_seq": "01", "file_type": "XML", "original_name": "xml_only_synthetic.xml"}
+        ],
+        "itineraries": [],
+        "records": [
+          {
+            "record_id": "Msg1-01",
+            "kind": "b类",
+            "status": "缺凭证",
+            "fields": {
+              "invoice_date": "2026-10-20",
+              "invoice_number": "26330000000000000001",
+              "total_amount": "121.74",
+              "invoice_type": "电子发票（普通发票）",
+              "receipt_type": "办公用品",
+              "seller": "测试销售方"
+            },
+            "source_file_seq": ["01"]
+          }
+        ]
+      }
+    ]
+  },
+  "excel": {
+    "rows": [
+      {
+        "invoice_date": "2026-10-20",
+        "invoice_number": "26330000000000000001",
+        "total_amount": "121.74",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "办公用品",
+        "travel_time": "",
+        "seller": "测试销售方",
+        "origin_dest": ""
+      }
+    ]
+  }
+}

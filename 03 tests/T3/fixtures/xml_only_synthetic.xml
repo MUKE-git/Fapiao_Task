@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 测试工程师制作、待用户审核；合成票号，不代表真实发票。 -->
+<EInvoice>
+  <TaxSupervisionInfo>
+    <InvoiceNumber>26330000000000000001</InvoiceNumber>
+    <IssueTime>2026-10-20</IssueTime>
+  </TaxSupervisionInfo>
+  <Header>
+    <EIid>26330000000000000001</EIid>
+    <InherentLabel>
+      <EInvoiceType><LabelName>电子发票</LabelName></EInvoiceType>
+      <GeneralOrSpecialVAT><LabelName>普通发票</LabelName></GeneralOrSpecialVAT>
+    </InherentLabel>
+  </Header>
+  <EInvoiceData>
+    <BasicInformation><TotalTax-includedAmount>121.74</TotalTax-includedAmount></BasicInformation>
+    <IssuItemInformation><ItemName>办公用品</ItemName></IssuItemInformation>
+    <SellerInformation><SellerName>测试销售方</SellerName></SellerInformation>
+  </EInvoiceData>
+</EInvoice>
