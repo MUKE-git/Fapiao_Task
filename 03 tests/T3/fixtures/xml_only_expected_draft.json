@@ -4,6 +4,22 @@
   "case_id": "T3_XML_ONLY_SYNTHETIC",
   "basis": "合成 XML 可见字段；PRD US-5/US-7 与重构方案仅 XML 分支；在程序运行前制定",
   "controlled_replacement": "只替换 XML 文件级处理结果；邮件解析、附件编号、跨格式端口、T2 仲裁/校验、JSON/Excel 实际运行",
+  "schema": {
+    "excel_columns": [["发票日期", "invoice_date"], ["发票号码", "invoice_number"],
+      ["报销金额", "total_amount"], ["发票类型", "invoice_type"],
+      ["票面类型", "receipt_type"], ["出行时间", "travel_time"],
+      ["销售方", "seller"], ["出发地/目的地", "origin_dest"]],
+    "formats": {
+      "invoice_date": "date_or_missing", "invoice_number": "20_digits_or_missing",
+      "total_amount": "decimal_string_4dp_or_missing", "invoice_type": "text_or_empty",
+      "receipt_type": "text_or_missing", "travel_time": "datetime_minute_or_empty",
+      "seller": "text_or_missing", "origin_dest": "text_or_empty",
+      "match_amount": "decimal_string_4dp_or_missing"
+    },
+    "empty_values": {"invoice_type": "", "travel_time": "", "origin_dest": "",
+      "required_missing": "Not Found"},
+    "excel_amount_number_format": "0.00"
+  },
   "json": {
     "mails": [
       {

@@ -10,7 +10,7 @@ from pathlib import Path
 from openpyxl import Workbook
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from compare_full_fields import COLUMNS, compare_files  # noqa: E402
+from compare_full_fields import COLUMNS, SCHEMA_FORMATS, compare_files  # noqa: E402
 
 
 class FullFieldComparisonTests(unittest.TestCase):
@@ -27,6 +27,13 @@ class FullFieldComparisonTests(unittest.TestCase):
         }
         self.manifest = {
             "review_status": "测试工程师制作、待用户审核",
+            "schema": {
+                "excel_columns": [[title, key] for title, key in COLUMNS],
+                "formats": dict(SCHEMA_FORMATS),
+                "empty_values": {"invoice_type": "", "travel_time": "",
+                                 "origin_dest": "", "required_missing": "Not Found"},
+                "excel_amount_number_format": "0.00",
+            },
             "json": {"mails": [{
                 "mail_id": "Msg1", "mail_uid": "9101", "subject": "测试电子发票",
                 "mail_date": "2026-10-26 09:00",
@@ -59,6 +66,7 @@ class FullFieldComparisonTests(unittest.TestCase):
         row = self.manifest["excel"]["rows"][0]
         sheet.append([float(row[key]) if key == "total_amount" else row[key]
                       for _, key in COLUMNS])
+        sheet.cell(row=2, column=3).number_format = "0.00"
         book.save(self.actual_excel)
 
     def test_complete_draft_can_be_compared_but_formal_is_refused(self):
@@ -77,6 +85,7 @@ class FullFieldComparisonTests(unittest.TestCase):
         sheet.append([float(row[key]) if key == "total_amount" else
                       "错误票面类型" if key == "receipt_type" else row[key]
                       for _, key in COLUMNS])
+        sheet.cell(row=2, column=3).number_format = "0.00"
         book.save(self.actual_excel)
         errors = compare_files(self.expected, self.actual_json,
                                self.actual_excel)["errors"]

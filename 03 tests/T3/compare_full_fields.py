@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
@@ -22,6 +24,70 @@ COLUMNS = [
 INVOICE_FIELDS = {"invoice_date", "invoice_number", "total_amount",
                   "invoice_type", "receipt_type", "seller"}
 TRIP_FIELDS = {"match_amount", "travel_time", "origin_dest"}
+SCHEMA_FORMATS = {
+    "invoice_date": "date_or_missing",
+    "invoice_number": "20_digits_or_missing",
+    "total_amount": "decimal_string_4dp_or_missing",
+    "invoice_type": "text_or_empty",
+    "receipt_type": "text_or_missing",
+    "travel_time": "datetime_minute_or_empty",
+    "seller": "text_or_missing",
+    "origin_dest": "text_or_empty",
+    "match_amount": "decimal_string_4dp_or_missing",
+}
+
+
+def _valid_format(rule: str, value: object) -> bool:
+    if rule == "raw":
+        return True
+    if rule.endswith("_or_missing") and value == "Not Found":
+        return True
+    if rule.endswith("_or_empty") and value == "":
+        return True
+    if rule in {"text_or_empty", "text_or_missing"}:
+        return isinstance(value, str) and bool(value.strip())
+    if rule == "20_digits_or_missing":
+        return isinstance(value, str) and re.fullmatch(r"[0-9]{20}", value) is not None
+    if rule == "date_or_missing":
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+            return False
+        try:
+            return date.fromisoformat(value).isoformat() == value
+        except ValueError:
+            return False
+    if rule == "datetime_minute_or_empty":
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}", value):
+            return False
+        try:
+            return datetime.strptime(value, "%Y-%m-%d %H:%M").strftime("%Y-%m-%d %H:%M") == value
+        except ValueError:
+            return False
+    if rule == "decimal_string_4dp_or_missing":
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9]+(?:\.[0-9]{1,4})?", value):
+            return False
+        try:
+            return Decimal(value) > 0
+        except InvalidOperation:
+            return False
+    return False
+
+
+def _schema_errors(schema: dict) -> list[str]:
+    errors = []
+    if schema.get("excel_columns") != [[title, key] for title, key in COLUMNS]:
+        errors.append("expectation.schema.excel_columns: must declare the exact eight-column mapping")
+    formats = schema.get("formats")
+    if not isinstance(formats, dict) or set(formats) != set(SCHEMA_FORMATS):
+        errors.append("expectation.schema.formats: must declare all nine business fields")
+    elif any(rule not in set(SCHEMA_FORMATS.values()) | {"raw"} for rule in formats.values()):
+        errors.append("expectation.schema.formats: unknown format rule")
+    if schema.get("empty_values") != {
+            "invoice_type": "", "travel_time": "", "origin_dest": "",
+            "required_missing": "Not Found"}:
+        errors.append("expectation.schema.empty_values: explicit empty-value rules required")
+    if schema.get("excel_amount_number_format") != "0.00":
+        errors.append("expectation.schema.excel_amount_number_format: expected 0.00")
+    return errors
 
 
 def _money(value: object, path: str, errors: list[str]) -> Decimal | None:
@@ -62,7 +128,7 @@ _ABSENT = object()
 
 
 def _compare_fields(expected: dict, actual: dict, required: set[str], path: str,
-                    errors: list[str]) -> None:
+                    errors: list[str], formats: dict[str, str]) -> None:
     if not isinstance(actual, dict):
         errors.append(f"{path}: expected object, actual {actual!r}")
         return
@@ -70,14 +136,21 @@ def _compare_fields(expected: dict, actual: dict, required: set[str], path: str,
         errors.append(f"{path}: expectation incomplete, missing {sorted(required - set(expected))}")
     for key, wanted in expected.items():
         _compare_value(wanted, actual.get(key, _ABSENT), f"{path}.{key}", errors)
+        rule = formats.get(key, "raw")
+        if wanted != "__ABSENT__" and not _valid_format(rule, wanted):
+            errors.append(f"{path}.{key}: expectation violates declared format {rule}")
+        found = actual.get(key, _ABSENT)
+        if found is not _ABSENT and not _valid_format(rule, found):
+            errors.append(f"{path}.{key}: actual violates declared format {rule}: {found!r}")
     extra = set(actual) - set(expected)
     if extra:
         errors.append(f"{path}: unexpected business fields {sorted(extra)}")
 
 
-def compare_json(expected: dict, observed: list[dict]) -> list[str]:
+def compare_json(expected: dict, observed: list[dict], formats: dict[str, str] | None = None) -> list[str]:
     """Compare every declared business field, counts and source identities."""
     errors: list[str] = []
+    formats = formats or {}
     wanted_mails = expected.get("mails")
     if not isinstance(wanted_mails, list):
         return ["expectation.mails must be a list"]
@@ -98,7 +171,7 @@ def compare_json(expected: dict, observed: list[dict]) -> list[str]:
                     for key in ("record_id", "kind", "status"):
                         _compare_value(left[key], right.get(key, _ABSENT), f"{item_path}.{key}", errors)
                     _compare_fields(left["fields"], right.get("fields"), INVOICE_FIELDS,
-                                    item_path + ".fields", errors)
+                                    item_path + ".fields", errors, formats)
                     _compare_value(left["source_file_seq"],
                                    (right.get("source") or {}).get("source_file_seq", _ABSENT),
                                    item_path + ".source_file_seq", errors)
@@ -111,7 +184,7 @@ def compare_json(expected: dict, observed: list[dict]) -> list[str]:
                     _compare_fields(left["fields"],
                                     {key: right.get(key, _ABSENT) for key in TRIP_FIELDS},
                                     TRIP_FIELDS,
-                                    item_path, errors)
+                                    item_path, errors, formats)
                     if "source_file_seq" in left:
                         _compare_value(left["source_file_seq"],
                                        right.get("source_file_seq", _ABSENT),
@@ -122,14 +195,15 @@ def compare_json(expected: dict, observed: list[dict]) -> list[str]:
     return errors
 
 
-def compare_excel(expected: dict, path: Path) -> list[str]:
+def compare_excel(expected: dict, path: Path, formats: dict[str, str] | None = None) -> list[str]:
     errors: list[str] = []
+    formats = formats or {}
     wanted_rows = expected.get("rows")
     if not isinstance(wanted_rows, list):
         return ["expectation.excel.rows must be a list"]
     if not path.is_file():
         return [] if not wanted_rows and expected.get("allow_missing_file") else [f"excel: missing file {path}"]
-    book = load_workbook(path, read_only=True, data_only=True)
+    book = load_workbook(path, read_only=False, data_only=True)
     try:
         sheet = book.active
         values = list(sheet.iter_rows(values_only=True))
@@ -149,9 +223,17 @@ def compare_excel(expected: dict, path: Path) -> list[str]:
                     value = ""
                 _compare_value(wanted.get(key, _ABSENT), value,
                                f"excel.rows[{ri}].{key}", errors, excel=True)
+                rule = formats.get(key, "raw")
+                if key != "total_amount":
+                    if not _valid_format(rule, wanted.get(key)):
+                        errors.append(f"excel.rows[{ri}].{key}: expectation violates declared format {rule}")
+                    if value is not _ABSENT and not _valid_format(rule, value):
+                        errors.append(f"excel.rows[{ri}].{key}: actual violates declared format {rule}: {value!r}")
                 if key == "total_amount" and wanted.get(key) != "Not Found" and value is not _ABSENT:
                     if not isinstance(value, (int, float)) or isinstance(value, bool):
                         errors.append(f"excel.rows[{ri}].total_amount: expected numeric cell, actual {type(value).__name__}")
+                    elif sheet.cell(row=ri + 2, column=ci + 1).number_format != "0.00":
+                        errors.append(f"excel.rows[{ri}].total_amount: expected 0.00 display format")
     finally:
         book.close()
     return errors
@@ -163,9 +245,12 @@ def compare_files(expectation: Path, actual_json: Path, actual_excel: Path,
     status = manifest.get("review_status")
     if mode == "formal" and status != "已由用户审核":
         return {"mode": mode, "status": "REFUSED", "errors": ["预期尚未由用户审核，不能作为正式验收"]}
+    schema = manifest.get("schema") or {}
+    schema_errors = _schema_errors(schema)
     observed = json.loads(actual_json.read_text(encoding="utf-8"))
-    errors = compare_json(manifest["json"], observed)
-    errors.extend(compare_excel(manifest["excel"], actual_excel))
+    errors = list(schema_errors)
+    errors.extend(compare_json(manifest["json"], observed, schema.get("formats") or {}))
+    errors.extend(compare_excel(manifest["excel"], actual_excel, schema.get("formats") or {}))
     return {"mode": mode, "review_status": status,
             "status": "PASS" if not errors else "FAIL", "errors": errors}
 
