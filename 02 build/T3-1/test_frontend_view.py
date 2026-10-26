@@ -81,6 +81,15 @@ class FrontendViewTests(unittest.TestCase):
         fake_st.messages.clear()
         fake_st.session_state.clear()
 
+    def test_imap_presets_match_current_password_login_support(self):
+        self.assertEqual(app.IMAP_PRESETS, {
+            "163 邮箱": "imap.163.com",
+            "QQ 邮箱": "imap.qq.com",
+            "126 邮箱": "imap.126.com",
+            "Yeah 邮箱": "imap.yeah.net",
+            "其他（手动输入）": "__custom__",
+        })
+
     def test_one_mail_card_keeps_file_numbers_and_reasons(self):
         mails = [{"mail_id": "Msg1", "subject": "报销凭证", "mail_date": "2031-02-03 04:05",
                   "files": [{"file_seq": "01", "original_name": "凭证.xml"},

@@ -156,8 +156,6 @@ IMAP_PRESETS = {
     "QQ 邮箱": "imap.qq.com",
     "126 邮箱": "imap.126.com",
     "Yeah 邮箱": "imap.yeah.net",
-    "Gmail": "imap.gmail.com",
-    "Outlook": "outlook.office365.com",
     "其他（手动输入）": "__custom__",
 }
 

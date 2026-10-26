@@ -30,7 +30,7 @@ from data_model import (
 )
 from excel_writer import append_to_summary_excel
 from delivery_exporter import prepare_delivery, build_delivery_zip
-from mail_link_downloader import download_links
+from mail_link_downloader import LinkFailure, discover_links, download_links
 from pdf_processor import process_pdf
 from processor_contracts import DocumentResult
 from stage_ports import StagePorts, load_stage_ports
@@ -48,6 +48,9 @@ class MessageOutcome:
     alerts: list[dict] = field(default_factory=list)
     failed_files: list[dict] = field(default_factory=list)
     converted_pdfs: dict[str, str] = field(default_factory=dict)
+    link_downloaded_count: int = 0
+    link_attempted_count: int = 0
+    link_downloaded_bytes: int = 0
 
 
 def _mail_date(value: str | None) -> str:
@@ -78,6 +81,26 @@ def _alert(mail: MailRecord, reason: str, file_seq: str = "", filename: str = ""
         alert["code"] = code
         alert["level"] = level
     return alert
+
+
+def _file_issue_for_page(reason: str) -> tuple[str, str]:
+    """Keep technical diagnostics in JSON while showing a safe file-level hint."""
+    tokens = reason.split(";")
+    if any(token.startswith("OFD_CONVERSION") for token in tokens):
+        return "OFD 字段已保留，但 PDF 转换未完成；请回原邮件查看 OFD。", "P08"
+    if any(token.startswith("OFD_") for token in tokens):
+        return "OFD 文件未能完整提取信息；请回原邮件核对。", "P08"
+    if any(token.startswith("XML_") for token in tokens):
+        return "XML 文件未能完整提取发票信息；请回原邮件核对。", "P07"
+    if any(token.startswith("IMAGE_READ") for token in tokens):
+        return "图片文件无法打开；请回原邮件查看原图。", "P06"
+    if any(token.startswith("MODEL_FIELD_MISSING") for token in tokens):
+        return "有发票字段未能提取，记录已保留；请核对原件。", "P17"
+    if any(token.startswith("MODEL_") for token in tokens):
+        return "自动识别未完成；已保留可取得的信息，请核对原件。", "P22"
+    if any(token.startswith(("IMAGE_", "MULTIPLE_DOCUMENTS_")) for token in tokens):
+        return "图片关键信息或交付副本未能可靠取得；请核对原图。", "P09"
+    return reason, ""
 
 
 def _invoice_record(mail: MailRecord, result: DocumentResult) -> InvoiceRecord:
@@ -144,7 +167,9 @@ def _itinerary_record(mail: MailRecord, result: DocumentResult) -> ItineraryReco
 def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
                     cfg: RunConfig, run_id: str = "",
                     ports: StagePorts | None = None,
-                    existing_mail: MailRecord | None = None) -> MessageOutcome:
+                    existing_mail: MailRecord | None = None,
+                    max_links: int = 8,
+                    max_link_bytes: int = 24 * 1024 * 1024) -> MessageOutcome:
     """单封邮件的分流与结果组装；可用合成邮件离线验证。"""
     mail = existing_mail if existing_mail is not None else MailRecord(
         mail_id=mail_id, mail_uid=mail_uid,
@@ -153,15 +178,38 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
     header = (msg.get("Date") or "").strip()
     ports = ports or load_stage_ports()
     try:
-        linked_files, link_failures = download_links(msg)
+        if max_link_bytes <= 0 and max_links > 0:
+            linked_files = []
+            link_failures = [LinkFailure(candidate.label, "LINK_ROUND_BYTES_LIMIT")
+                             for candidate in discover_links(msg)]
+        else:
+            linked_files, link_failures = download_links(
+                msg, max_links=max(0, min(8, max_links)),
+                max_total_bytes=max(0, min(24 * 1024 * 1024, max_link_bytes)))
     except Exception as exc:
         linked_files, link_failures = [], []
         outcome.alerts.append(_alert(mail, f"正文链接检查失败：{type(exc).__name__}",
                                      date_header=header))
     for failure in link_failures:
-        outcome.alerts.append(_alert(mail, f"{failure.source_label} 下载失败：{failure.reason}",
-                                     date_header=header))
+        unsupported = failure.reason in {"LINK_UNSUPPORTED_RESPONSE", "LINK_HTML_RESPONSE"}
+        hint = ("链接取得的内容不受支持，请回原邮件查看。" if unsupported else
+                "正文链接未取得有效文件（下载失败），请回原邮件查看链接。")
+        outcome.alerts.append(_alert(mail, f"{failure.source_label}：{hint}",
+                                     date_header=header,
+                                     code="P05" if unsupported else "P04"))
+        mail.error_reason = (mail.error_reason + ";" +
+                             f"{failure.source_label}:{failure.reason}").strip(";")
+    outcome.link_downloaded_count = len(linked_files)
+    outcome.link_attempted_count = len(linked_files) + sum(
+        failure.reason not in {"LINK_COUNT_LIMIT", "LINK_ROUND_BYTES_LIMIT"}
+        for failure in link_failures)
+    outcome.link_downloaded_bytes = sum(len(item.content) for item in linked_files)
+    before_collection_errors = mail.error_reason
     files = collect_mail_files(msg, mail, cfg, linked_files)
+    if mail.error_reason != before_collection_errors:
+        outcome.alerts.append(_alert(
+            mail, "附件或压缩包中有文件未能处理，请回原邮件核对。",
+            date_header=header, code="P06"))
     files_by_seq = {item.meta.file_seq: item for item in files}
     results: list[DocumentResult] = []
     for item in files:
@@ -200,8 +248,9 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
                                          header, code="P10"))
         if result.error_reason:
             mail.error_reason = (mail.error_reason + ";" + result.error_reason).strip(";")
-            outcome.alerts.append(_alert(mail, result.error_reason, result.file_seq,
-                                         item.meta.original_name, header))
+            hint, code = _file_issue_for_page(result.error_reason)
+            outcome.alerts.append(_alert(mail, hint, result.file_seq,
+                                         item.meta.original_name, header, code=code))
         if result.manual_unknown and not result.mismatches:
             outcome.alerts.append(_alert(mail, "附件类型依据不一致，需人工确认",
                                          result.file_seq, item.meta.original_name,
@@ -224,18 +273,16 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
             outcome.itineraries.append(result)
         else:
             outcome.alerts.append(_alert(mail, f"{item.meta.file_type if item else '文件'} 类型无法确定，需人工核对",
-                                         result.file_seq, filename, header))
+                                         result.file_seq, filename, header, code="P11"))
         if result.error_reason and result.error_reason not in mail.error_reason:
             mail.error_reason = (mail.error_reason + ";" + result.error_reason).strip(";")
-            outcome.alerts.append(_alert(mail, result.error_reason, result.file_seq,
-                                         filename, header))
+            hint, code = _file_issue_for_page(result.error_reason)
+            outcome.alerts.append(_alert(mail, hint, result.file_seq,
+                                         filename, header, code=code))
 
-    if not files:
-        outcome.alerts.append(_alert(
-            mail, "正文链接未取得有效文件，需回原邮件核对" if link_failures else "无有效附件",
-            date_header=header))
-    if mail.error_reason:
-        outcome.alerts.append(_alert(mail, mail.error_reason, date_header=header))
+    if not files and not link_failures:
+        outcome.alerts.append(_alert(mail, "无有效附件或下载文件，请查看原邮件。",
+                                     date_header=header, code="P03"))
     for record in mail.records:
         if not record.kind:
             source_seq = record.source.source_file_seq[0] if record.source.source_file_seq else ""
@@ -415,6 +462,8 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
     ensure_output_dirs(cfg)
     ports = load_stage_ports(cfg)
     outcomes: list[MessageOutcome] = []
+    remaining_link_count = 40
+    remaining_link_bytes = 64 * 1024 * 1024
     client = None
     run_id = datetime.now().strftime("%Y%m%d%H%M%S")
     try:
@@ -487,7 +536,11 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
                 partial_mail.mail_date = _mail_date(date_header)
                 message = email.message_from_bytes(fetch(uid, "(BODY.PEEK[])"))
                 outcome = process_message(message, mail_id, uid_text, cfg, run_id, ports,
-                                          existing_mail=partial_mail)
+                                          existing_mail=partial_mail,
+                                          max_links=remaining_link_count,
+                                          max_link_bytes=remaining_link_bytes)
+                remaining_link_count -= outcome.link_attempted_count
+                remaining_link_bytes -= outcome.link_downloaded_bytes
                 if outcome.failed_files:
                     stats["failed_mails"].append({"mail_id": mail_id, "mail_uid": uid_text,
                                                    "failed_files": outcome.failed_files})

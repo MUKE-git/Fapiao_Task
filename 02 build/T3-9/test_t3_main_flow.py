@@ -23,6 +23,7 @@ from voucher_matcher import combine_vouchers
 from xml_processor import process_xml
 
 SAMPLE_XML = Path(r"C:\Users\lenovo\Downloads\T3出行电子发票(XML)A.xml")
+SAMPLE_OFD = Path(r"C:\Users\lenovo\Downloads\T3出行电子发票(OFD)A.ofd")
 NUMBER = "26447000000342589935"
 
 
@@ -155,6 +156,36 @@ class MainFlowTests(unittest.TestCase):
                 "Invoice_Task/发票信息汇总表.xlsx")), data_only=True).active.values)
             self.assertEqual(len(rows), 1)
             self.assertEqual(len(rows[0]), 8)
+
+    def test_exhausted_round_link_bytes_does_not_start_download(self):
+        msg = EmailMessage()
+        msg["Subject"] = "链接发票"
+        msg.set_content("请取 https://example.com/invoice.pdf")
+        with patch("pipeline.download_links", side_effect=AssertionError("download started")):
+            outcome = process_message(msg, "Msg1", "101", self.cfg,
+                                      ports=self.ports, max_links=2, max_link_bytes=0)
+        self.assertEqual(outcome.link_attempted_count, 0)
+        self.assertEqual(outcome.link_downloaded_bytes, 0)
+        self.assertTrue(any(alert.get("code") == "P04" for alert in outcome.alerts))
+        self.assertIn("LINK_ROUND_BYTES_LIMIT", outcome.mail.error_reason)
+
+    @unittest.skipUnless(SAMPLE_OFD.is_file(), "本机无用户 A OFD 原件")
+    def test_real_a_ofd_keeps_fields_when_conversion_is_unsafe(self):
+        msg = EmailMessage()
+        msg["Subject"] = "发票 OFD A"
+        msg["Date"] = "Mon, 27 Apr 2026 09:00:00 +0800"
+        msg.set_content("本次 OFD")
+        msg.add_attachment(SAMPLE_OFD.read_bytes(), maintype="application",
+                           subtype="ofd", filename="A.ofd")
+        _, stats = self._run_fixed_imap(msg)
+        self.assertEqual(stats["delivery_status"], "ready", stats.get("delivery_error"))
+        self.assertTrue(any(alert.get("code") == "P08"
+                            for alert in stats["not_found_alerts"]))
+        with zipfile.ZipFile(io.BytesIO(stats["delivery_zip_bytes"])) as archive:
+            self.assertFalse(any("用户票据/" in name for name in archive.namelist()))
+            mails = json.loads(archive.read("Invoice_Task/task_debug.json"))
+            self.assertEqual(mails[0]["records"][0]["fields"]["invoice_number"], NUMBER)
+            self.assertEqual(mails[0]["records"][0]["fields"]["total_amount"], "121.74")
 
 
 if __name__ == "__main__":

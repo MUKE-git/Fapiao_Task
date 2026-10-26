@@ -1,0 +1,1419 @@
+{
+  "author": "测试工程师制作、待用户审核",
+  "review_status": "测试工程师制作、待用户审核",
+  "purpose": "已审核18条/26变体之外的逐字段扩展草案；不覆盖原预期",
+  "basis": "固定 extract.json 提取字段 + 原 expected.json 已审核匹配/行数/字段结论 + 已确认的八列映射与空值规则；程序实际输出未参与编制",
+  "schema": {
+    "json_invoice_fields": [
+      "invoice_date",
+      "invoice_number",
+      "total_amount",
+      "invoice_type",
+      "receipt_type",
+      "seller",
+      "travel_time",
+      "origin_dest"
+    ],
+    "json_itinerary_fields": [
+      "match_amount",
+      "travel_time",
+      "origin_dest"
+    ],
+    "excel_columns": [
+      [
+        "发票日期",
+        "invoice_date"
+      ],
+      [
+        "发票号码",
+        "invoice_number"
+      ],
+      [
+        "报销金额",
+        "total_amount"
+      ],
+      [
+        "发票类型",
+        "invoice_type"
+      ],
+      [
+        "票面类型",
+        "receipt_type"
+      ],
+      [
+        "出行时间",
+        "travel_time"
+      ],
+      [
+        "销售方",
+        "seller"
+      ],
+      [
+        "出发地/目的地",
+        "origin_dest"
+      ]
+    ],
+    "formats": {
+      "invoice_date": "YYYY-MM-DD 或 Not Found",
+      "invoice_number": "20位数字字符串或 Not Found",
+      "total_amount_json": "十进制字符串或 Not Found",
+      "total_amount_excel": "数字单元格且显示格式 0.00；缺失为 Not Found 字符串",
+      "invoice_type": "文本或空字符串",
+      "receipt_type": "文本或 Not Found",
+      "seller": "文本或 Not Found",
+      "match_amount": "十进制字符串或 Not Found",
+      "travel_time": "JSON 匹配时 YYYY-MM-DD HH:mm，否则字段不存在；Excel 未匹配时空单元格",
+      "origin_dest": "JSON 匹配时文本，否则字段不存在；Excel 未匹配时空单元格"
+    },
+    "empty_values": {
+      "json_unmatched_travel_fields": "absent",
+      "json_unmatched_itinerary": "absent",
+      "excel_unmatched_travel_fields": "",
+      "required_missing": "Not Found"
+    },
+    "excel_amount_number_format": "0.00",
+    "row_order": "入表发票按邮件及附件来源顺序；行程单不独立入表"
+  },
+  "variants": [
+    {
+      "case_id": "C01",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C01/variants/v1/extract.json",
+        "approved_expected": "cases/C01/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 0,
+        "file_count": 0,
+        "record_count": 0,
+        "itinerary_count": 0,
+        "excel_rows": 0
+      },
+      "json_invoice_records": [],
+      "json_itinerary_records": [],
+      "excel_rows": []
+    },
+    {
+      "case_id": "C02",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C02/variants/v1/extract.json",
+        "approved_expected": "cases/C02/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 0,
+        "file_count": 0,
+        "record_count": 0,
+        "itinerary_count": 0,
+        "excel_rows": 0
+      },
+      "json_invoice_records": [],
+      "json_itinerary_records": [],
+      "excel_rows": []
+    },
+    {
+      "case_id": "C03",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C03/variants/v1/extract.json",
+        "approved_expected": "cases/C03/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 0,
+        "record_count": 0,
+        "itinerary_count": 0,
+        "excel_rows": 0
+      },
+      "json_invoice_records": [],
+      "json_itinerary_records": [],
+      "excel_rows": []
+    },
+    {
+      "case_id": "C04",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C04/variants/v1/extract.json",
+        "approved_expected": "cases/C04/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 1,
+        "record_count": 1,
+        "itinerary_count": 0,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331988405429177621",
+            "total_amount": "304.48",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331988405429177621",
+            "total_amount": "304.48",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C04",
+      "variant": "a",
+      "source": {
+        "fixed_extract": "cases/C04/variants/a/extract.json",
+        "approved_expected": "cases/C04/variants/a/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 1,
+        "record_count": 1,
+        "itinerary_count": 0,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "26331202610040000123",
+            "total_amount": "116.56",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "26331202610040000123",
+            "total_amount": "116.56",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C05",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C05/variants/v1/extract.json",
+        "approved_expected": "cases/C05/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 2,
+        "record_count": 1,
+        "itinerary_count": 1,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331148571660833404",
+            "total_amount": "38.93",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站 → 杭州萧山国际机场"
+          },
+          "matched_itinerary": {
+            "original_name": "行程单.pdf",
+            "match_amount": "38.93"
+          }
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单.pdf",
+          "fields": {
+            "match_amount": "38.93",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站 → 杭州萧山国际机场"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331148571660833404",
+            "total_amount": "38.93",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "2026-09-25 10:00",
+            "seller": "合成测试销售方",
+            "origin_dest": "杭州东站 → 杭州萧山国际机场"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C06",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C06/variants/v1/extract.json",
+        "approved_expected": "cases/C06/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 1,
+        "record_count": 1,
+        "itinerary_count": 0,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "26331350602504239155",
+            "total_amount": "82.97",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "26331350602504239155",
+            "total_amount": "82.97",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C07",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C07/variants/v1/extract.json",
+        "approved_expected": "cases/C07/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 2,
+        "record_count": 2,
+        "itinerary_count": 0,
+        "excel_rows": 2
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票甲.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331358875592358614",
+            "total_amount": "70.91",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        },
+        {
+          "original_name": "发票乙.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331783771999167861",
+            "total_amount": "190.69",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票甲.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331358875592358614",
+            "total_amount": "70.91",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        },
+        {
+          "invoice_original_name": "发票乙.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331783771999167861",
+            "total_amount": "190.69",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C08",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C08/variants/v1/extract.json",
+        "approved_expected": "cases/C08/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 1,
+        "record_count": 1,
+        "itinerary_count": 0,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "附件01.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331229039876235290",
+            "total_amount": "244.94",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [],
+      "excel_rows": [
+        {
+          "invoice_original_name": "附件01.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331229039876235290",
+            "total_amount": "244.94",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C09",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C09/variants/v1/extract.json",
+        "approved_expected": "cases/C09/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 1,
+        "record_count": 0,
+        "itinerary_count": 0,
+        "excel_rows": 0
+      },
+      "json_invoice_records": [],
+      "json_itinerary_records": [],
+      "excel_rows": []
+    },
+    {
+      "case_id": "C12",
+      "variant": "partial",
+      "source": {
+        "fixed_extract": "cases/C12/variants/partial/extract.json",
+        "approved_expected": "cases/C12/variants/partial/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 1,
+        "record_count": 1,
+        "itinerary_count": 0,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "Not Found",
+            "total_amount": "262.68",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "Not Found",
+            "total_amount": "262.68",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C12",
+      "variant": "all_missing",
+      "source": {
+        "fixed_extract": "cases/C12/variants/all_missing/extract.json",
+        "approved_expected": "cases/C12/variants/all_missing/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 1,
+        "record_count": 1,
+        "itinerary_count": 0,
+        "excel_rows": 0
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "Not Found",
+            "invoice_number": "Not Found",
+            "total_amount": "Not Found",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [],
+      "excel_rows": []
+    },
+    {
+      "case_id": "C13",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C13/variants/v1/extract.json",
+        "approved_expected": "cases/C13/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 1,
+        "record_count": 1,
+        "itinerary_count": 0,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "26331170435830407067",
+            "total_amount": "333.52",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "26331170435830407067",
+            "total_amount": "333.52",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C14",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C14/variants/v1/extract.json",
+        "approved_expected": "cases/C14/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 3,
+        "record_count": 1,
+        "itinerary_count": 2,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "26331540109971408975",
+            "total_amount": "100.17",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州宋城（之江路148号）"
+          },
+          "matched_itinerary": {
+            "original_name": "行程单甲.pdf",
+            "match_amount": "100.1700"
+          }
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单甲.pdf",
+          "fields": {
+            "match_amount": "100.1700",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州宋城（之江路148号）"
+          }
+        },
+        {
+          "original_name": "行程单乙.pdf",
+          "fields": {
+            "match_amount": "100.57",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州宋城（之江路148号）→杭州东站"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "26331540109971408975",
+            "total_amount": "100.17",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "2026-09-25 10:00",
+            "seller": "合成测试销售方",
+            "origin_dest": "杭州东站→杭州宋城（之江路148号）"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C15",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C15/variants/v1/extract.json",
+        "approved_expected": "cases/C15/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 3,
+        "record_count": 1,
+        "itinerary_count": 2,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票B.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331429265386194320",
+            "total_amount": "258.70",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "浙江省科技馆（西湖文化广场2号）→杭州宋城"
+          },
+          "matched_itinerary": {
+            "original_name": "行程单B.pdf",
+            "match_amount": "258.70"
+          }
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单A.pdf",
+          "fields": {
+            "match_amount": "258.70",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "中国美术学院（南山校区）→杭州东站"
+          }
+        },
+        {
+          "original_name": "行程单B.pdf",
+          "fields": {
+            "match_amount": "258.70",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "浙江省科技馆（西湖文化广场2号）→杭州宋城"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票B.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331429265386194320",
+            "total_amount": "258.70",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "2026-09-25 10:00",
+            "seller": "合成测试销售方",
+            "origin_dest": "浙江省科技馆（西湖文化广场2号）→杭州宋城"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C16",
+      "variant": "d049",
+      "source": {
+        "fixed_extract": "cases/C16/variants/d049/extract.json",
+        "approved_expected": "cases/C16/variants/d049/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 3,
+        "record_count": 1,
+        "itinerary_count": 2,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331429192087625629",
+            "total_amount": "60.21",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州宋城"
+          },
+          "matched_itinerary": {
+            "original_name": "行程单A.pdf",
+            "match_amount": "60.70"
+          }
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单A.pdf",
+          "fields": {
+            "match_amount": "60.70",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州宋城"
+          }
+        },
+        {
+          "original_name": "行程单D.pdf",
+          "fields": {
+            "match_amount": "149.74",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州萧山国际机场"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331429192087625629",
+            "total_amount": "60.21",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "2026-09-25 10:00",
+            "seller": "合成测试销售方",
+            "origin_dest": "杭州东站→杭州宋城"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C16",
+      "variant": "d050",
+      "source": {
+        "fixed_extract": "cases/C16/variants/d050/extract.json",
+        "approved_expected": "cases/C16/variants/d050/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 3,
+        "record_count": 1,
+        "itinerary_count": 2,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331461668052080012",
+            "total_amount": "120.92",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州宋城"
+          },
+          "matched_itinerary": {
+            "original_name": "行程单A.pdf",
+            "match_amount": "121.42"
+          }
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单A.pdf",
+          "fields": {
+            "match_amount": "121.42",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州宋城"
+          }
+        },
+        {
+          "original_name": "行程单D.pdf",
+          "fields": {
+            "match_amount": "210.45",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州萧山国际机场"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331461668052080012",
+            "total_amount": "120.92",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "2026-09-25 10:00",
+            "seller": "合成测试销售方",
+            "origin_dest": "杭州东站→杭州宋城"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C16",
+      "variant": "d051_name",
+      "source": {
+        "fixed_extract": "cases/C16/variants/d051_name/extract.json",
+        "approved_expected": "cases/C16/variants/d051_name/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 3,
+        "record_count": 1,
+        "itinerary_count": 2,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票A.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331626229746587002",
+            "total_amount": "138.69",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州宋城"
+          },
+          "matched_itinerary": {
+            "original_name": "行程单A.pdf",
+            "match_amount": "139.20"
+          }
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单A.pdf",
+          "fields": {
+            "match_amount": "139.20",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州宋城"
+          }
+        },
+        {
+          "original_name": "行程单D.pdf",
+          "fields": {
+            "match_amount": "139.21",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州萧山国际机场"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票A.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331626229746587002",
+            "total_amount": "138.69",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "2026-09-25 10:00",
+            "seller": "合成测试销售方",
+            "origin_dest": "杭州东站→杭州宋城"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C16",
+      "variant": "d051_no_name",
+      "source": {
+        "fixed_extract": "cases/C16/variants/d051_no_name/extract.json",
+        "approved_expected": "cases/C16/variants/d051_no_name/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 3,
+        "record_count": 1,
+        "itinerary_count": 2,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "26331145455793714847",
+            "total_amount": "86.74",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单A.pdf",
+          "fields": {
+            "match_amount": "87.25",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州宋城"
+          }
+        },
+        {
+          "original_name": "行程单D.pdf",
+          "fields": {
+            "match_amount": "87.26",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→杭州萧山国际机场"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-27",
+            "invoice_number": "26331145455793714847",
+            "total_amount": "86.74",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C17",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C17/variants/v1/extract.json",
+        "approved_expected": "cases/C17/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 3,
+        "record_count": 1,
+        "itinerary_count": 2,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票A.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331882617152424518",
+            "total_amount": "Not Found",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→千岛湖镇人民政府"
+          },
+          "matched_itinerary": {
+            "original_name": "行程单A.pdf",
+            "match_amount": "500.00"
+          }
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单A.pdf",
+          "fields": {
+            "match_amount": "500.00",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州东站→千岛湖镇人民政府"
+          }
+        },
+        {
+          "original_name": "行程单B.pdf",
+          "fields": {
+            "match_amount": "600.00",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州萧山国际机场→千岛湖镇人民政府"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票A.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331882617152424518",
+            "total_amount": "Not Found",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "2026-09-25 10:00",
+            "seller": "合成测试销售方",
+            "origin_dest": "杭州东站→千岛湖镇人民政府"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C18",
+      "variant": "v1",
+      "source": {
+        "fixed_extract": "cases/C18/variants/v1/extract.json",
+        "approved_expected": "cases/C18/variants/v1/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 5,
+        "record_count": 3,
+        "itinerary_count": 2,
+        "excel_rows": 3
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票A.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331456513317974903",
+            "total_amount": "98.31",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        },
+        {
+          "original_name": "发票B.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331989083246556926",
+            "total_amount": "98.47",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        },
+        {
+          "original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331585693637935814",
+            "total_amount": "107.74",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "临安汽车东站→杭州东站"
+          },
+          "matched_itinerary": {
+            "original_name": "行程单C.pdf",
+            "match_amount": "107.74"
+          }
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单X.pdf",
+          "fields": {
+            "match_amount": "98.39",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州宋城→杭州萧山国际机场"
+          }
+        },
+        {
+          "original_name": "行程单C.pdf",
+          "fields": {
+            "match_amount": "107.74",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "临安汽车东站→杭州东站"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票A.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331456513317974903",
+            "total_amount": "98.31",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        },
+        {
+          "invoice_original_name": "发票B.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331989083246556926",
+            "total_amount": "98.47",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        },
+        {
+          "invoice_original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331585693637935814",
+            "total_amount": "107.74",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "2026-09-25 10:00",
+            "seller": "合成测试销售方",
+            "origin_dest": "临安汽车东站→杭州东站"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C19",
+      "variant": "same_amount",
+      "source": {
+        "fixed_extract": "cases/C19/variants/same_amount/extract.json",
+        "approved_expected": "cases/C19/variants/same_amount/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 3,
+        "record_count": 1,
+        "itinerary_count": 2,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331289689000870570",
+            "total_amount": "263.18",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单A.pdf",
+          "fields": {
+            "match_amount": "263.18",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州萧山国际机场→杭州宋城"
+          }
+        },
+        {
+          "original_name": "行程单B.pdf",
+          "fields": {
+            "match_amount": "263.18",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "杭州宋城→中国美术学院（南山校区）"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331289689000870570",
+            "total_amount": "263.18",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C19",
+      "variant": "no_evidence",
+      "source": {
+        "fixed_extract": "cases/C19/variants/no_evidence/extract.json",
+        "approved_expected": "cases/C19/variants/no_evidence/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 3,
+        "record_count": 1,
+        "itinerary_count": 2,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331638222555199577",
+            "total_amount": "64.75",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [
+        {
+          "original_name": "行程单A.pdf",
+          "fields": {
+            "match_amount": "135.98",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "千岛湖镇人民政府→杭州东站"
+          }
+        },
+        {
+          "original_name": "行程单B.pdf",
+          "fields": {
+            "match_amount": "178.32",
+            "travel_time": "2026-09-25 10:00",
+            "origin_dest": "临安汽车东站→杭州萧山国际机场"
+          }
+        }
+      ],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票C.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331638222555199577",
+            "total_amount": "64.75",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "客运服务费",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C22",
+      "variant": "all_miss",
+      "source": {
+        "fixed_extract": "cases/C22/variants/all_miss/extract.json",
+        "approved_expected": "cases/C22/variants/all_miss/expected.json"
+      },
+      "counts": {
+        "selected_mails": 0,
+        "file_count": 0,
+        "record_count": 0,
+        "itinerary_count": 0,
+        "excel_rows": 0
+      },
+      "json_invoice_records": [],
+      "json_itinerary_records": [],
+      "excel_rows": []
+    },
+    {
+      "case_id": "C22",
+      "variant": "miss_then_hit",
+      "source": {
+        "fixed_extract": "cases/C22/variants/miss_then_hit/extract.json",
+        "approved_expected": "cases/C22/variants/miss_then_hit/expected.json"
+      },
+      "counts": {
+        "selected_mails": 1,
+        "file_count": 1,
+        "record_count": 1,
+        "itinerary_count": 0,
+        "excel_rows": 1
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票甲.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331461520399771704",
+            "total_amount": "97.49",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票甲.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331461520399771704",
+            "total_amount": "97.49",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C22",
+      "variant": "hit_miss_hit",
+      "source": {
+        "fixed_extract": "cases/C22/variants/hit_miss_hit/extract.json",
+        "approved_expected": "cases/C22/variants/hit_miss_hit/expected.json"
+      },
+      "counts": {
+        "selected_mails": 2,
+        "file_count": 2,
+        "record_count": 2,
+        "itinerary_count": 0,
+        "excel_rows": 2
+      },
+      "json_invoice_records": [
+        {
+          "original_name": "发票甲.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331780465373588813",
+            "total_amount": "355.29",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        },
+        {
+          "original_name": "发票乙.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331751770250313413",
+            "total_amount": "289.87",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "seller": "合成测试销售方"
+          },
+          "matched_itinerary": null
+        }
+      ],
+      "json_itinerary_records": [],
+      "excel_rows": [
+        {
+          "invoice_original_name": "发票甲.pdf",
+          "fields": {
+            "invoice_date": "2026-09-26",
+            "invoice_number": "26331780465373588813",
+            "total_amount": "355.29",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        },
+        {
+          "invoice_original_name": "发票乙.pdf",
+          "fields": {
+            "invoice_date": "2026-09-28",
+            "invoice_number": "26331751770250313413",
+            "total_amount": "289.87",
+            "invoice_type": "电子发票（普通发票）",
+            "receipt_type": "办公用品",
+            "travel_time": "",
+            "seller": "合成测试销售方",
+            "origin_dest": ""
+          }
+        }
+      ]
+    }
+  ]
+}
