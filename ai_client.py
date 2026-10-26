@@ -13,12 +13,19 @@ AI 审计与重命名模块（由 invoice_pipeline.py 拆分而来，契约 = A 
 from __future__ import annotations
 
 import json
+import base64
+from dataclasses import dataclass, field
+from datetime import datetime
 from decimal import Decimal
 import os
+import re
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from dashscope import Generation
+try:
+    from dashscope import Generation
+except ImportError:  # Fixed-response tests run without the optional service SDK.
+    Generation = None
 
 from fallback_extractor import build_fallback_audit_result
 
@@ -36,6 +43,192 @@ from type_classifier import (
     resolve_effective_type_for_rename,
     triple_type_disagreement,
 )
+
+
+# The old PDF audit entry point below remains for T2 regression. T3 processors
+# use this side-effect-free, single-file adapter instead.
+T3_EXTRACTION_PROMPT_VERSION = "t3-file-v1"
+_T3_ROLES = {"Invoice", "Itinerary", "Unknown"}
+_T3_INVOICE_FIELDS = ("invoice_number", "invoice_date", "total_amount",
+                      "invoice_type", "receipt_type", "seller")
+_T3_ITINERARY_FIELDS = ("match_amount", "travel_time", "origin_dest")
+
+
+@dataclass(frozen=True)
+class ModelFileInput:
+    file_seq: str
+    internal_name: str
+    original_name: str
+    file_type: str
+    pre_read_role: str = "Unknown"
+    text: str = ""
+    # Already decoded, complete image frames in (bytes, MIME type) order.
+    images: tuple[tuple[bytes, str], ...] = ()
+    mail_id: str = ""
+
+
+@dataclass
+class ModelFileOutput:
+    role: str = "Unknown"
+    fields: dict[str, str] = field(default_factory=dict)
+    field_evidence: dict[str, list[dict]] = field(default_factory=dict)
+    error_reason: str = ""
+
+
+def _t3_response_text(response: object) -> str:
+    output = getattr(response, "output", None)
+    raw = getattr(output, "text", None)
+    if raw:
+        return str(raw)
+    choices = getattr(output, "choices", None) or []
+    if choices:
+        choice = choices[0]
+        message = choice.get("message", {}) if isinstance(choice, dict) else getattr(choice, "message", None)
+        content = message.get("content", "") if isinstance(message, dict) else getattr(message, "content", "")
+        if isinstance(content, list):
+            return "".join(str(part.get("text", "")) for part in content if isinstance(part, dict))
+        return str(content or "")
+    return ""
+
+
+def _t3_default_transport(*, model: str, api_key: str, messages: list, vision: bool):
+    if vision:
+        from dashscope import MultiModalConversation
+        return MultiModalConversation.call(api_key=api_key, model=model,
+                                           messages=messages,
+                                           response_format={"type": "json_object"})
+    if Generation is None:
+        raise RuntimeError("DASHSCOPE_SDK_UNAVAILABLE")
+    return Generation.call(api_key=api_key, model=model, messages=messages,
+                           result_format="message", response_format={"type": "json_object"})
+
+
+def extract_single_file(request: ModelFileInput, cfg: object,
+                        transport: Callable[..., object] | None = None,
+                        sleep: Callable[[float], None] = time.sleep) -> ModelFileOutput:
+    """Return one file's candidate only; never rename files or pair documents.
+
+    ``transport`` accepts the same keyword arguments as _t3_default_transport,
+    so fixed-response tests replace only the external service boundary.
+    """
+    if not request.file_seq or not request.internal_name or not request.file_type:
+        return ModelFileOutput(error_reason="MODEL_INPUT_IDENTITY_MISSING")
+    if len(request.text) > 12000 or len(request.images) > 8 or sum(len(p[0]) for p in request.images) > 15_000_000:
+        return ModelFileOutput(error_reason="MODEL_INPUT_LIMIT_EXCEEDED")
+    vision = bool(request.images)
+    key = str(getattr(cfg, "dashscope_api_key", "") or os.getenv("DASHSCOPE_API_KEY", ""))
+    if transport is None and not key:
+        return ModelFileOutput(error_reason="MODEL_API_KEY_MISSING")
+    model = str((getattr(cfg, "dashscope_vision_model", None) or os.getenv("DASHSCOPE_VISION_MODEL")
+                 or "qwen-vl-plus") if vision else (getattr(cfg, "dashscope_model", None) or "qwen-plus"))
+    system = ("从当前单个票据文件提取 JSON。只返回一项 file_classifications，file 必须等于输入 internal_name。"
+              "role 只能是 Invoice、Itinerary、Unknown。发票字段为 invoice_number、invoice_date、"
+              "total_amount、invoice_type、receipt_type、seller；行程单字段为 match_amount、"
+              "travel_time、origin_dest。缺失用 Not Found，金额保留原小数位。"
+              "每个非空字段在 field_evidence 中给出 raw 和 location；不臆造不可见的值。"
+              "若同一画面有多张独立票据，设置 multiple_documents=true。"
+              f"提示词版本 {T3_EXTRACTION_PROMPT_VERSION}。")
+    identity = (f"mail_id={request.mail_id}; file_seq={request.file_seq}; internal_name={request.internal_name}; "
+                f"original_name={request.original_name}; format={request.file_type}; "
+                f"pre_read_role={request.pre_read_role}")
+    if vision:
+        content = [{"image": "data:" + mime + ";base64," + base64.b64encode(data).decode("ascii")}
+                   for data, mime in request.images]
+        content.append({"text": identity})
+        messages = [{"role": "system", "content": [{"text": system}]},
+                    {"role": "user", "content": content}]
+    else:
+        messages = [{"role": "system", "content": system},
+                    {"role": "user", "content": identity + "\n" + request.text}]
+    send = transport or _t3_default_transport
+    response = None
+    for attempt in range(3):
+        try:
+            response = send(model=model, api_key=key, messages=messages, vision=vision)
+            status = int(getattr(response, "status_code", 0) or 0)
+        except Exception as exc:
+            if isinstance(exc, (TimeoutError, ConnectionError)) or any(
+                    word in type(exc).__name__.lower() for word in ("timeout", "connection")):
+                status = 503
+                response = None
+            else:
+                return ModelFileOutput(error_reason="MODEL_TRANSPORT_" + type(exc).__name__)
+        if status == 200:
+            break
+        if (status == 429 or status >= 500) and attempt < 2:
+            sleep((1, 3)[attempt])
+            continue
+        return ModelFileOutput(error_reason=f"MODEL_API_STATUS_{status}")
+    raw = _t3_response_text(response).strip()
+    if raw.startswith("```json"):
+        raw = raw[7:].removesuffix("```").strip()
+    try:
+        parsed = json.loads(raw, parse_float=Decimal)
+    except (ValueError, TypeError):
+        return ModelFileOutput(error_reason="MODEL_JSON_INVALID")
+    if not isinstance(parsed, dict):
+        return ModelFileOutput(error_reason="MODEL_SHAPE_INVALID")
+    classifications = parsed.get("file_classifications")
+    if not (isinstance(classifications, list) and len(classifications) == 1
+            and isinstance(classifications[0], dict)
+            and classifications[0].get("file") == request.internal_name
+            and classifications[0].get("role") in _T3_ROLES):
+        return ModelFileOutput(error_reason="MODEL_CLASSIFICATION_INVALID")
+    role = classifications[0]["role"]
+    if parsed.get("multiple_documents") is True:
+        return ModelFileOutput(role="Unknown", error_reason="MULTIPLE_DOCUMENTS_IN_IMAGE")
+    names = _T3_INVOICE_FIELDS if role == "Invoice" else _T3_ITINERARY_FIELDS if role == "Itinerary" else ()
+    values: dict[str, str] = {}
+    evidence: dict[str, list[dict]] = {}
+    errors: list[str] = []
+    submitted_evidence = parsed.get("field_evidence") if isinstance(parsed.get("field_evidence"), dict) else {}
+    for name in names:
+        raw_value = parsed.get(name)
+        if raw_value is None:
+            errors.append("MODEL_FIELD_MISSING:" + name)
+            values[name] = "" if name == "invoice_type" else "Not Found"
+            continue
+        if not isinstance(raw_value, str):
+            errors.append("MODEL_FIELD_TYPE:" + name)
+            values[name] = "" if name == "invoice_type" else "Not Found"
+            continue
+        value = raw_value.strip()
+        values[name] = value if value not in ("", "Not Found") else ("" if name == "invoice_type" else "Not Found")
+        if values[name] in ("", "Not Found"):
+            continue
+        source = submitted_evidence.get(name)
+        source = source if isinstance(source, list) else [source] if isinstance(source, dict) else []
+        valid = [dict(file_seq=request.file_seq, raw=str(item["raw"]),
+                      normalized=values[name], location=str(item["location"]))
+                 for item in source if isinstance(item, dict)
+                 and item.get("raw") and item.get("location")]
+        if valid:
+            evidence[name] = valid
+        else:
+            errors.append("MODEL_EVIDENCE_MISSING:" + name)
+    if role == "Invoice":
+        if values.get("invoice_number") not in (None, "Not Found") and not re.fullmatch(r"\d{20}", values["invoice_number"]):
+            errors.append("MODEL_INVOICE_NUMBER_INVALID")
+        date = values.get("invoice_date")
+        if date not in (None, "Not Found"):
+            try:
+                if datetime.strptime(date, "%Y-%m-%d").strftime("%Y-%m-%d") != date:
+                    raise ValueError
+            except ValueError:
+                errors.append("MODEL_INVOICE_DATE_INVALID")
+        amount_name = "total_amount"
+    else:
+        amount_name = "match_amount"
+    amount = values.get(amount_name)
+    if amount not in (None, "Not Found"):
+        try:
+            decimal = Decimal(amount)
+            if not decimal.is_finite() or decimal <= 0 or decimal.as_tuple().exponent < -4:
+                raise ValueError
+        except (ArithmeticError, ValueError):
+            errors.append("MODEL_AMOUNT_INVALID")
+    return ModelFileOutput(role=role, fields=values, field_evidence=evidence,
+                           error_reason=";".join(errors))
 
 
 def _rename_pdfs_with_audit(
@@ -142,6 +335,7 @@ def call_ai_audit_and_rename(
     mail_subject: str = "",
     mail_date_hint: str = "",
     run_id: str = "",
+    api_key: str = "",
 ) -> Tuple[Optional[dict], str, List[Dict[str, Any]], List[Dict[str, Any]]]:
     def document_role(data: dict) -> str:
         # 本次调用只有一个文件；原名/正文预读已确定时，字段归属与 PDF 处理器一致。
@@ -266,7 +460,10 @@ def call_ai_audit_and_rename(
         response = None
         retry_intervals = [1, 3]
         for attempt in range(1 + len(retry_intervals)):
+            if Generation is None:
+                raise RuntimeError("DASHSCOPE_SDK_UNAVAILABLE")
             response = Generation.call(
+                api_key=api_key or os.getenv("DASHSCOPE_API_KEY", ""),
                 model=model,
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -306,14 +503,11 @@ def call_ai_audit_and_rename(
             return data, error_reason, mm, manual_u
         # 步骤 B-HTTP 非 200：同样走兜底 + 重命名 + 空差异列表（AI 没给出分类）
         code = str(getattr(response, "code", "") or "")
-        message = str(getattr(response, "message", "") or "")
         error_reason = f"AI_API_{code}" if code else f"AI_API_STATUS_{response.status_code}"
-        if message:
-            error_reason += f"({message})"
         data = build_fallback_audit_result(task_info.get("files", []))
         if core_missing(data):
             error_reason = (error_reason + ";FIELD_NOT_FOUND").strip(";")
         mm, manual_u = _rename_pdfs_with_audit(task_info, data, mail_subject, mail_date_hint, run_id)
         return data, error_reason, mm, manual_u
     except Exception as e:
-        return None, f"PROCESSING_EXCEPTION: {str(e)}", [], []
+        return None, f"PROCESSING_EXCEPTION:{type(e).__name__}", [], []
