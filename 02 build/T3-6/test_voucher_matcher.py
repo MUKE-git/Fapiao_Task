@@ -134,15 +134,29 @@ class VoucherMatcherTest(unittest.TestCase):
 
     def test_itinerary_identity_merge_or_keep_uncertain(self):
         def itinerary(seq, number=""):
-            return DocumentResult(seq, "Itinerary", {
+            item = DocumentResult(seq, "Itinerary", {
                 "itinerary_number": number, "match_amount": "121.74",
                 "travel_time": "2026-04-27 12:00", "origin_dest": "A→B"}, [seq])
+            if number:
+                item.field_evidence["itinerary_number"] = [{
+                    "file_seq": seq, "raw": number, "normalized": number,
+                    "location": "page1/business-id"}]
+            return item
         out = combine_vouchers(mail("PDF", "OFD", "图片", "PDF"), [
             itinerary("01", "TRIP-A"), itinerary("02", "TRIP-A"),
             itinerary("03"), itinerary("04")])
         self.assertEqual(len(out), 3)
         self.assertEqual(out[0].source_file_seq, ["01", "02"])
         self.assertTrue(all("无可靠身份" in x.error_reason for x in out[1:]))
+
+    def test_itinerary_number_without_evidence_does_not_merge(self):
+        items = [DocumentResult(seq, "Itinerary", {
+            "itinerary_number": "TRIP-A", "match_amount": "121.74",
+            "travel_time": "2026-04-27 12:00", "origin_dest": "A→B"}, [seq])
+            for seq in ("01", "02")]
+        out = combine_vouchers(mail("PDF", "OFD"), items)
+        self.assertEqual(len(out), 2)
+        self.assertTrue(all("无可靠身份" in x.error_reason for x in out))
 
 
 if __name__ == "__main__":

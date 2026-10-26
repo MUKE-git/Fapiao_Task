@@ -214,7 +214,13 @@ def _combine_itineraries(itineraries: list[DocumentResult],
     anonymous: list[DocumentResult] = []
     for result in itineraries:
         identity = str(result.fields.get("itinerary_number") or "").strip()
-        if identity and identity != NOT_FOUND:
+        has_identity_evidence = any(
+            item.get("file_seq") == result.file_seq
+            and item.get("location")
+            and str(item.get("normalized") or "").strip() == identity
+            for item in _field_evidence(result, "itinerary_number")
+        )
+        if identity and identity != NOT_FOUND and has_identity_evidence:
             by_identity.setdefault(identity, []).append(result)
         else:
             anonymous.append(result)
