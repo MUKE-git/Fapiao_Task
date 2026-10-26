@@ -505,7 +505,14 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
             log(f"已登记 {outcome.mail.mail_id}：{len(outcome.mail.files)} 个文件，"
                 f"{len(outcome.mail.records)} 笔 PDF 发票")
 
+        missing_voucher_ids = {record.record_id for outcome in outcomes
+                               for record in outcome.mail.records
+                               if record.status == STATUS_MISSING_VOUCHER}
         _apply_matching(outcomes, ports)
+        for outcome in outcomes:
+            for record in outcome.mail.records:
+                if record.record_id in missing_voucher_ids:
+                    record.status = STATUS_MISSING_VOUCHER
         mails = [outcome.mail for outcome in outcomes]
         if ports.arbitrate_records is not None:
             mails = ports.arbitrate_records(mails)
