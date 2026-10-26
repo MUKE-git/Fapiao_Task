@@ -19,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 import re
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 
 # ---------------------------------------------------------------------------
@@ -106,6 +106,8 @@ class FileRecord:
     pre_read_amount: Union[Decimal, float, str] = NOT_FOUND
     internal_name: str = ""                         # 当前内部落盘文件名
     exported_name: str = ""                         # T3-1 导出前留空
+    acquisition: str = ""                            # T3: 附件/正文链接，空为旧数据
+    source_ref: str = ""                             # 脱敏来源标识，不保存签名 URL
 
 
 @dataclass
@@ -116,6 +118,9 @@ class SourceMeta:
     邮件维度（subject/mail_date）挂顶层 MailRecord，本对象只记文件序号。
     """
     source_file_seq: List[str] = field(default_factory=list)
+    field_evidence: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+    conflicts: list[dict[str, Any]] = field(default_factory=list)
+    delivery_blocked: bool = False
 
 
 @dataclass
@@ -136,6 +141,9 @@ class ItineraryRecord:
     match_amount: Union[Decimal, float, str] = NOT_FOUND
     travel_time: str = NOT_FOUND
     origin_dest: str = NOT_FOUND
+    source_file_seq: List[str] = field(default_factory=list)
+    conflicts: list[dict[str, Any]] = field(default_factory=list)
+    delivery_blocked: bool = False
 
 
 @dataclass
@@ -210,7 +218,7 @@ class MailRecord:
 
 def _file_to_dict(f: FileRecord) -> dict:
     """文件条目：按契约 §5.3 files[] 字段顺序输出。"""
-    return {
+    result = {
         "file_seq": f.file_seq,
         "file_type": f.file_type,
         "original_name": f.original_name,
@@ -220,15 +228,27 @@ def _file_to_dict(f: FileRecord) -> dict:
         "internal_name": f.internal_name,
         "exported_name": f.exported_name,
     }
+    if f.acquisition:
+        result["acquisition"] = f.acquisition
+    if f.source_ref:
+        result["source_ref"] = f.source_ref
+    return result
 
 
 def _itinerary_to_dict(itinerary: ItineraryRecord) -> dict:
-    return {
+    result = {
         "record_id": itinerary.record_id,
         "match_amount": amount_to_json(itinerary.match_amount),
         "travel_time": itinerary.travel_time,
         "origin_dest": itinerary.origin_dest,
     }
+    if itinerary.source_file_seq:
+        result["source_file_seq"] = list(itinerary.source_file_seq)
+    if itinerary.conflicts:
+        result["conflicts"] = list(itinerary.conflicts)
+    if itinerary.delivery_blocked:
+        result["delivery_blocked"] = True
+    return result
 
 
 def _record_to_dict(r: InvoiceRecord) -> dict:
@@ -251,11 +271,18 @@ def _record_to_dict(r: InvoiceRecord) -> dict:
     if r.fields.origin_dest and r.fields.origin_dest != NOT_FOUND:
         fields["origin_dest"] = r.fields.origin_dest
 
+    source: dict = {"source_file_seq": list(r.source.source_file_seq)}
+    if r.source.field_evidence:
+        source["field_evidence"] = r.source.field_evidence
+    if r.source.conflicts:
+        source["conflicts"] = r.source.conflicts
+    if r.source.delivery_blocked:
+        source["delivery_blocked"] = True
     out: dict = {
         "record_id": r.record_id,
         "kind": r.kind,
         "fields": fields,
-        "source": {"source_file_seq": list(r.source.source_file_seq)},
+        "source": source,
     }
     if r.matched_itinerary is not None:
         out["matched_itinerary"] = {

@@ -53,6 +53,35 @@ def _signature(record: InvoiceRecord) -> tuple:
     return tuple(_value(record, name) for name in REQUIRED_FIELDS)
 
 
+def _reliable_xml_values(mail: MailRecord, record: InvoiceRecord) -> dict[str, str]:
+    """Only values backed by a located XML field may control T3 arbitration."""
+    xml_seqs = {item.file_seq for item in mail.files if item.file_type == "XML"}
+    values: dict[str, str] = {}
+    for field in REQUIRED_FIELDS:
+        evidence = (record.source.field_evidence or {}).get(field, [])
+        supported = {str(item.get("normalized")) for item in evidence
+                     if item.get("file_seq") in xml_seqs and item.get("location")
+                     and str(item.get("normalized")) == str(_value(record, field))}
+        if len(supported) == 1 and not any(
+                conflict.get("field") == field and conflict.get("reason") == "xml_conflict"
+                for conflict in record.source.conflicts):
+            values[field] = next(iter(supported))
+    return values
+
+
+def _choose_with_xml(entries: list[tuple[MailRecord, InvoiceRecord]],
+                     differences: list[str]) -> str | None:
+    xml = [(record, _reliable_xml_values(mail, record)) for mail, record in entries]
+    xml = [(record, values) for record, values in xml if values]
+    if not xml or any(field not in values for _, values in xml for field in differences):
+        return None
+    if any(len({values[field] for _, values in xml}) != 1 for field in differences):
+        return None
+    winners = [record.record_id for record, values in xml
+               if all(str(_value(record, field)) == values[field] for field in differences)]
+    return winners[0] if len(winners) == 1 else None
+
+
 def _alert(mail: MailRecord, record: InvoiceRecord, reason: str) -> None:
     seq = record.source.source_file_seq[0] if record.source.source_file_seq else ""
     file = next((item for item in mail.files if item.file_seq == seq), None)
@@ -268,23 +297,36 @@ def arbitrate_records(mails: list[MailRecord], cfg: RunConfig | None = None, *,
             kept = items[0][1]
             for mail, record in items[1:]:
                 mail.excel_skip_record_ids.add(record.record_id)
+                record.source.delivery_blocked = True
                 _alert(mail, record, f"{record.record_id} 与 {kept.record_id} 的发票号及五个必填字段一致，已跳过重复 Excel 行；原记录保留在 JSON")
         if len(representatives) == 1:
             continue
-        decision = _choose_with_ai(representatives, cfg, text_loader, ai_call)
+        differences = [field for field in REQUIRED_FIELDS
+                       if len({_value(record, field) for _, record in representatives}) > 1]
+        has_xml = any(any(item.file_type == "XML" and
+                              item.file_seq in record.source.source_file_seq
+                              for item in mail.files)
+                      for mail, record in representatives)
+        xml_chosen = _choose_with_xml(representatives, differences) if has_xml else None
+        decision = ((xml_chosen, []) if xml_chosen else
+                    None if has_xml else
+                    _choose_with_ai(representatives, cfg, text_loader, ai_call))
         if decision:
             chosen_id, evidence = decision
+            channel = "XML 可靠字段优先" if xml_chosen else "AI 二次仲裁"
             evidence_text = "；".join(f"{FIELD_NAMES[item['field']]}：{item['quote'][:120]}"
                                      for item in evidence)
             for mail, record in representatives:
                 if record.record_id == chosen_id:
-                    _alert(mail, record, f"同票号 {number} 存在字段冲突；AI 二次仲裁采信 {chosen_id}；原文证据 {evidence_text}")
+                    _alert(mail, record, f"同票号 {number} 存在字段冲突；{channel}采信 {chosen_id}；原文证据 {evidence_text}")
                 else:
                     mail.excel_skip_record_ids.add(record.record_id)
                     record.status = STATUS_MANUAL_REVIEW
-                    _alert(mail, record, f"{record.record_id} 与 {chosen_id} 同票号但必填字段冲突；AI 采信后者，本条未写入 Excel，原记录保留在 JSON")
+                    record.source.delivery_blocked = True
+                    _alert(mail, record, f"{record.record_id} 与 {chosen_id} 同票号但必填字段冲突；{channel}采信后者，本条未写入 Excel，原记录保留在 JSON")
         else:
             for mail, record in representatives:
                 record.status = STATUS_MANUAL_REVIEW
-                _alert(mail, record, f"{record.record_id} 同票号 {number} 的必填字段冲突，AI 无法确认其一；本条保留 Excel 并需人工核对")
+                record.source.delivery_blocked = True
+                _alert(mail, record, f"{record.record_id} 同票号 {number} 的必填字段冲突，无法确认其一；本条保留 Excel 并需人工核对")
     return mails
