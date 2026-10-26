@@ -14,3 +14,10 @@ class DocumentResult:
     error_reason: str = ""
     mismatches: list[dict] = field(default_factory=list)
     manual_unknown: list[dict] = field(default_factory=list)
+    # T3 additive contract. Each evidence item identifies file_seq, raw value,
+    # normalized value and a location (XPath/page/region). A missing value has
+    # no evidence item. The main flow preserves these in task_debug.json.
+    field_evidence: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+    conflicts: list[dict[str, Any]] = field(default_factory=list)
+    # A checked delivery copy of an OFD/image, never the original input.
+    pdf_path: str = ""
