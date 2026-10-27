@@ -83,6 +83,36 @@ _WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL"} | {
 }
 
 
+def _positive_format(content: bytes) -> tuple[str, str] | None:
+    """Use a recognizable byte signature to override a misleading suffix."""
+    if content.startswith(b"%PDF-"):
+        return "PDF", ".pdf"
+    if content.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "图片", ".png"
+    if content.startswith(b"\xff\xd8\xff"):
+        return "图片", ".jpg"
+    if content.startswith(b"BM"):
+        return "图片", ".bmp"
+    if content.startswith(b"RIFF") and content[8:12] == b"WEBP":
+        return "图片", ".webp"
+    if content.startswith((b"PK\x03\x04", b"PK\x05\x06")):
+        try:
+            with zipfile.ZipFile(BytesIO(content)) as archive:
+                names = [entry.filename.lower().replace("\\", "/")
+                         for entry in archive.infolist()[:1000]]
+            return ("OFD", ".ofd") if any(name == "ofd.xml" for name in names) else ("ZIP", ".zip")
+        except (OSError, zipfile.BadZipFile):
+            return None
+    for codec in ("utf-8-sig", "utf-16"):
+        try:
+            start = content[:256].decode(codec).lstrip()
+        except UnicodeError:
+            continue
+        if start.startswith("<") and not start.lower().startswith(("<html", "<!doctype html")):
+            return "XML", ".xml"
+    return None
+
+
 @dataclass(frozen=True)
 class CollectedFile:
     """已登记文件；业务字段由后续形态处理器提取。"""
@@ -137,7 +167,7 @@ def _write_unique_file(directory: str, prefix: str, original_name: str,
 
 
 def collect_mail_files(msg: email.message.Message, mail: MailRecord,
-                       cfg: RunConfig) -> list[CollectedFile]:
+                       cfg: RunConfig, downloaded_files: list | None = None) -> list[CollectedFile]:
     """下载附件、解 ZIP、去重、安全存盘并编号；不提取凭证业务字段。
 
     返回的 meta 与 mail.files 中对象相同，供 PDF 处理器补预读字段。
@@ -149,7 +179,7 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
     zip_total_bytes = 0
 
     def add_file(name: str, content: bytes, source: str,
-                 extension_hint: str = "") -> None:
+                 extension_hint: str = "", declared_type: str = "") -> None:
         nonlocal zip_file_count, zip_total_bytes
         if source.startswith("ZIP:"):
             zip_file_count += 1
@@ -164,17 +194,26 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
         if seq > 99:
             raise ValueError("单邮件文件数超过 99，无法分配两位文件序号")
         seq_text = f"{seq:02d}"
+        actual = _positive_format(content)
+        file_type = actual[0] if actual else declared_type
+        storage_name = name
+        if actual and os.path.splitext(name)[1].lower() != actual[1]:
+            storage_name = os.path.splitext(name)[0] + actual[1]
         path = _write_unique_file(cfg.extract_dir, f"{mail.mail_id}_{seq_text}_",
-                                  name, seq, content, extension_hint)
+                                  storage_name, seq, content, extension_hint)
         seen_hashes.add(digest)
         suffix = os.path.splitext(path)[1].lower()
+        linked = "正文链接" in source
         meta = FileRecord(file_seq=seq_text,
-                          file_type=_FILE_TYPES.get(suffix, "其他"), original_name=name,
-                          internal_name=os.path.basename(path))
+                          file_type=file_type or _FILE_TYPES.get(suffix, "其他"),
+                          original_name=name, internal_name=os.path.basename(path),
+                          acquisition="正文链接" if linked else "",
+                          source_ref=source.removeprefix("正文链接:") if linked else "")
         mail.files.append(meta)
         collected.append(CollectedFile(meta, path))
 
-    def unpack_zip(name: str, content: bytes, depth: int) -> None:
+    def unpack_zip(name: str, content: bytes, depth: int,
+                   link_label: str = "") -> None:
         if depth > 2:
             mail.error_reason = (mail.error_reason + ";ZIP_DEPTH_LIMIT").strip(";")
             return
@@ -192,9 +231,10 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
                         continue
                     payload = archive.read(entry)
                     if inner.lower().endswith(".zip"):
-                        unpack_zip(inner, payload, depth + 1)
+                        unpack_zip(inner, payload, depth + 1, link_label)
                     else:
-                        add_file(inner, payload, f"ZIP:{name}")
+                        source = f"ZIP:正文链接:{link_label}" if link_label else f"ZIP:{name}"
+                        add_file(inner, payload, source)
         except (OSError, ValueError, zipfile.BadZipFile, RuntimeError) as exc:
             mail.error_reason = (mail.error_reason + f";ZIP_EXTRACT_ERROR:{exc}").strip(";")
 
@@ -209,7 +249,10 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
         if content is None:
             continue
         extension_hint = _MIME_EXTENSIONS.get(part.get_content_type().lower(), "")
-        if name.lower().endswith(".zip") or (not name and extension_hint == ".zip"):
+        detected = _positive_format(content)
+        if (detected and detected[0] == "ZIP") or (
+                detected is None and
+                (name.lower().endswith(".zip") or (not name and extension_hint == ".zip"))):
             path = _write_unique_file(cfg.zips_dir, f"{mail.mail_id}_",
                                       name, 1, content, extension_hint)
             unpack_zip(name, content, 1)
@@ -219,4 +262,15 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
             except ValueError as exc:
                 mail.error_reason = (mail.error_reason + f";ATTACHMENT_LIMIT:{exc}").strip(";")
                 break
+    for downloaded in downloaded_files or []:
+        try:
+            source = "正文链接:" + str(downloaded.source_label)
+            if downloaded.file_type == "ZIP":
+                unpack_zip(downloaded.name, downloaded.content, 1,
+                           str(downloaded.source_label))
+            else:
+                add_file(downloaded.name, downloaded.content, source,
+                         declared_type=downloaded.file_type)
+        except ValueError as exc:
+            mail.error_reason = (mail.error_reason + f";LINK_FILE_LIMIT:{type(exc).__name__}").strip(";")
     return collected

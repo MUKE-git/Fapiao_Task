@@ -16,17 +16,21 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from email.utils import parsedate_to_datetime
 from typing import Any, Callable, Optional
+from openpyxl import Workbook
 
-import dashscope
 
 from attachment_processor import collect_mail_files
-from config import RunConfig, TRANSPORT_RECEIPT_KEYWORDS, ensure_output_dirs, should_send_netease_id
+from config import (RunConfig, SUMMARY_COLUMNS, TRANSPORT_RECEIPT_KEYWORDS,
+                    ensure_output_dirs, should_send_netease_id)
 from data_model import (
     InvoiceFields, InvoiceRecord, ItineraryRecord, KIND_A, KIND_B, MailRecord, NOT_FOUND,
-    PRE_READ_INVOICE, PRE_READ_ITINERARY, STATUS_COMPLETE, STATUS_MANUAL_REVIEW, SourceMeta,
+    PRE_READ_INVOICE, PRE_READ_ITINERARY, STATUS_COMPLETE, STATUS_MANUAL_REVIEW,
+    STATUS_MISSING_VOUCHER, SourceMeta,
     amount_requires_review, mail_to_dict, normalize_amount,
 )
 from excel_writer import append_to_summary_excel
+from delivery_exporter import prepare_delivery, build_delivery_zip
+from mail_link_downloader import download_links
 from pdf_processor import process_pdf
 from processor_contracts import DocumentResult
 from stage_ports import StagePorts, load_stage_ports
@@ -43,6 +47,7 @@ class MessageOutcome:
     mismatches: list[dict] = field(default_factory=list)
     alerts: list[dict] = field(default_factory=list)
     failed_files: list[dict] = field(default_factory=list)
+    converted_pdfs: dict[str, str] = field(default_factory=dict)
 
 
 def _mail_date(value: str | None) -> str:
@@ -64,11 +69,15 @@ def _travel_time_to_minute(value: object) -> str:
 
 
 def _alert(mail: MailRecord, reason: str, file_seq: str = "", filename: str = "",
-           date_header: str = "") -> dict:
-    return {"mail_id": mail.mail_id, "mail_uid": mail.mail_uid,
+           date_header: str = "", code: str = "", level: str = "warning") -> dict:
+    alert = {"mail_id": mail.mail_id, "mail_uid": mail.mail_uid,
             "mail_subject": mail.subject, "mail_date": mail.mail_date,
             "mail_date_header": date_header, "file_seq": file_seq,
             "filename": filename, "flags": [reason]}
+    if code:
+        alert["code"] = code
+        alert["level"] = level
+    return alert
 
 
 def _invoice_record(mail: MailRecord, result: DocumentResult) -> InvoiceRecord:
@@ -91,14 +100,25 @@ def _invoice_record(mail: MailRecord, result: DocumentResult) -> InvoiceRecord:
     kind = ("" if receipt_missing else
             KIND_A if any(key in fields.receipt_type for key in TRANSPORT_RECEIPT_KEYWORDS)
             else KIND_B)
+    sources = [result.file_seq] + [seq for seq in result.source_file_seq
+                                   if seq != result.file_seq]
     record = InvoiceRecord(
         record_id=f"{mail.mail_id}-{result.file_seq}", kind=kind,
-        fields=fields, source=SourceMeta(result.source_file_seq or [result.file_seq]),
+        fields=fields, source=SourceMeta(sources,
+            field_evidence=result.field_evidence, conflicts=result.conflicts,
+            delivery_blocked=any(item.get("reason") in {
+                "unresolved_field_conflict", "xml_conflict", "ambiguous_numberless_match",
+                "multiple_numberless_sources"} for item in result.conflicts)),
         status=STATUS_COMPLETE,
     )
     if (result.error_reason or receipt_missing or amount_requires_review(fields.total_amount)
-            or not isinstance(fields.invoice_type, str) or not isinstance(fields.seller, str)):
+            or result.conflicts or not isinstance(fields.invoice_type, str)
+            or not isinstance(fields.seller, str)):
         record.status = STATUS_MANUAL_REVIEW
+    if (record.status == STATUS_COMPLETE and
+            all(next((f.file_type for f in mail.files if f.file_seq == seq), "") == "XML"
+                for seq in sources)):
+        record.status = STATUS_MISSING_VOUCHER
     return record
 
 
@@ -112,6 +132,12 @@ def _itinerary_record(mail: MailRecord, result: DocumentResult) -> ItineraryReco
         match_amount=normalize_amount(amount),
         travel_time=_travel_time_to_minute(data.get("travel_time")),
         origin_dest=str(data.get("origin_dest") or NOT_FOUND),
+        source_file_seq=([result.file_seq] + [seq for seq in result.source_file_seq
+                                               if seq != result.file_seq]),
+        conflicts=result.conflicts,
+        delivery_blocked=any(item.get("reason") in {
+            "itinerary_identity_unconfirmed", "itinerary_conflict"}
+            for item in result.conflicts),
     )
 
 
@@ -126,7 +152,16 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
     outcome = MessageOutcome(mail)
     header = (msg.get("Date") or "").strip()
     ports = ports or load_stage_ports()
-    files = collect_mail_files(msg, mail, cfg)
+    try:
+        linked_files, link_failures = download_links(msg)
+    except Exception as exc:
+        linked_files, link_failures = [], []
+        outcome.alerts.append(_alert(mail, f"正文链接检查失败：{type(exc).__name__}",
+                                     date_header=header))
+    for failure in link_failures:
+        outcome.alerts.append(_alert(mail, f"{failure.source_label} 下载失败：{failure.reason}",
+                                     date_header=header))
+    files = collect_mail_files(msg, mail, cfg, linked_files)
     files_by_seq = {item.meta.file_seq: item for item in files}
     results: list[DocumentResult] = []
     for item in files:
@@ -145,7 +180,7 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
             if not isinstance(result, DocumentResult):
                 raise TypeError("处理器未返回文件级 DocumentResult")
         except Exception as exc:
-            reason = f"FILE_PROCESSING_EXCEPTION:{item.meta.file_seq}:{type(exc).__name__}:{exc}"
+            reason = f"FILE_PROCESSING_EXCEPTION:{item.meta.file_seq}:{type(exc).__name__}"
             mail.error_reason = (mail.error_reason + ";" + reason).strip(";")
             outcome.alerts.append(_alert(mail, reason, item.meta.file_seq,
                                          item.meta.original_name, header))
@@ -153,33 +188,52 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
                                          "filename": item.meta.original_name, "reason": reason})
             continue
         results.append(result)
+        if result.pdf_path:
+            outcome.converted_pdfs[result.file_seq] = result.pdf_path
         for mismatch in result.mismatches:
             mismatch.setdefault("mail_id", mail.mail_id)
             mismatch.setdefault("mail_uid", mail.mail_uid)
         outcome.mismatches.extend(result.mismatches)
+        if result.mismatches:
+            outcome.alerts.append(_alert(mail, "附件预读类型与识别类型不一致，需人工确认",
+                                         result.file_seq, item.meta.original_name,
+                                         header, code="P10"))
         if result.error_reason:
             mail.error_reason = (mail.error_reason + ";" + result.error_reason).strip(";")
             outcome.alerts.append(_alert(mail, result.error_reason, result.file_seq,
                                          item.meta.original_name, header))
-        if result.manual_unknown:
+        if result.manual_unknown and not result.mismatches:
             outcome.alerts.append(_alert(mail, "附件类型依据不一致，需人工确认",
-                                         result.file_seq, item.meta.original_name, header))
+                                         result.file_seq, item.meta.original_name,
+                                         header, code="P10"))
     if ports.combine_vouchers is not None:
         results = ports.combine_vouchers(mail, results)
     for result in results:
         item = files_by_seq.get(result.file_seq)
         filename = item.meta.original_name if item else ""
         if result.role == PRE_READ_INVOICE:
-            mail.records.append(_invoice_record(mail, result))
+            record = _invoice_record(mail, result)
+            mail.records.append(record)
+            if (record.status == STATUS_MISSING_VOUCHER or
+                    all(next((f.file_type for f in mail.files if f.file_seq == seq), "") == "XML"
+                        for seq in record.source.source_file_seq)):
+                outcome.alerts.append(_alert(mail, f"{record.record_id} 缺凭证，需回原邮件核对",
+                                             result.file_seq, filename, header))
         elif result.role == PRE_READ_ITINERARY:
             mail.itineraries.append(_itinerary_record(mail, result))
             outcome.itineraries.append(result)
         else:
-            outcome.alerts.append(_alert(mail, "PDF 类型无法确定，需人工核对",
+            outcome.alerts.append(_alert(mail, f"{item.meta.file_type if item else '文件'} 类型无法确定，需人工核对",
                                          result.file_seq, filename, header))
+        if result.error_reason and result.error_reason not in mail.error_reason:
+            mail.error_reason = (mail.error_reason + ";" + result.error_reason).strip(";")
+            outcome.alerts.append(_alert(mail, result.error_reason, result.file_seq,
+                                         filename, header))
 
     if not files:
-        outcome.alerts.append(_alert(mail, "无有效附件", date_header=header))
+        outcome.alerts.append(_alert(
+            mail, "正文链接未取得有效文件，需回原邮件核对" if link_failures else "无有效附件",
+            date_header=header))
     if mail.error_reason:
         outcome.alerts.append(_alert(mail, mail.error_reason, date_header=header))
     for record in mail.records:
@@ -218,6 +272,13 @@ def _apply_matching(outcomes: list[MessageOutcome], ports: StagePorts) -> None:
             for record in transport_records:
                 record.status = STATUS_MANUAL_REVIEW
             outcome.alerts.append(_alert(mail, "缺行程单，需人工核对"))
+            continue
+        if any(any(conflict.get("reason") == "itinerary_identity_unconfirmed"
+                       for conflict in item.conflicts)
+               for item in outcome.itineraries):
+            for record in transport_records:
+                record.status = STATUS_MANUAL_REVIEW
+            outcome.alerts.append(_alert(mail, "行程单重复关系无可靠身份，发票与行程单关系需人工核对"))
             continue
         if ports.match_itineraries is not None:
             outcome.alerts.extend(ports.match_itineraries(mail, outcome.itineraries))
@@ -267,6 +328,10 @@ def _check_source_chain(mails: list[MailRecord], cfg: RunConfig | None = None) -
         for itinerary in mail.itineraries:
             if not itinerary.record_id.startswith(f"{mail.mail_id}-") or itinerary.record_id[len(mail.mail_id) + 1:] not in known:
                 raise ValueError(f"{itinerary.record_id} 行程单来源链断裂")
+            if itinerary.source_file_seq and (
+                    itinerary.record_id != f"{mail.mail_id}-{itinerary.source_file_seq[0]}"
+                    or not set(itinerary.source_file_seq) <= known):
+                raise ValueError(f"{itinerary.record_id} 行程单聚合来源链断裂")
             if itinerary.record_id in record_ids:
                 raise ValueError(f"{itinerary.record_id} 记录编号重复")
             record_ids.add(itinerary.record_id)
@@ -341,11 +406,13 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
         "invoice_keyword_mails": 0, "manual_unknown_alerts": [],
         "not_found_alerts": [], "imap_mailbox_status": None, "imap_error": None,
         "failed_mails": [], "run_error": None, "excel_error": None,
+        "delivery_status": "summary_failed", "delivery_zip_bytes": None,
+        "delivery_error": "", "delivery_issues": [],
+        "summary_row_count": 0,
     }
     if not (cfg.dashscope_api_key or "").strip():
         return [], {**stats, "error": "no_api_key"}
     ensure_output_dirs(cfg)
-    dashscope.api_key = cfg.dashscope_api_key.strip()
     ports = load_stage_ports(cfg)
     outcomes: list[MessageOutcome] = []
     client = None
@@ -483,17 +550,58 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
                 stats["not_found_alerts"].append(_alert(
                     mail, reason, source_seq, source.original_name if source else ""))
 
-        excel_error, path = append_to_summary_excel(_excel_rows(mails), cfg.summary_excel_file)
+        excel_rows = _excel_rows(mails)
+        excel_error, path = append_to_summary_excel(excel_rows, cfg.summary_excel_file)
+        if not excel_error and not path and not os.path.isfile(cfg.summary_excel_file):
+            try:
+                workbook = Workbook()
+                for column, (header, _) in enumerate(SUMMARY_COLUMNS, 1):
+                    workbook.active.cell(1, column, header)
+                workbook.save(cfg.summary_excel_file)
+                path = cfg.summary_excel_file
+            except Exception as exc:
+                excel_error = f"EXCEL_EMPTY_SUMMARY_ERROR:{type(exc).__name__}"
         if excel_error:
             stats["excel_error"] = excel_error
             for mail in mails:
                 mail.error_reason = (mail.error_reason + ";" + excel_error).strip(";")
             log(f"Excel 写入失败：{excel_error}")
         elif path:
+            stats["summary_row_count"] = len(excel_rows)
             log(f"Excel 已写入：{path}")
         for outcome in outcomes:
             stats["not_found_alerts"].extend(outcome.alerts)
         _write_debug(cfg, mails)
+        if excel_error:
+            stats["delivery_status"] = "summary_failed"
+            stats["delivery_error"] = "汇总表生成失败"
+        else:
+            try:
+                converted = {(outcome.mail.mail_id, seq): path
+                             for outcome in outcomes
+                             for seq, path in outcome.converted_pdfs.items()}
+                plan = prepare_delivery(cfg, [mail_to_dict(mail) for mail in mails], converted)
+                with open(cfg.debug_file, "w", encoding="utf-8") as out:
+                    json.dump(plan.mails, out, ensure_ascii=False, indent=2)
+                stats["delivery_zip_bytes"] = build_delivery_zip(cfg, plan)
+                stats["delivery_issues"] = plan.issues
+                stats["delivery_status"] = "ready"
+                for issue in plan.issues:
+                    match = re.match(r"^(Msg[0-9]+)-([0-9]{2}):", issue)
+                    if not match:
+                        continue
+                    source_mail = next((mail for mail in mails if mail.mail_id == match[1]), None)
+                    if source_mail is None:
+                        continue
+                    source_file = next((item for item in source_mail.files
+                                        if item.file_seq == match[2]), None)
+                    stats["not_found_alerts"].append(_alert(
+                        source_mail, issue, match[2],
+                        source_file.original_name if source_file else ""))
+            except (OSError, ValueError, TypeError) as exc:
+                stats["delivery_status"] = "package_failed"
+                stats["delivery_error"] = f"交付包生成或核查失败：{type(exc).__name__}"
+                log(f"交付包生成或核查失败：{type(exc).__name__}: {exc}")
     except (imaplib.IMAP4.error, OSError, ValueError) as exc:
         stats["imap_error"] = str(exc)
         log(f"处理失败：{exc}")

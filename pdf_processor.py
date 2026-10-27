@@ -61,6 +61,7 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
         audit, error, mismatches, manual = call_ai_audit_and_rename(
             task_info, model=cfg.dashscope_model, mail_subject=mail_subject,
             mail_date_hint=mail_date, run_id=run_id,
+            api_key=cfg.dashscope_api_key,
         )
         expected_name = os.path.basename(temp_path)
 

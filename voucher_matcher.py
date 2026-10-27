@@ -153,6 +153,9 @@ def _combine_invoices(mail: MailRecord, invoices: list[DocumentResult],
     # agree with exactly one numbered invoice candidate.
     numberless_matches: dict[str, list[DocumentResult]] = {}
     for result in numberless:
+        if any(item.get("field") == "invoice_number" for item in result.conflicts):
+            _issue(result, "来源内部票号冲突，不能自动归并凭证")
+            continue
         matches = [number for number, group in numbered.items()
                    if all(_can_attach_numberless(result, item) for item in group)]
         if len(matches) == 1:
