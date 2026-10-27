@@ -9,7 +9,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from invoice_pipeline import RunConfig, _imap_error_hint
+from config import RunConfig, _imap_error_hint
 from pipeline import run_pipeline
 
 

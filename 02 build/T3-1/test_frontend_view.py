@@ -66,10 +66,6 @@ class FakeStreamlit(types.ModuleType):
 
 fake_st = FakeStreamlit()
 sys.modules["streamlit"] = fake_st
-fake_invoice = types.ModuleType("invoice_pipeline")
-fake_invoice.RunConfig = object
-fake_invoice._imap_error_hint = lambda _message: ""
-sys.modules["invoice_pipeline"] = fake_invoice
 fake_pipeline = types.ModuleType("pipeline")
 fake_pipeline.run_pipeline = lambda *_args, **_kwargs: ([], {})
 sys.modules["pipeline"] = fake_pipeline

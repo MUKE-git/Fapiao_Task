@@ -61,13 +61,13 @@ streamlit run app_demo.py
 
 ## 模块说明
 
-- app_demo.py：页面入口，调用新版 pipeline.run_pipeline；后续按 T3-1 适配提示和用户打包。
+- app_demo.py：页面入口；从 config.py 读取运行配置与 IMAP 错误提示，调用 pipeline.run_pipeline，展示后端已核查的下载包。
 - pipeline.py：收件、调度、记录组装，统一调用 Excel 与 JSON 输出。
 - attachment_processor.py / pdf_processor.py：附件登记与单文件 PDF 处理。
 - data_model.py / processor_contracts.py / stage_ports.py：数据结构、处理器返回结果、后续阶段入口；当前阶段端口已接入行程单匹配器。
 - itinerary_matcher.py：T2-3 发票与行程单匹配；dedup_arbitrator.py：T2-4 本轮发票票号去重仲裁；field_validator.py：T2-6 已确定字段规则校验。
 - ai_client.py / fallback_extractor.py / type_classifier.py：AI、正则和分类能力；config.py / utils.py 为配置与工具。
-- excel_writer.py：写表；invoice_pipeline.py：兼容导入过渡层。
+- excel_writer.py：写表。根目录旧 invoice_pipeline.py 已移除；T1/ 中同名文件仅是历史快照，不参与新版运行。
 - T1/ 为旧版快照；未来新增文件位置见《项目目录与文件归档规则.md》。
 
 编号仅本轮唯一；当前本机模式下每轮需选择不同输出目录，T3-1 目标改为自动创建独立临时工作目录。模型由配置选择，提示词当前内置；模型接口改造纳入 T3-2。
