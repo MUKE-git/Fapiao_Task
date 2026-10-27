@@ -12,6 +12,8 @@ _v2_output/
 
 # Python
 .venv/
+.deps/
+.uv-cache/
 __pycache__/
 *.pyc
 
