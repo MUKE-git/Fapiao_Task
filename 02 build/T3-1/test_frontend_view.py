@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import importlib
+import os
 import sys
 import types
 import unittest
+from unittest.mock import patch
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -76,6 +78,24 @@ class FrontendViewTests(unittest.TestCase):
     def setUp(self):
         fake_st.messages.clear()
         fake_st.session_state.clear()
+
+    def test_model_names_prefer_toml_then_environment_then_default(self):
+        with patch.dict(os.environ, {"DASHSCOPE_MODEL": "env-text",
+                                  "DASHSCOPE_VISION_MODEL": "env-vision"}):
+            fake_st.secrets.update({"DASHSCOPE_MODEL": "toml-text",
+                                    "DASHSCOPE_VISION_MODEL": "toml-vision"})
+            try:
+                self.assertEqual(app._dashscope_model(), "toml-text")
+                self.assertEqual(app._dashscope_vision_model(), "toml-vision")
+                fake_st.secrets.clear()
+                self.assertEqual(app._dashscope_model(), "env-text")
+                self.assertEqual(app._dashscope_vision_model(), "env-vision")
+            finally:
+                fake_st.secrets.clear()
+        with patch.dict(os.environ, {"DASHSCOPE_MODEL": "",
+                                  "DASHSCOPE_VISION_MODEL": ""}):
+            self.assertEqual(app._dashscope_model(), "qwen-plus")
+            self.assertEqual(app._dashscope_vision_model(), "qwen-vl-plus")
 
     def test_imap_presets_match_current_password_login_support(self):
         self.assertEqual(app.IMAP_PRESETS, {

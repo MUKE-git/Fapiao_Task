@@ -23,14 +23,20 @@ def _dashscope_api_key() -> str:
         return ""
 
 
-def _dashscope_model() -> str:
-    env_model = (os.environ.get("DASHSCOPE_MODEL") or "").strip()
-    if env_model:
-        return env_model
+def _model_setting(name: str, default: str) -> str:
     try:
-        return str(st.secrets.get("DASHSCOPE_MODEL", "") or "").strip() or "qwen-plus"
-    except (FileNotFoundError, TypeError, Exception):
-        return "qwen-plus"
+        secret_model = str(st.secrets.get(name, "") or "").strip()
+    except Exception:
+        secret_model = ""
+    return secret_model or (os.environ.get(name) or "").strip() or default
+
+
+def _dashscope_model() -> str:
+    return _model_setting("DASHSCOPE_MODEL", "qwen-plus")
+
+
+def _dashscope_vision_model() -> str:
+    return _model_setting("DASHSCOPE_VISION_MODEL", "qwen-vl-plus")
 
 
 def mail_notice_cards(mails: list[dict], alerts: list[dict], mismatches: list[dict]) -> list[dict]:
@@ -204,6 +210,7 @@ if submitted:
                     use_netease_id=use_netease,
                     dashscope_api_key=api_key,
                     dashscope_model=_dashscope_model(),
+                    dashscope_vision_model=_dashscope_vision_model(),
                     output_root=output_root,
                 )
 

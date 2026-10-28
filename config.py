@@ -65,6 +65,7 @@ class RunConfig:
     dashscope_api_key: str = ""
     dashscope_model: str = "qwen-plus"
     output_root: Optional[str] = None
+    dashscope_vision_model: str = ""
 
     @property
     def base_path(self) -> str:
