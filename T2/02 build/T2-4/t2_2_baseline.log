@@ -1,0 +1,12 @@
+test_ai_json_number_keeps_four_decimal_places (test_incremental.T22IncrementalTests.test_ai_json_number_keeps_four_decimal_places) ... ok
+test_all_itineraries_persist_with_only_four_fields (test_incremental.T22IncrementalTests.test_all_itineraries_persist_with_only_four_fields) ... ok
+test_amount_precision_and_final_excel_display (test_incremental.T22IncrementalTests.test_amount_precision_and_final_excel_display) ... ok
+test_excess_precision_keeps_value_and_flags_record (test_incremental.T22IncrementalTests.test_excess_precision_keeps_value_and_flags_record) ... ok
+test_missing_receipt_type_does_not_default_to_b (test_incremental.T22IncrementalTests.test_missing_receipt_type_does_not_default_to_b) ... ok
+test_pdf_pre_read_keeps_amount_precision (test_incremental.T22IncrementalTests.test_pdf_pre_read_keeps_amount_precision) ... ok
+test_run_pipeline_writes_unmatched_itinerary_to_debug_json (test_incremental.T22IncrementalTests.test_run_pipeline_writes_unmatched_itinerary_to_debug_json) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.189s
+
+OK

@@ -1,0 +1,20 @@
+{
+  "id": "C15",
+  "title": "T2-3 同层原名消歧",
+  "priority": "必选",
+  "stages": [
+    "T2-3",
+    "T2-5"
+  ],
+  "source_kind": "合成",
+  "review_status": "已审核通过",
+  "review_focus": "检查完整解码原名，不使用内部存盘名。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票及行程单 C15",
+      "note": "两份行程单都处在相等金额层，只能用原名尾缀 B 消歧。"
+    }
+  ]
+}

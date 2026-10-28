@@ -1,0 +1,15 @@
+﻿# 敏感文件（凭证/加解密相关，禁止上传）
+enc.bin
+try_dec.py
+
+# 调试日志
+debug-*.log
+debug.log
+task_debug.json
+
+# Python
+__pycache__/
+*.pyc
+
+# 密钥配置
+.streamlit/secrets.toml

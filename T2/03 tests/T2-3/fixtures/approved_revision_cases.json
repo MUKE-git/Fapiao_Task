@@ -1,0 +1,82 @@
+{
+  "approval": "用户于 2026-10-15 确认：甲～戊全部通过",
+  "mail_subject": "电子发票 T2-3 修订验收",
+  "mail_date_header": "Thu, 15 Oct 2026 09:30:00 +0800",
+  "common_invoice": {
+    "invoice_date": "2026-10-15",
+    "invoice_type": "",
+    "receipt_type": "客运服务费",
+    "seller": "合成测试销售方"
+  },
+  "cases": [
+    {
+      "id": "甲",
+      "uid": "9101",
+      "files": [
+        {"name": "发票C.pdf", "role": "Invoice", "amount": "100.00"},
+        {"name": "发票A.pdf", "role": "Invoice", "amount": "100.00"},
+        {"name": "行程单A.pdf", "role": "Itinerary", "amount": "100.00", "route": "杭州→A站"}
+      ],
+      "expected_links": {"02": "03"},
+      "expected_statuses": {"01": "人工待核", "02": "complete"},
+      "expected_unmatched_itineraries": [],
+      "expected_issue_seqs": ["01"]
+    },
+    {
+      "id": "乙",
+      "uid": "9102",
+      "files": [
+        {"name": "发票A.pdf", "role": "Invoice", "amount": "100.00"},
+        {"name": "发票C.pdf", "role": "Invoice", "amount": "900.00"},
+        {"name": "行程单A.pdf", "role": "Itinerary", "amount": "100.00", "route": "杭州→A站"},
+        {"name": "行程单B.pdf", "role": "Itinerary", "amount": "1.00", "route": "杭州→B站"}
+      ],
+      "expected_links": {"01": "03", "02": "04"},
+      "expected_statuses": {"01": "complete", "02": "complete"},
+      "expected_unmatched_itineraries": [],
+      "expected_issue_seqs": []
+    },
+    {
+      "id": "丙",
+      "uid": "9103",
+      "files": [
+        {"name": "发票C.pdf", "role": "Invoice", "amount": "100.00"},
+        {"name": "发票D.pdf", "role": "Invoice", "amount": "100.00"},
+        {"name": "发票B.pdf", "role": "Invoice", "amount": "200.00"},
+        {"name": "行程单A.pdf", "role": "Itinerary", "amount": "100.00", "route": "杭州→A站"},
+        {"name": "行程单D.pdf", "role": "Itinerary", "amount": "100.00", "route": "杭州→D站"},
+        {"name": "行程单B.pdf", "role": "Itinerary", "amount": "200.00", "route": "杭州→B站"}
+      ],
+      "expected_links": {"01": "04", "02": "05", "03": "06"},
+      "expected_statuses": {"01": "complete", "02": "complete", "03": "complete"},
+      "expected_unmatched_itineraries": [],
+      "expected_issue_seqs": []
+    },
+    {
+      "id": "丁",
+      "uid": "9104",
+      "files": [
+        {"name": "发票A.pdf", "role": "Invoice", "amount": "100.00"},
+        {"name": "副本发票A.pdf", "role": "Invoice", "amount": "100.00"},
+        {"name": "行程单A.pdf", "role": "Itinerary", "amount": "100.00", "route": "杭州→A站"}
+      ],
+      "expected_links": {},
+      "expected_statuses": {"01": "人工待核", "02": "人工待核"},
+      "expected_unmatched_itineraries": ["03"],
+      "expected_issue_seqs": ["01", "02"]
+    },
+    {
+      "id": "戊",
+      "uid": "9105",
+      "files": [
+        {"name": "发票C.pdf", "role": "Invoice", "amount": "900.00"},
+        {"name": "发票B.pdf", "role": "Invoice", "amount": "5.00", "receipt_type": "办公用品"},
+        {"name": "行程单A.pdf", "role": "Itinerary", "amount": "1.00", "route": "杭州→A站"}
+      ],
+      "expected_links": {},
+      "expected_statuses": {"01": "人工待核", "02": "complete"},
+      "expected_unmatched_itineraries": ["03"],
+      "expected_issue_seqs": ["01"]
+    }
+  ]
+}

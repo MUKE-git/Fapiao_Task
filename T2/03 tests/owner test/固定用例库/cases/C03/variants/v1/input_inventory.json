@@ -1,0 +1,9 @@
+[
+  {
+    "path": "00_raw.eml",
+    "name": "原始邮件",
+    "source": "RFC822/MIME",
+    "bytes": 345,
+    "sha256": "2f8d1a12080e6058d844c55fe72c9ccae429e47c17ef3e445d080dbd441852bd"
+  }
+]

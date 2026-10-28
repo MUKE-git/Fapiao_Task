@@ -1,0 +1,26 @@
+{
+  "id": "C12",
+  "title": "关键字段缺失",
+  "priority": "必选",
+  "stages": [
+    "T2-1",
+    "T2-6"
+  ],
+  "source_kind": "合成",
+  "review_status": "已审核通过",
+  "review_focus": "两个变体分别检查部分缺失与三项全缺的入表边界。",
+  "variants": [
+    {
+      "id": "partial",
+      "path": "variants/partial",
+      "subject": "电子发票 C12",
+      "note": "只有票号缺失；保留 JSON 记录并写一行 Excel。"
+    },
+    {
+      "id": "all_missing",
+      "path": "variants/all_missing",
+      "subject": "电子发票 C12",
+      "note": "票号、日期、金额三项全缺；JSON 仍留记录，Excel 零行。"
+    }
+  ]
+}

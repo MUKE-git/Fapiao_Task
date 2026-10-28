@@ -1,0 +1,16 @@
+[
+  {
+    "path": "00_raw.eml",
+    "name": "原始邮件",
+    "source": "RFC822/MIME",
+    "bytes": 81484,
+    "sha256": "d8ffe7c21ec8e3ef3a726b2efbd01f832c874a8e008fe5050d82d68091cce808"
+  },
+  {
+    "path": "attachments/direct/部门会议通知.pdf",
+    "name": "部门会议通知.pdf",
+    "source": "MIME",
+    "bytes": 58982,
+    "sha256": "27236c80df72681a0aef53dc6481ea6b36eb5c148b1a0bc71c472917c643b9b9"
+  }
+]

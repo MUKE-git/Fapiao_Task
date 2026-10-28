@@ -1,0 +1,30 @@
+{
+  "type": "受控逐文件提取结果；不是 AI 或真实 PDF 处理器的实测输出",
+  "documents": [
+    {
+      "original_name": "发票.pdf",
+      "role": "Invoice",
+      "fields": {
+        "invoice_date": "2026-09-28",
+        "invoice_number": "26331148571660833404",
+        "total_amount": "38.93",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "客运服务费",
+        "seller": "合成测试销售方"
+      },
+      "error_reason": "",
+      "source_sha256": "b2656e2e00d66d9f77c43865c19bc23326c930e48c5c7c17350785d17f6edc6e"
+    },
+    {
+      "original_name": "行程单.pdf",
+      "role": "Itinerary",
+      "fields": {
+        "match_amount": "38.93",
+        "travel_time": "2026-09-25 10:00",
+        "origin_dest": "杭州东站 → 杭州萧山国际机场"
+      },
+      "error_reason": "",
+      "source_sha256": "a9e1602c43f59dc3d0faae1078abc13ad14df61d66f234d56638e9106e6550a5"
+    }
+  ]
+}

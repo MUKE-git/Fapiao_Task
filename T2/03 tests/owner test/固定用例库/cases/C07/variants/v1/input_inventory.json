@@ -1,0 +1,37 @@
+[
+  {
+    "path": "00_raw.eml",
+    "name": "原始邮件",
+    "source": "RFC822/MIME",
+    "bytes": 72473,
+    "sha256": "bae9c5d993fd2d0d9523efa404225cb963fe73b82466af760f5e45adb877ee9a"
+  },
+  {
+    "path": "attachments/direct/发票甲.pdf",
+    "name": "发票甲.pdf",
+    "source": "MIME",
+    "bytes": 25058,
+    "sha256": "7a85dafcbe8d1e3711f734941ee3acfa6597f24f479c15ef6604257f5d0994a6"
+  },
+  {
+    "path": "attachments/zip/发票甲.pdf",
+    "name": "发票甲.pdf",
+    "source": "汇总附件.zip",
+    "bytes": 25058,
+    "sha256": "7a85dafcbe8d1e3711f734941ee3acfa6597f24f479c15ef6604257f5d0994a6"
+  },
+  {
+    "path": "attachments/zip/发票乙.pdf",
+    "name": "发票乙.pdf",
+    "source": "汇总附件.zip",
+    "bytes": 25031,
+    "sha256": "1ef81f6d5b0425b7e1f6b98e1f27023a8bfc385f2caee820bf5df97e3dea899c"
+  },
+  {
+    "path": "attachments/direct/汇总附件.zip",
+    "name": "汇总附件.zip",
+    "source": "MIME",
+    "bytes": 27901,
+    "sha256": "ccd8f6a82d442652b147849e1a2c8b982c23c01fade97d92ece5f09206901e05"
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "folder": "INBOX",
+  "unseen_uids": [
+    "8221",
+    "8222",
+    "8223"
+  ],
+  "messages": 3,
+  "unseen": 3,
+  "mails": [
+    {
+      "uid": "8221",
+      "raw_path": "mail/01_8221.eml",
+      "subject": "电子发票 C22 甲",
+      "date_header": "Mon, 12 Oct 2026 09:30:00 +0800"
+    },
+    {
+      "uid": "8222",
+      "raw_path": "mail/02_8222.eml",
+      "subject": "部门会议通知 C22",
+      "date_header": "Mon, 12 Oct 2026 09:30:00 +0800"
+    },
+    {
+      "uid": "8223",
+      "raw_path": "mail/03_8223.eml",
+      "subject": "报销凭证 C22 乙",
+      "date_header": "Mon, 12 Oct 2026 09:30:00 +0800"
+    }
+  ]
+}

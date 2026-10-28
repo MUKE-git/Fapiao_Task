@@ -1,0 +1,25 @@
+{
+  "id": "C19",
+  "title": "T2-3 无法唯一匹配",
+  "priority": "必选",
+  "stages": [
+    "T2-3"
+  ],
+  "source_kind": "合成",
+  "review_status": "已审核通过",
+  "review_focus": "无唯一证据时不猜关系，全部行程单保留。",
+  "variants": [
+    {
+      "id": "same_amount",
+      "path": "variants/same_amount",
+      "subject": "电子发票及行程单 C19 同金额",
+      "note": "两个同层金额候选，发票 C 与 A/B 均无尾缀对应。"
+    },
+    {
+      "id": "no_evidence",
+      "path": "variants/no_evidence",
+      "subject": "电子发票及行程单 C19 无证据",
+      "note": "金额两层均不命中，发票 C 与 A/B 均无尾缀对应。"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "type": "已审核人工标准答案",
+  "case_id": "C22",
+  "variant": "all_miss",
+  "expected": {
+    "unseen_total": 2,
+    "selected_mails": 0,
+    "file_count": 0,
+    "record_count": 0,
+    "itinerary_count": 0,
+    "excel_rows": 0,
+    "matched_by_invoice": {},
+    "duplicate_skipped": 0,
+    "alerts_contain": [],
+    "field_checks": {},
+    "mail_checks": {
+      "header_fetched_uids": [
+        "8201",
+        "8202"
+      ],
+      "full_fetched_uids": [],
+      "records_by_uid": {},
+      "pdf_calls": []
+    }
+  },
+  "reason": "两封未读邮件均不命中，必须逐封读邮件头；任何一封都不应完整获取附件。"
+}

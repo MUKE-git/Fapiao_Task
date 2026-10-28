@@ -1,0 +1,22 @@
+{
+  "type": "已审核人工标准答案",
+  "case_id": "C18",
+  "variant": "v1",
+  "expected": {
+    "unseen_total": 1,
+    "selected_mails": 1,
+    "file_count": 5,
+    "record_count": 3,
+    "itinerary_count": 2,
+    "excel_rows": 3,
+    "matched_by_invoice": {
+      "发票C.pdf": "行程单C.pdf"
+    },
+    "duplicate_skipped": 0,
+    "alerts_contain": [
+      "多张发票"
+    ],
+    "field_checks": {}
+  },
+  "reason": "A/B 均先拟配 X，冲突撤回；C/C 独立配对。 冲突提示可写“被多张发票竞争”或“多张发票拟关联同一行程单”，两者均可。"
+}

@@ -1,0 +1,69 @@
+{
+  "type": "受控逐文件提取结果；不是 AI 或真实 PDF 处理器的实测输出",
+  "documents": [
+    {
+      "original_name": "发票A.pdf",
+      "role": "Invoice",
+      "fields": {
+        "invoice_date": "2026-09-26",
+        "invoice_number": "26331456513317974903",
+        "total_amount": "98.31",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "客运服务费",
+        "seller": "合成测试销售方"
+      },
+      "error_reason": "",
+      "source_sha256": "6e38c7bb794a11de501b20f5111e55d76778e492d5150df4f3d121df41b7b74c"
+    },
+    {
+      "original_name": "发票B.pdf",
+      "role": "Invoice",
+      "fields": {
+        "invoice_date": "2026-09-26",
+        "invoice_number": "26331989083246556926",
+        "total_amount": "98.47",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "客运服务费",
+        "seller": "合成测试销售方"
+      },
+      "error_reason": "",
+      "source_sha256": "b8599e559acc6f4f570a06612eb2b371d76aaa2233d822ad3dad0b718728d4a2"
+    },
+    {
+      "original_name": "发票C.pdf",
+      "role": "Invoice",
+      "fields": {
+        "invoice_date": "2026-09-28",
+        "invoice_number": "26331585693637935814",
+        "total_amount": "107.74",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "客运服务费",
+        "seller": "合成测试销售方"
+      },
+      "error_reason": "",
+      "source_sha256": "e8b258ecd6d7d823e48eab54c5ae2e5dcd3897d37b9e9e09ef0ae3a8d6afeb17"
+    },
+    {
+      "original_name": "行程单X.pdf",
+      "role": "Itinerary",
+      "fields": {
+        "match_amount": "98.39",
+        "travel_time": "2026-09-25 10:00",
+        "origin_dest": "杭州宋城→杭州萧山国际机场"
+      },
+      "error_reason": "",
+      "source_sha256": "ea813ddc9a0b7c18b40fbb6fab2a9dfb1fc67256a0621e0dbd972485e816f908"
+    },
+    {
+      "original_name": "行程单C.pdf",
+      "role": "Itinerary",
+      "fields": {
+        "match_amount": "107.74",
+        "travel_time": "2026-09-25 10:00",
+        "origin_dest": "临安汽车东站→杭州东站"
+      },
+      "error_reason": "",
+      "source_sha256": "a513547a625fae7c5c2e38aee30343cf78870657a3e71e678095c88359f6ae84"
+    }
+  ]
+}

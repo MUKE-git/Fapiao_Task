@@ -1,0 +1,70 @@
+{
+  "case": "C05/v1",
+  "sample_kind": "已审核合成文字型 PDF",
+  "model": "qwen3.7-max",
+  "request_cap": 2,
+  "actual_requests": 2,
+  "api_statuses": [
+    200,
+    200
+  ],
+  "documents": [
+    {
+      "file": "发票.pdf",
+      "role_expected": "Invoice",
+      "role_actual": "Invoice",
+      "pre_read_type": "Invoice",
+      "api_success": true,
+      "fallback_used": false,
+      "error_reason": "",
+      "expected": {
+        "invoice_date": "2026-09-28",
+        "invoice_number": "26331148571660833404",
+        "total_amount": "38.93",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "客运服务费",
+        "seller": "合成测试销售方"
+      },
+      "actual": {
+        "invoice_date": "2026-09-28",
+        "invoice_number": "26331148571660833404",
+        "total_amount": "38.93",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "客运服务费",
+        "seller": "合成测试销售方"
+      },
+      "field_checks": {
+        "invoice_date": true,
+        "invoice_number": true,
+        "total_amount": true,
+        "invoice_type": true,
+        "receipt_type": true,
+        "seller": true
+      }
+    },
+    {
+      "file": "行程单.pdf",
+      "role_expected": "Itinerary",
+      "role_actual": "Itinerary",
+      "pre_read_type": "Itinerary",
+      "api_success": true,
+      "fallback_used": false,
+      "error_reason": "",
+      "expected": {
+        "match_amount": "38.93",
+        "travel_time": "2026-09-25 10:00",
+        "origin_dest": "杭州东站 → 杭州萧山国际机场"
+      },
+      "actual": {
+        "match_amount": "38.93",
+        "travel_time": "2026-09-25 10:00",
+        "origin_dest": "杭州东站 → 杭州萧山国际机场"
+      },
+      "field_checks": {
+        "match_amount": true,
+        "travel_time": true,
+        "origin_dest": true
+      }
+    }
+  ]
+}

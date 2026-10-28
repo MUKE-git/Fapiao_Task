@@ -1,0 +1,19 @@
+{
+  "id": "C14",
+  "title": "T2-3 金额层级",
+  "priority": "必选",
+  "stages": [
+    "T2-3"
+  ],
+  "source_kind": "合成",
+  "review_status": "已审核通过",
+  "review_focus": "检查 100.1700 原精度及未匹配乙单保留。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票及行程单 C14",
+      "note": "精度舍入后相等层优先于仅在 0.5 容差内的候选。"
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "scope": "18 条必选；C11 改为可选并保留编号，C10/C20/C21 暂不制作。C04 含 a/b 两个变体。",
+  "source_kind": "全部合成",
+  "review_status": "18 条必选已审核通过；可选 C11 待审核",
+  "cases": [
+    {
+      "id": "C01",
+      "title": "无未读邮件",
+      "path": "cases/C01/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C02",
+      "title": "主题不命中",
+      "path": "cases/C02/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C03",
+      "title": "命中主题但无 PDF",
+      "path": "cases/C03/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C04",
+      "title": "普通发票字段提取：a/b 类",
+      "path": "cases/C04/review.md",
+      "variants": [
+        "v1",
+        "a"
+      ]
+    },
+    {
+      "id": "C05",
+      "title": "单张发票与单份行程单同封",
+      "path": "cases/C05/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C06",
+      "title": "ZIP 根目录 PDF",
+      "path": "cases/C06/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C07",
+      "title": "多附件及重复文件",
+      "path": "cases/C07/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C08",
+      "title": "无类型提示的附件名",
+      "path": "cases/C08/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C09",
+      "title": "不可读 PDF",
+      "path": "cases/C09/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C12",
+      "title": "关键字段缺失",
+      "path": "cases/C12/review.md",
+      "variants": [
+        "partial",
+        "all_missing"
+      ]
+    },
+    {
+      "id": "C13",
+      "title": "交通类发票无行程单",
+      "path": "cases/C13/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C14",
+      "title": "T2-3 金额层级",
+      "path": "cases/C14/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C15",
+      "title": "T2-3 同层原名消歧",
+      "path": "cases/C15/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C16",
+      "title": "T2-3 容差边界与原名下一步",
+      "path": "cases/C16/review.md",
+      "variants": [
+        "d049",
+        "d050",
+        "d051_name",
+        "d051_no_name"
+      ]
+    },
+    {
+      "id": "C17",
+      "title": "T2-3 缺金额时原名兜底",
+      "path": "cases/C17/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C18",
+      "title": "T2-3 多票竞争一单",
+      "path": "cases/C18/review.md",
+      "variants": [
+        "v1"
+      ]
+    },
+    {
+      "id": "C19",
+      "title": "T2-3 无法唯一匹配",
+      "path": "cases/C19/review.md",
+      "variants": [
+        "same_amount",
+        "no_evidence"
+      ]
+    },
+    {
+      "id": "C22",
+      "title": "多封未读邮件的主题筛选",
+      "path": "cases/C22/review.md",
+      "variants": [
+        "all_miss",
+        "miss_then_hit",
+        "hit_miss_hit"
+      ]
+    }
+  ],
+  "optional_cases": [
+    {
+      "id": "C11",
+      "title": "金额或日期有歧义",
+      "path": "cases/C11/review.md",
+      "variants": [
+        "v1"
+      ]
+    }
+  ]
+}

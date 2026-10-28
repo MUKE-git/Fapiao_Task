@@ -1,0 +1,18 @@
+{
+  "type": "已审核人工标准答案",
+  "case_id": "C07",
+  "variant": "v1",
+  "expected": {
+    "unseen_total": 1,
+    "selected_mails": 1,
+    "file_count": 2,
+    "record_count": 2,
+    "itinerary_count": 0,
+    "excel_rows": 2,
+    "matched_by_invoice": {},
+    "duplicate_skipped": 1,
+    "alerts_contain": [],
+    "field_checks": {}
+  },
+  "reason": "ZIP 内甲与直接附件甲字节完全相同；乙不同。"
+}

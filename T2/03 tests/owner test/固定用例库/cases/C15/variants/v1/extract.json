@@ -1,0 +1,41 @@
+{
+  "type": "受控逐文件提取结果；不是 AI 或真实 PDF 处理器的实测输出",
+  "documents": [
+    {
+      "original_name": "发票B.pdf",
+      "role": "Invoice",
+      "fields": {
+        "invoice_date": "2026-09-28",
+        "invoice_number": "26331429265386194320",
+        "total_amount": "258.70",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "客运服务费",
+        "seller": "合成测试销售方"
+      },
+      "error_reason": "",
+      "source_sha256": "ef0b7738cc8c646b08f6c76b9299e49410ff21728478bf872ba64e3fc7360f7f"
+    },
+    {
+      "original_name": "行程单A.pdf",
+      "role": "Itinerary",
+      "fields": {
+        "match_amount": "258.70",
+        "travel_time": "2026-09-25 10:00",
+        "origin_dest": "中国美术学院（南山校区）→杭州东站"
+      },
+      "error_reason": "",
+      "source_sha256": "4a5d65c7758e3cede098236b66e9932a1e79bc88ed4981349eccb13072caee8b"
+    },
+    {
+      "original_name": "行程单B.pdf",
+      "role": "Itinerary",
+      "fields": {
+        "match_amount": "258.70",
+        "travel_time": "2026-09-25 10:00",
+        "origin_dest": "浙江省科技馆（西湖文化广场2号）→杭州宋城"
+      },
+      "error_reason": "",
+      "source_sha256": "a1efc075bbf6bb46515b8bcf115a60347dc013e37424803a01361c31b59a7083"
+    }
+  ]
+}

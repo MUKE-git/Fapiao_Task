@@ -1,0 +1,50 @@
+[
+  {
+    "path": "mail/01_8221.eml",
+    "name": "原始邮件 8221",
+    "source": "RFC822/MIME",
+    "mail_uid": "8221",
+    "bytes": 34559,
+    "sha256": "81a2eee8282a8c3b68ea6acb1bc7afb68429230da016a1a3bdf82e809cc2a6ae"
+  },
+  {
+    "path": "attachments/direct/8221_发票甲.pdf",
+    "name": "发票甲.pdf",
+    "source": "MIME",
+    "mail_uid": "8221",
+    "bytes": 25059,
+    "sha256": "11e983bb15d65ce67011798920a1509d9f0856b732432ce48396e3cec360b668"
+  },
+  {
+    "path": "mail/02_8222.eml",
+    "name": "原始邮件 8222",
+    "source": "RFC822/MIME",
+    "mail_uid": "8222",
+    "bytes": 80413,
+    "sha256": "6ede74ab3a9d90c2dd000ddb66d156a9739e62ee8b5e645a0ae34f14927bacde"
+  },
+  {
+    "path": "attachments/direct/8222_部门会议通知.pdf",
+    "name": "部门会议通知.pdf",
+    "source": "MIME",
+    "mail_uid": "8222",
+    "bytes": 58982,
+    "sha256": "27236c80df72681a0aef53dc6481ea6b36eb5c148b1a0bc71c472917c643b9b9"
+  },
+  {
+    "path": "mail/03_8223.eml",
+    "name": "原始邮件 8223",
+    "source": "RFC822/MIME",
+    "mail_uid": "8223",
+    "bytes": 34523,
+    "sha256": "df8d4e1eb6c2a634f711c6f4c229585962dc36786e5c99699a728750cbae9437"
+  },
+  {
+    "path": "attachments/direct/8223_发票乙.pdf",
+    "name": "发票乙.pdf",
+    "source": "MIME",
+    "mail_uid": "8223",
+    "bytes": 25031,
+    "sha256": "1e76aef69511cd20d219fce7750f06906a6f2bff0caa9049cebc9627cdb3c5b4"
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "type": "受控逐文件提取结果；不是 AI 或真实 PDF 处理器的实测输出",
+  "documents": [
+    {
+      "original_name": "发票A.pdf",
+      "role": "Invoice",
+      "fields": {
+        "invoice_date": "2026-09-26",
+        "invoice_number": "26331882617152424518",
+        "total_amount": "Not Found",
+        "invoice_type": "电子发票（普通发票）",
+        "receipt_type": "客运服务费",
+        "seller": "合成测试销售方"
+      },
+      "error_reason": "",
+      "source_sha256": "88902118a8b2b4ea3f310c46711191a6e29e477f6260ae443f77756a5ef2e349"
+    },
+    {
+      "original_name": "行程单A.pdf",
+      "role": "Itinerary",
+      "fields": {
+        "match_amount": "500.00",
+        "travel_time": "2026-09-25 10:00",
+        "origin_dest": "杭州东站→千岛湖镇人民政府"
+      },
+      "error_reason": "",
+      "source_sha256": "043c702b65679de55d58fdc875d9e62cf73bf729efc759dbf112df10da2179df"
+    },
+    {
+      "original_name": "行程单B.pdf",
+      "role": "Itinerary",
+      "fields": {
+        "match_amount": "600.00",
+        "travel_time": "2026-09-25 10:00",
+        "origin_dest": "杭州萧山国际机场→千岛湖镇人民政府"
+      },
+      "error_reason": "",
+      "source_sha256": "910484de394cbeee1fe4ad70eee124816ce6867d227069484dcd959575ae3259"
+    }
+  ]
+}

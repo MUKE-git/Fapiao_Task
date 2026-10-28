@@ -1,0 +1,17 @@
+{
+  "approval": "用户于2026-10-13确认：甲～辛全部通过",
+  "invoice_number": "26327000000775232739",
+  "defaults": {"invoice_date": "2026-10-13", "total_amount": "100.00", "invoice_type": "", "receipt_type": "办公用品", "seller": "甲公司"},
+  "cases": [
+    {"id": "甲", "invoices": [{"uid": "9101", "name": "甲发票.pdf", "pdf_text": "INVOICE A TOTAL 100.00"}, {"uid": "9102", "name": "乙发票.pdf", "total_amount": "100.0", "invoice_type": "电子发票（普通发票）", "pdf_text": "INVOICE B TOTAL 100.0"}], "excel_from": [0], "ai_calls": 0, "mode": "duplicate"},
+    {"id": "乙1", "invoices": [{"uid": "9101", "name": "甲发票.pdf", "invoice_number": "", "pdf_text": "INVOICE A TOTAL 100.00"}, {"uid": "9102", "name": "乙发票.pdf", "invoice_number": "Not Found", "pdf_text": "INVOICE B TOTAL 100.00"}], "excel_from": [0, 1], "ai_calls": 0, "mode": "none"},
+    {"id": "乙2", "invoices": [{"uid": "9101", "name": "甲发票.pdf", "invoice_number": "ABC123", "pdf_text": "INVOICE A TOTAL 100.00"}, {"uid": "9102", "name": "乙发票.pdf", "invoice_number": "ABC123", "pdf_text": "INVOICE B TOTAL 100.00"}], "excel_from": [0], "ai_calls": 0, "mode": "duplicate"},
+    {"id": "丙", "invoices": [{"uid": "9101", "name": "甲发票.pdf", "pdf_text": "发票甲 价税合计 100.00 元"}, {"uid": "9102", "name": "乙发票.pdf", "total_amount": "200.00", "pdf_text": "发票乙 价税合计 200.00 元"}], "excel_from": [0, 1], "ai_calls": 1, "different_fields": ["total_amount"], "ai_selection": 1, "evidence": [{"field": "total_amount", "quote": "价税合计 200.00 元"}], "mode": "conflict_unresolved"},
+    {"id": "丁", "invoices": [{"uid": "9101", "name": "甲发票.pdf", "pdf_text": "发票甲 金额字样不可辨"}, {"uid": "9102", "name": "乙发票.pdf", "total_amount": "200.00", "pdf_text": "发票乙 价税合计 200.00 元"}], "excel_from": [1], "ai_calls": 1, "different_fields": ["total_amount"], "ai_selection": 1, "evidence": [{"field": "total_amount", "quote": "价税合计 200.00 元"}], "mode": "conflict_selected"},
+    {"id": "戊", "invoices": [{"uid": "9101", "name": "甲发票.pdf", "pdf_text": "INVOICE A TOTAL 100.00"}, {"uid": "9102", "name": "乙发票.pdf", "total_amount": "100.0", "pdf_text": "INVOICE B TOTAL 100.0"}, {"uid": "9103", "name": "丙发票.pdf", "total_amount": "200.00", "pdf_text": "INVOICE C TOTAL 200.00"}], "excel_from": [0, 2], "ai_calls": 1, "different_fields": ["total_amount"], "ai_selection": null, "evidence": [], "mode": "mixed"},
+    {"id": "己", "invoices": [{"uid": "9101", "name": "甲发票.pdf", "pdf_text": "发票甲 价税合计 100.00 元 销售方 甲公司"}, {"uid": "9102", "name": "乙发票.pdf", "total_amount": "200.00", "seller": "乙公司", "pdf_text": "发票乙 价税合计 200.00 元 销售方 乙公司"}], "excel_from": [0, 1], "ai_calls": 1, "different_fields": ["total_amount", "seller"], "ai_selection": 1, "evidence": [{"field": "total_amount", "quote": "价税合计 200.00 元"}], "mode": "conflict_unresolved"},
+    {"id": "庚", "invoices": [{"uid": "9101", "name": "甲发票.pdf", "pdf_text": "发票甲 金额字样不可辨", "extra_pdf_name": "甲行程单.pdf", "extra_pdf_text": "行程单甲 用车信息"}, {"uid": "9102", "name": "乙发票.pdf", "total_amount": "200.00", "pdf_text": "发票乙 价税合计 200.00 元"}], "excel_from": [1], "ai_calls": 1, "different_fields": ["total_amount"], "ai_selection": 1, "evidence": [{"field": "total_amount", "quote": "价税合计 200.00 元"}], "mode": "conflict_selected"},
+    {"id": "辛1", "invoices": [{"uid": "9101", "name": "甲发票.pdf", "pdf_text": "INVOICE A TOTAL 100.00"}], "excel_from": [0], "ai_calls": 0, "mode": "none"},
+    {"id": "辛2", "invoices": [{"uid": "9101", "name": "甲发票.pdf", "pdf_text": "INVOICE A TOTAL 100.00"}], "excel_from": [0], "ai_calls": 0, "mode": "none"}
+  ]
+}

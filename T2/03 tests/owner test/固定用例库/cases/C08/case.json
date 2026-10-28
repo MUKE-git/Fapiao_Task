@@ -1,0 +1,20 @@
+{
+  "id": "C08",
+  "title": "无类型提示的附件名",
+  "priority": "必选",
+  "stages": [
+    "T2-1",
+    "T2-5"
+  ],
+  "source_kind": "合成",
+  "review_status": "已审核通过",
+  "review_focus": "检查角色判断依据，保留原名与内部名对应关系。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票 C08",
+      "note": "原名不含发票/行程单；PDF 正文含发票字段。"
+    }
+  ]
+}

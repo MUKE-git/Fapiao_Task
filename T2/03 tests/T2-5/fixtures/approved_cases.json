@@ -1,0 +1,17 @@
+{
+  "approval": "用户确认：T2-5甲～丁全部通过",
+  "case_A": {
+    "uids": ["701", "702"],
+    "files": [[{"file_seq": "01", "original_name": "甲发票.pdf", "file_type": "PDF", "bytes_label": "invoice_one"}, {"file_seq": "02", "original_name": "资料/行程单.pdf", "file_type": "PDF", "bytes_label": "itinerary"}], [{"file_seq": "01", "original_name": "乙发票.pdf", "file_type": "PDF", "bytes_label": "invoice_two"}]],
+    "dedup_skipped": [{"filename": "重复发票.pdf", "reason": "同邮件内容重复（ZIP:附件.zip）"}],
+    "invoice_fields": [
+      {"invoice_date": "2026-10-15", "invoice_number": "26327000000775232739", "total_amount": "100.00", "invoice_type": "", "receipt_type": "客运服务费", "seller": "甲公司", "travel_time": "2026-10-15 09:05", "origin_dest": "杭州→上海"},
+      {"invoice_date": "2026-10-15", "invoice_number": "26327000000775232740", "total_amount": "200.00", "invoice_type": "", "receipt_type": "办公用品", "seller": "甲公司"}
+    ],
+    "itinerary": {"record_id": "Msg1-02", "match_amount": "900.00", "travel_time": "2026-10-15 09:05", "origin_dest": "杭州→上海"},
+    "excel_rows": [["2026-10-15", "26327000000775232739", 100.0, null, "客运服务费", "2026-10-15 09:05", "甲公司", "杭州→上海"], ["2026-10-15", "26327000000775232740", 200.0, null, "办公用品", null, "甲公司", null]]
+  },
+  "case_B": {"uid": "703", "exact_stem_char": "甲", "over_stem_char": "乙", "exact_stem_length": 108, "over_stem_length": 109, "extension": ".pdf", "sentinel_bytes": "sentinel", "attachment_bytes": ["first-pdf", "second-pdf"]},
+  "case_C": {"uid": "704", "names": ["", "CON.ofd", "a<bad>?.xml", "发票.pdf"], "types": ["PDF", "OFD", "XML", "PDF"], "extensions": [".pdf", ".ofd", ".xml", ".pdf"], "contents": ["blank-pdf", "reserved-ofd", "illegal-xml", "encoded-pdf"]},
+  "case_D": {"uid": "705", "variants": [{"id": "丁1", "bad_source": "02", "expected_error": "来源链断裂"}, {"id": "丁2", "delete_file": true, "expected_error": "内部文件不存在"}]}
+}

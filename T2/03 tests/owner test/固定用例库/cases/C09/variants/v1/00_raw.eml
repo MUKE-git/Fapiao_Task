@@ -1,0 +1,23 @@
+Subject: =?utf-8?b?55S15a2Q5Y+R56Wo?= C09
+From: fixture-sender@example.test
+To: fixture-reviewer@example.test
+Date: Tue, 29 Sep 2026 09:30:00 +0800
+Message-ID: <case-090593db69b818a5@example.test>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============7594456315938890145=="
+
+--===============7594456315938890145==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+合成测试邮件。附件仅供固定用例审核。
+
+--===============7594456315938890145==
+Content-Type: application/pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename*=utf-8''%E5%8F%91%E7%A5%A8.pdf
+MIME-Version: 1.0
+
+JVBERi0xLjQKJUlOVEVOVElPTkFMTFlfQ09SUlVQVF9GSVhFRF9DQVNFCg==
+
+--===============7594456315938890145==--

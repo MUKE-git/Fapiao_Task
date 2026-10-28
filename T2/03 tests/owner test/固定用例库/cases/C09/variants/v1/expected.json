@@ -1,0 +1,20 @@
+{
+  "type": "已审核人工标准答案",
+  "case_id": "C09",
+  "variant": "v1",
+  "expected": {
+    "unseen_total": 1,
+    "selected_mails": 1,
+    "file_count": 1,
+    "record_count": 0,
+    "itinerary_count": 0,
+    "excel_rows": 0,
+    "matched_by_invoice": {},
+    "duplicate_skipped": 0,
+    "alerts_contain": [
+      "PDF_READ_ERROR"
+    ],
+    "field_checks": {}
+  },
+  "reason": "附件以 PDF 扩展名提交，但字节故意损坏；不能猜造字段。"
+}

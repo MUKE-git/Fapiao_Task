@@ -1,0 +1,20 @@
+{
+  "id": "C05",
+  "title": "单张发票与单份行程单同封",
+  "priority": "必选",
+  "stages": [
+    "T2-1",
+    "T2-3"
+  ],
+  "source_kind": "合成",
+  "review_status": "已审核通过",
+  "review_focus": "核对打车发票价税合计、开票日期与行程时间，并核对行程单匹配和 Excel 八列。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": "电子发票及行程单 C05",
+      "note": "整封邮件恰好一票一单；行程字段只汇入发票行。"
+    }
+  ]
+}

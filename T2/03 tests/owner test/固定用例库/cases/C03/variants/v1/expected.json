@@ -1,0 +1,20 @@
+{
+  "type": "已审核人工标准答案",
+  "case_id": "C03",
+  "variant": "v1",
+  "expected": {
+    "unseen_total": 1,
+    "selected_mails": 1,
+    "file_count": 0,
+    "record_count": 0,
+    "itinerary_count": 0,
+    "excel_rows": 0,
+    "matched_by_invoice": {},
+    "duplicate_skipped": 0,
+    "alerts_contain": [
+      "无有效附件"
+    ],
+    "field_checks": {}
+  },
+  "reason": "命中主题，邮件没有任何附件。"
+}

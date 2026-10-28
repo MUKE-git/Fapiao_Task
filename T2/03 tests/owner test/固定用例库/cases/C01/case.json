@@ -1,0 +1,19 @@
+{
+  "id": "C01",
+  "title": "无未读邮件",
+  "priority": "必选",
+  "stages": [
+    "T2-1"
+  ],
+  "source_kind": "合成",
+  "review_status": "已审核通过",
+  "review_focus": "检查邮箱状态、附件/PDF 调用次数和空输出。",
+  "variants": [
+    {
+      "id": "v1",
+      "path": "variants/v1",
+      "subject": null,
+      "note": "INBOX 的 UNSEEN 搜索为空；没有邮件 FETCH 或附件处理。"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "type": "已审核人工标准答案",
+  "case_id": "C12",
+  "variant": "partial",
+  "expected": {
+    "unseen_total": 1,
+    "selected_mails": 1,
+    "file_count": 1,
+    "record_count": 1,
+    "itinerary_count": 0,
+    "excel_rows": 1,
+    "matched_by_invoice": {},
+    "duplicate_skipped": 0,
+    "alerts_contain": [
+      "缺少发票号码"
+    ],
+    "field_checks": {
+      "发票.pdf": {
+        "invoice_number": "Not Found",
+        "total_amount": "262.68"
+      }
+    }
+  },
+  "reason": "只有票号缺失；保留 JSON 记录并写一行 Excel。"
+}
