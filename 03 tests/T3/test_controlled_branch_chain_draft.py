@@ -86,34 +86,6 @@ class ControlledBranchChainDraft(unittest.TestCase):
         rows = list(load_workbook(self.cfg.summary_excel_file, data_only=True).active.values)
         return stats, mails, names, rows
 
-    def test_passenger_transport_image_without_itinerary_requests_review(self):
-        # 测试工程师制作、待用户审核：合成图片与预先写定的模型答复。
-        from PIL import Image
-        payload = io.BytesIO()
-        Image.new("RGB", (64, 64), "white").save(payload, format="PNG")
-        msg = mail()
-        msg.add_attachment(payload.getvalue(), maintype="image", subtype="png",
-                           filename="测试工程师制作-发票.png")
-        fields = {
-            "invoice_number": "26327000000775232739",
-            "invoice_date": "2026-04-27",
-            "total_amount": "293.52",
-            "invoice_type": "电子发票（普通发票）",
-            "receipt_type": "旅客运输服务",
-            "seller": "测试销售方",
-        }
-        def fixed_model(request, _cfg):
-            return ModelFileOutput(role="Invoice", fields=fields)
-
-        stats, mails, names, rows = self.execute(msg, image_model=fixed_model)
-        record = mails[0]["records"][0]
-        self.assertEqual(record["kind"], "a类")
-        self.assertEqual(record["status"], "人工待核")
-        flags = [flag for alert in stats["not_found_alerts"] for flag in alert["flags"]]
-        self.assertTrue(any("缺行程单" in flag for flag in flags))
-        self.assertEqual(len(rows), 2)
-        self.assertEqual(len([name for name in names if name.endswith(".pdf")]), 1)
-
     @unittest.skipUnless(XML.is_file() and IMAGE.is_file(), "缺用户 XML 与图片原件")
     def test_real_image_decode_fixed_itinerary_result_matches_xml_invoice(self):
         msg = mail(XML)

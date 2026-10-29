@@ -34,7 +34,6 @@ SUMMARY_COLUMNS: List[Tuple[str, str]] = [
 # 判定为子串匹配（any(kw in receipt_type)），"客运服务"已含"客运服务"，并同时覆盖"客运服务费"（哈啰/嗖嗖开具差异）
 TRANSPORT_RECEIPT_KEYWORDS = [
     "客运服务",
-    "旅客运输服务",
     "代收通行费",
     "运输服务费",
     "通行费",
