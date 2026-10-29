@@ -86,6 +86,29 @@ class ControlledBranchChainDraft(unittest.TestCase):
         rows = list(load_workbook(self.cfg.summary_excel_file, data_only=True).active.values)
         return stats, mails, names, rows
 
+    def test_filename_fallback_after_image_model_failure_is_reviewed(self):
+        # 测试工程师制作、待用户审核：合成图片与固定模型失败结果。
+        from PIL import Image
+        payload = io.BytesIO()
+        Image.new("RGB", (64, 64), "white").save(payload, format="PNG")
+        msg = mail()
+        msg.add_attachment(payload.getvalue(), maintype="image", subtype="png",
+                           filename="测试工程师制作-发票.png")
+
+        def failed_model(request, _cfg):
+            return ModelFileOutput(role="Unknown", error_reason="MODEL_API_STATUS_503")
+
+        stats, mails, _names, rows = self.execute(msg, image_model=failed_model)
+        self.assertEqual(len(mails[0]["records"]), 1)
+        record = mails[0]["records"][0]
+        self.assertEqual(record["status"], "人工待核")
+        self.assertEqual(record["fields"]["invoice_number"], "Not Found")
+        self.assertIn("IMAGE_ROLE_FILENAME_FALLBACK", mails[0]["error_reason"])
+        self.assertIn("MODEL_API_STATUS_503", mails[0]["error_reason"])
+        self.assertEqual(len(rows), 1)
+        flags = [flag for alert in stats["not_found_alerts"] for flag in alert["flags"]]
+        self.assertTrue(any("自动识别未完成" in flag for flag in flags))
+
     @unittest.skipUnless(XML.is_file() and IMAGE.is_file(), "缺用户 XML 与图片原件")
     def test_real_image_decode_fixed_itinerary_result_matches_xml_invoice(self):
         msg = mail(XML)

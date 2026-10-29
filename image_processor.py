@@ -177,6 +177,12 @@ def process_image(file: CollectedFile, cfg: RunConfig, mail_subject: str,
     role = candidate.role
     fields = dict(candidate.fields)
     errors = [candidate.error_reason] if candidate.error_reason else []
+    # The image content takes precedence. A filename is only an unconfirmed
+    # fallback when the model cannot decide on one document's role.
+    if (role == "Unknown" and name_hint in ("Invoice", "Itinerary")
+            and "MULTIPLE_DOCUMENTS_IN_IMAGE" not in candidate.error_reason):
+        role = name_hint
+        errors.append("IMAGE_ROLE_FILENAME_FALLBACK")
     if role == "Invoice":
         errors.extend(_invoice_rules(fields))
         file.meta.pre_read_invoice_no = fields.get("invoice_number", NOT_FOUND)

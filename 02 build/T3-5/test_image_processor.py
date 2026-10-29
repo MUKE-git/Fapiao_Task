@@ -195,12 +195,56 @@ class ImageProcessorTest(unittest.TestCase):
         self.assertEqual(result.fields["invoice_number"], "Not Found")
         self.assertIn("IMAGE_INVOICE_NUMBER_INVALID", result.error_reason)
 
-    def test_model_failure_keeps_unknown_source_without_pdf(self):
+    def test_filename_fallback_when_model_is_unknown_or_fails(self):
+        for reason in ("", "MODEL_API_STATUS_503"):
+            with self.subTest(reason=reason):
+                with patch("image_processor.extract_single_file", return_value=ModelFileOutput(
+                        role="Unknown", error_reason=reason)):
+                    result = process_image(self.file, self.cfg, "发票", "2026-08-24 12:00")
+                self.assertEqual(result.role, "Invoice")
+                self.assertEqual(result.fields, {})
+                self.assertIn("IMAGE_ROLE_FILENAME_FALLBACK", result.error_reason)
+                if reason:
+                    self.assertIn(reason, result.error_reason)
+                self.assertEqual(result.source_file_seq, ["01"])
+                # Avoid a conversion collision between subtests.
+                Path(result.pdf_path).unlink()
+
+    def test_itinerary_filename_fallback_is_marked_for_review(self):
+        self.meta.original_name = "行程单.png"
         with patch("image_processor.extract_single_file", return_value=ModelFileOutput(
-                error_reason="MODEL_API_STATUS_503")):
+                role="Unknown")):
+            result = process_image(self.file, self.cfg, "发票", "2026-08-24 12:00")
+        self.assertEqual(result.role, "Itinerary")
+        self.assertEqual(result.fields, {})
+        self.assertIn("IMAGE_ROLE_FILENAME_FALLBACK", result.error_reason)
+
+    def test_unknown_name_uses_model_and_both_unknown_stays_unknown(self):
+        self.meta.original_name = "截图.jpg"
+        for role in ("Invoice", "Itinerary", "Unknown"):
+            with self.subTest(role=role):
+                with patch("image_processor.extract_single_file", return_value=ModelFileOutput(
+                        role=role)):
+                    result = process_image(self.file, self.cfg, "发票", "2026-08-24 12:00")
+                self.assertEqual(result.role, role)
+                self.assertEqual(self.meta.pre_read_type, "Unknown")
+                if result.pdf_path:
+                    Path(result.pdf_path).unlink()
+
+    def test_model_role_beats_opposite_filename_and_flags_conflict(self):
+        with patch("image_processor.extract_single_file", return_value=ModelFileOutput(
+                role="Itinerary")):
+            result = process_image(self.file, self.cfg, "发票", "2026-08-24 12:00")
+        self.assertEqual(result.role, "Itinerary")
+        self.assertIn("IMAGE_ROLE_CONFLICT", result.error_reason)
+        self.assertEqual(result.mismatches[0]["pre_read_type"], "Invoice")
+
+    def test_multiple_documents_does_not_fallback_to_filename(self):
+        with patch("image_processor.extract_single_file", return_value=ModelFileOutput(
+                role="Unknown", error_reason="MULTIPLE_DOCUMENTS_IN_IMAGE")):
             result = process_image(self.file, self.cfg, "发票", "2026-08-24 12:00")
         self.assertEqual(result.role, "Unknown")
-        self.assertEqual(result.source_file_seq, ["01"])
+        self.assertIn("MULTIPLE_DOCUMENTS_IN_IMAGE", result.error_reason)
         self.assertFalse(result.pdf_path)
 
     def test_user_sample_real_decoder_and_pdf_with_fixed_model(self):
