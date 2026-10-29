@@ -59,6 +59,32 @@ class ModelAdapterTest(unittest.TestCase):
         self.assertEqual(calls[0]["model"], "vision-model")
         self.assertIn("data:image/jpeg;base64,", str(calls[0]["messages"]))
 
+    def test_invoice_fields_inside_classification_are_read(self):
+        fields = {
+            "invoice_number": "26522000000868668241",
+            "invoice_date": "2026-08-24",
+            "total_amount": "21.60",
+            "invoice_type": "增值税电子普通发票",
+            "receipt_type": "客运服务费",
+            "seller": "测试销售方",
+        }
+        classification = {
+            "file": self.request.internal_name, "role": "Invoice",
+            **fields,
+            "field_evidence": {
+                name: [{"raw": value, "location": "page=1"}]
+                for name, value in fields.items()
+            },
+        }
+        result = extract_single_file(
+            self.request, self.cfg,
+            transport=lambda **_: response({"file_classifications": [classification]}),
+        )
+        self.assertEqual(result.role, "Invoice")
+        self.assertEqual(result.fields, fields)
+        self.assertEqual(result.error_reason, "")
+        self.assertEqual(result.field_evidence["seller"][0]["raw"], "测试销售方")
+
     def test_retry_only_transient_errors(self):
         calls = []
         sleeps = []

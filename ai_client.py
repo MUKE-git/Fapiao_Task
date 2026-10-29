@@ -181,9 +181,18 @@ def extract_single_file(request: ModelFileInput, cfg: object,
     values: dict[str, str] = {}
     evidence: dict[str, list[dict]] = {}
     errors: list[str] = []
-    submitted_evidence = parsed.get("field_evidence") if isinstance(parsed.get("field_evidence"), dict) else {}
+    classification = classifications[0]
+    top_evidence = parsed.get("field_evidence")
+    nested_evidence = classification.get("field_evidence")
+    submitted_evidence = (
+        top_evidence if isinstance(top_evidence, dict) and top_evidence
+        else nested_evidence if isinstance(nested_evidence, dict)
+        else {}
+    )
     for name in names:
         raw_value = parsed.get(name)
+        if raw_value is None:
+            raw_value = classification.get(name)
         if raw_value is None:
             errors.append("MODEL_FIELD_MISSING:" + name)
             values[name] = "" if name == "invoice_type" else "Not Found"
