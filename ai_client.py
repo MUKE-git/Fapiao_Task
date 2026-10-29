@@ -124,7 +124,8 @@ def extract_single_file(request: ModelFileInput, cfg: object,
     system = ("从当前单个票据文件提取 JSON。只返回一项 file_classifications，file 必须等于输入 internal_name。"
               "role 只能是 Invoice、Itinerary、Unknown。发票字段为 invoice_number、invoice_date、"
               "total_amount、invoice_type、receipt_type、seller；行程单字段为 match_amount、"
-              "travel_time、origin_dest。缺失用 Not Found，金额保留原小数位。"
+              "travel_time、origin_dest。字段值必须为字符串；开票日期严格使用 YYYY-MM-DD，"
+              "金额只用数字和小数点，保留原小数位，不带货币符号或单位；缺失用 Not Found。"
               "每个非空字段在 field_evidence 中给出 raw 和 location；不臆造不可见的值。"
               "若同一画面有多张独立票据，设置 multiple_documents=true。"
               f"提示词版本 {T3_EXTRACTION_PROMPT_VERSION}。")
@@ -193,6 +194,8 @@ def extract_single_file(request: ModelFileInput, cfg: object,
         raw_value = parsed.get(name)
         if raw_value is None:
             raw_value = classification.get(name)
+        if isinstance(raw_value, dict) and "value" in raw_value:
+            raw_value = raw_value["value"]
         if raw_value is None:
             errors.append("MODEL_FIELD_MISSING:" + name)
             values[name] = "" if name == "invoice_type" else "Not Found"

@@ -85,6 +85,28 @@ class ModelAdapterTest(unittest.TestCase):
         self.assertEqual(result.error_reason, "")
         self.assertEqual(result.field_evidence["seller"][0]["raw"], "测试销售方")
 
+    def test_classification_fields_wrapped_in_value_are_read_without_invented_evidence(self):
+        fields = {
+            "invoice_number": "26522000000868668241",
+            "invoice_date": "2026-08-24",
+            "total_amount": "21.60",
+            "invoice_type": "电子发票",
+            "receipt_type": "客运服务费",
+            "seller": "测试销售方",
+        }
+        classification = {
+            "file": self.request.internal_name, "role": "Invoice",
+            **{name: {"value": value} for name, value in fields.items()},
+        }
+        result = extract_single_file(
+            self.request, self.cfg,
+            transport=lambda **_: response({"file_classifications": [classification]}),
+        )
+        self.assertEqual(result.fields, fields)
+        self.assertEqual(result.field_evidence, {})
+        self.assertIn("MODEL_EVIDENCE_MISSING:invoice_number", result.error_reason)
+        self.assertNotIn("MODEL_FIELD_TYPE", result.error_reason)
+
     def test_retry_only_transient_errors(self):
         calls = []
         sleeps = []
