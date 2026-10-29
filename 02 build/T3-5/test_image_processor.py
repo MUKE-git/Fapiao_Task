@@ -56,6 +56,11 @@ class ModelAdapterTest(unittest.TestCase):
         self.assertEqual(result.error_reason, "")
         self.assertEqual(result.field_evidence["seller"][0]["file_seq"], "01")
         self.assertTrue(calls[0]["vision"])
+        prompt = calls[0]["messages"][0]["content"][0]["text"]
+        self.assertIn("从票面“项目名称”一栏提取", prompt)
+        self.assertIn("*运输服务*客运服务费 应返回 客运服务费", prompt)
+        self.assertIn("二维码旁的文字或文件名", prompt)
+        self.assertIn("项目名称无法辨认", prompt)
         self.assertEqual(calls[0]["model"], "vision-model")
         self.assertIn("data:image/jpeg;base64,", str(calls[0]["messages"]))
 

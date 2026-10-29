@@ -133,6 +133,16 @@ def extract_single_file(request: ModelFileInput, cfg: object,
                 f"original_name={request.original_name}; format={request.file_type}; "
                 f"pre_read_role={request.pre_read_role}")
     if vision:
+        system += (
+            "图片发票的 receipt_type 必须从票面“项目名称”一栏提取，"
+            "若项目名称为 *一级*二级，则只返回二级名称；"
+            "例如 *运输服务*客运服务费 应返回 客运服务费。"
+            "不要将票面标题、二维码旁的文字或文件名当作项目名称。"
+            "项目名称无法辨认或多个项目无法唯一确定时，返回 Not Found，不要猜测。"
+            "receipt_type 的 field_evidence 中 raw 应保留项目名称原文，"
+            "location 应指明项目名称在图片中的位置。"
+            "图片票面类型规则版本 t3-image-receipt-v2。"
+        )
         content = [{"image": "data:" + mime + ";base64," + base64.b64encode(data).decode("ascii")}
                    for data, mime in request.images]
         content.append({"text": identity})
