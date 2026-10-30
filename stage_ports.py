@@ -57,7 +57,6 @@ def load_stage_ports(cfg: RunConfig | None = None) -> StagePorts:
         document_handlers={
             file_type: handler for file_type, handler in (
                 ("XML", _optional("xml_processor", "process_xml")),
-                ("OFD", _optional("ofd_processor", "process_ofd")),
                 ("图片", _optional("image_processor", "process_image")),
             ) if handler is not None
         },

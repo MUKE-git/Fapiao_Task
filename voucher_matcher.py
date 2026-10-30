@@ -107,11 +107,14 @@ def _merge(mail: MailRecord, group: list[DocumentResult], order: dict[str, int])
         key=lambda seq: order.get(seq, 10**6),
     )
     merged.field_evidence = {}
-    merged.conflicts = [deepcopy(item) for r in group for item in r.conflicts]
+    # Once same-invoice identity is established, XML alone supplies invoice
+    # business fields; other formats remain linked only as voucher sources.
+    field_sources = [r for r in group if not xml or _format(mail, r) == "XML"]
+    merged.conflicts = [deepcopy(item) for r in field_sources for item in r.conflicts]
     for field in _INVOICE_FIELDS:
-        valid = [(r, _normal(field, r.fields.get(field))) for r in group]
+        valid = [(r, _normal(field, r.fields.get(field))) for r in field_sources]
         valid = [(r, value) for r, value in valid if value is not None]
-        merged.field_evidence[field] = [item for r in group
+        merged.field_evidence[field] = [item for r in field_sources
                                         for item in _field_evidence(r, field)]
         if not valid:
             continue
@@ -193,6 +196,7 @@ def _combine_invoices(mail: MailRecord, invoices: list[DocumentResult],
             continue
         conflicting_fields = {
             field for i, a in enumerate(group) for b in group[i + 1:]
+            if not xml or (_format(mail, a) == "XML" and _format(mail, b) == "XML")
             for field in _values_conflict(a, b)
         }
         xml_can_decide = all(len({_normal(field, r.fields.get(field))

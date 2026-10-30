@@ -53,7 +53,7 @@ class PageStateDraft(unittest.TestCase):
             return [], {
                 "delivery_status": state, "delivery_zip_bytes": zip_bytes,
                 "summary_row_count": 0, "unseen_total": 1,
-                "invoice_keyword_mails": 1, "not_found_alerts": [{
+                "invoice_keyword_mails": 1, "duplicate_record_count": 0, "not_found_alerts": [{
                     "mail_id": "Msg1", "mail_uid": "101", "mail_subject": "电子发票 A",
                     "mail_date": "2026-04-27 09:00", "file_seq": "01",
                     "filename": "A.xml", "flags": ["缺凭证，回原邮件核对"]
@@ -63,6 +63,7 @@ class PageStateDraft(unittest.TestCase):
              patch("streamlit.download_button") as download:
             app.button[0].click().run(timeout=30)
         self.assertEqual(len(app.exception), 0)
+        self.assertTrue(any("发票相关" in x.value and "发票记录" in x.value and "重复记录" in x.value for x in app.info))
         self.assertTrue(any("A.xml" in item.value and "缺凭证" in item.value
                             for item in app.markdown),
                         [item.value for item in app.markdown])

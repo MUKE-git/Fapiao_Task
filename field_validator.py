@@ -95,10 +95,10 @@ def _receipt_issue(value: object) -> str:
     return _text_issue(value, "票面类型", 50)
 
 
-def validate_records(mail: MailRecord) -> list[dict]:
+def validate_records(mail: MailRecord, all_mails: list[MailRecord] | None = None) -> list[dict]:
     """原位标记待核，返回可按邮件/文件/记录定位的提示。"""
     alerts: list[dict] = []
-    itineraries = {item.record_id: item for item in mail.itineraries}
+    itineraries = {item.record_id: item for owner in (all_mails or [mail]) for item in owner.itineraries}
     for itinerary in mail.itineraries:
         issues = [issue for issue in (
             _amount_issue(itinerary.match_amount, "行程单匹配金额"),
@@ -111,6 +111,8 @@ def validate_records(mail: MailRecord) -> list[dict]:
             alerts.append(_report(mail, itinerary.record_id, seq, issues))
 
     for record in mail.records:
+        if record.record_id in mail.excel_skip_record_ids:
+            continue
         fields = record.fields
         issues: list[str] = []
         for issue in (
@@ -163,7 +165,7 @@ def validate_records(mail: MailRecord) -> list[dict]:
             if matched is None:
                 issues.append("a 类缺少已匹配行程单")
             else:
-                itinerary = itineraries.get(f"{mail.mail_id}-{matched.file_seq}")
+                itinerary = itineraries.get(f"{matched.mail_id or mail.mail_id}-{matched.file_seq}")
                 if itinerary is None:
                     issues.append("匹配的行程单记录不存在")
                 else:

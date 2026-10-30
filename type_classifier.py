@@ -115,7 +115,7 @@ def collect_classification_mismatches(
 ) -> List[Dict[str, Any]]:
     """
     比较「原名+正文合并后的 identified_type」与 AI file_classifications。
-    仅当 AI 给出了该文件的 role 且与合并结果不一致时记入列表。
+    仅当预读和 AI 分别明确判断为发票、行程单时记入列表；未知不是相反结论。
     """
     if not ai_data or not task_info.get("files"):
         return []
@@ -131,7 +131,7 @@ def collect_classification_mismatches(
         if ai_raw is None:
             continue
         ai_n = normalize_doc_role(ai_raw)
-        if local_n != ai_n:
+        if {local_n, ai_n} == {"Invoice", "Itinerary"}:
             mismatches.append({
                 "filename": os.path.basename(f["local_path"]),
                 "local_path": f["local_path"],

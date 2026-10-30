@@ -58,14 +58,14 @@ class VoucherMatcherTest(unittest.TestCase):
             result("02", invoice_number=OTHER, invoice_date="2026-04-27")])
         self.assertEqual([x.file_seq for x in out], ["01", "02"])
 
-    def test_xml_field_wins_but_conflict_is_visible(self):
+    def test_xml_field_wins_without_pdf_field_comparison(self):
         out = combine_vouchers(mail("XML", "PDF"), [
             xml("01", invoice_number=NO, total_amount="121.74"),
             result("02", invoice_number=NO, total_amount="131.74")])
         self.assertEqual(len(out), 1)
         self.assertEqual(out[0].fields["total_amount"], "121.74")
-        self.assertEqual(out[0].conflicts[0]["field"], "total_amount")
-        self.assertIn("人工核对", out[0].error_reason)
+        self.assertFalse(out[0].conflicts)
+        self.assertNotIn("人工核对", out[0].error_reason)
 
     def test_no_xml_conflict_retains_distinct_candidates(self):
         out = combine_vouchers(mail("PDF", "OFD"), [

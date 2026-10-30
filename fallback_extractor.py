@@ -68,14 +68,17 @@ def build_fallback_audit_result(files):
     if m_inv_type and invoice_type == "Not Found":
         invoice_type = m_inv_type.group(1) if m_inv_type.lastindex is None or m_inv_type.lastindex == 0 else m_inv_type.group(0)
 
-    # 票面类型：匹配 *服务名*项目名 格式，如 "*运输服务*客运服务费"
-    m_rec_type = re.search(r"(?:服务名称|货物名称)[:：]?\s*\*?([^*\n]{2,20})\*?", invoice_text)
-    if not m_rec_type:
-        m_rec_type = re.search(r"\*([^*]+)\*([^*\n]{2,20})", invoice_text)
-        if m_rec_type:
-            receipt_type = m_rec_type.group(2).strip()
-    if m_rec_type and receipt_type == "Not Found":
-        receipt_type = m_rec_type.group(1).strip() if receipt_type == "Not Found" else receipt_type
+    # 项目名可能与单价、数量、金额等列挤在同一行。只在明确的
+    # 列间空白或数字/货币列开始处截断，保留名称内部的数字。
+    m_rec_type = re.search(r"\*([^*\n]+)\*([^*\n]{1,80})", invoice_text)
+    if m_rec_type:
+        item_name = m_rec_type.group(2)
+    else:
+        labeled = re.search(r"(?:服务名称|货物名称)[:：]?[ \t]*([^\n]{1,80})", invoice_text)
+        item_name = labeled.group(1) if labeled else ""
+    item_name = re.split(r"[ \t]{2,}|[ \t]+(?=[¥￥]?[0-9]+(?:\.[0-9]+)?(?:[ \t%]|$))|[ \t]+(?=[¥￥])", item_name, maxsplit=1)[0].strip()
+    if item_name:
+        receipt_type = item_name
 
     # 销售方：匹配各种格式，如 "销 名称：xxx"、"销售方名称：xxx"、"销售方：xxx"
     m_seller = re.search(r"(?:销售方名称|销售方)[:：]?\s*(.{4,60})", invoice_text)
@@ -86,14 +89,19 @@ def build_fallback_audit_result(files):
     if m_seller:
         seller = m_seller.group(1).strip()
 
-    # 出行时间：从行程单首行提取日期+时间（支持跨行格式）
-    m_time = re.search(
-        r"([0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2})[\s\S]*?([0-2]?[0-9]:[0-5][0-9](?::[0-5][0-9])?)",
-        itinerary_text
-    )
-    if m_time:
-        hour, minute = m_time.group(2).split(":")[:2]
-        travel_time = f"{_normalize_date_text(m_time.group(1))} {hour.zfill(2)}:{minute}"
+    # 日期和时间必须相邻，避免跨段落把申请日期和另一笔行程的时间拼接。
+    for m_time in re.finditer(
+        r"(?<![0-9])([0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2})"
+        r"(?:[ \t]+|[ \t]*\r?\n[ \t]*)([01]?[0-9]|2[0-3]):([0-5][0-9])(?::[0-5][0-9])?",
+        itinerary_text,
+    ):
+        line_start = itinerary_text.rfind("\n", 0, m_time.start()) + 1
+        prefix = itinerary_text[line_start:m_time.start()]
+        if (any(label in prefix for label in ("申请日期", "申请时间", "开票日期", "制作时间", "打印时间"))
+                or re.search(r"[0-9]{4}[-/][0-9]{1,2}[-/][0-9]{1,2}", prefix)):
+            continue
+        travel_time = f"{_normalize_date_text(m_time.group(1))} {int(m_time.group(2)):02d}:{m_time.group(3)}"
+        break
 
     # 出发地/目的地：从行程单表格中提取起点和终点
     m_od = re.search(r"([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)\s*[-—→至到]\s*([\u4e00-\u9fa5]{2,}(?:站|机场|中心)?)", itinerary_text)

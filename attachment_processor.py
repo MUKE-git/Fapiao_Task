@@ -99,7 +99,7 @@ def _positive_format(content: bytes) -> tuple[str, str] | None:
         try:
             with zipfile.ZipFile(BytesIO(content)) as archive:
                 names = [entry.filename.lower().replace("\\", "/")
-                         for entry in archive.infolist()[:1000]]
+                         for entry in archive.infolist()]
             return ("OFD", ".ofd") if any(name == "ofd.xml" for name in names) else ("ZIP", ".zip")
         except (OSError, zipfile.BadZipFile):
             return None
@@ -111,6 +111,32 @@ def _positive_format(content: bytes) -> tuple[str, str] | None:
         if start.startswith("<") and not start.lower().startswith(("<html", "<!doctype html")):
             return "XML", ".xml"
     return None
+
+
+def _is_ignored_ofd(actual, name: str, extension_hint: str = "",
+                    declared_type: str = "") -> bool:
+    kind = (actual[0] if actual else declared_type
+            or _FILE_TYPES.get(os.path.splitext(name)[1].lower())
+            or _FILE_TYPES.get(extension_hint.lower()))
+    return kind == "OFD"
+
+
+def has_non_ofd_attachment(msg: email.message.Message) -> bool:
+    # Mermaid uses links only when no non-OFD attachment is present.
+    for part in msg.walk():
+        if part.is_multipart():
+            continue
+        raw_name = part.get_filename()
+        if raw_name is None and part.get_content_disposition() != "attachment":
+            continue
+        content = part.get_payload(decode=True)
+        if content is None:
+            continue
+        name = decode_str(raw_name) if raw_name else ""
+        extension_hint = _MIME_EXTENSIONS.get(part.get_content_type().lower(), "")
+        if not _is_ignored_ofd(_positive_format(content), name, extension_hint):
+            return True
+    return False
 
 
 @dataclass(frozen=True)
@@ -166,6 +192,18 @@ def _write_unique_file(directory: str, prefix: str, original_name: str,
             continue
 
 
+def _zip_entry_name(entry: zipfile.ZipInfo) -> str:
+    """Recover common unflagged GBK names only when CP437 shows box-drawing mojibake."""
+    name = entry.filename
+    if entry.flag_bits & 0x800 or not any("\u2500" <= ch <= "\u259f" for ch in name):
+        return name
+    try:
+        decoded = name.encode("cp437").decode("gbk")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return name
+    return decoded if any("\u4e00" <= ch <= "\u9fff" for ch in decoded) else name
+
+
 def collect_mail_files(msg: email.message.Message, mail: MailRecord,
                        cfg: RunConfig, downloaded_files: list | None = None) -> list[CollectedFile]:
     """下载附件、解 ZIP、去重、安全存盘并编号；不提取凭证业务字段。
@@ -186,6 +224,11 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
             zip_total_bytes += len(content)
             if zip_file_count > _MAX_ZIP_FILES or zip_total_bytes > _MAX_ZIP_BYTES:
                 raise ValueError("ZIP 解出数量或总大小超过限制（50个文件、15MB）")
+        # Ignore OFD before deduplication, numbering and storage. Prefer a
+        # positive byte signature over the filename when it is available.
+        actual = _positive_format(content)
+        if _is_ignored_ofd(actual, name, extension_hint, declared_type):
+            return
         digest = hashlib.md5(content).hexdigest()
         if digest in seen_hashes:
             mail.dedup_skipped.append(DedupSkipped(name, f"同邮件内容重复（{source}）"))
@@ -194,7 +237,6 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
         if seq > 99:
             raise ValueError("单邮件文件数超过 99，无法分配两位文件序号")
         seq_text = f"{seq:02d}"
-        actual = _positive_format(content)
         file_type = actual[0] if actual else declared_type
         storage_name = name
         if actual and os.path.splitext(name)[1].lower() != actual[1]:
@@ -222,7 +264,7 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
                 for entry in archive.infolist():
                     if entry.is_dir():
                         continue
-                    inner = entry.filename.replace("\\", "/")
+                    inner = _zip_entry_name(entry).replace("\\", "/")
                     if inner.startswith("/") or ".." in inner.split("/"):
                         mail.error_reason = (mail.error_reason + ";ZIP_UNSAFE_PATH").strip(";")
                         continue
@@ -230,7 +272,8 @@ def collect_mail_files(msg: email.message.Message, mail: MailRecord,
                         mail.error_reason = (mail.error_reason + ";ZIP_UNSUPPORTED_ENTRY").strip(";")
                         continue
                     payload = archive.read(entry)
-                    if inner.lower().endswith(".zip"):
+                    actual = _positive_format(payload)
+                    if inner.lower().endswith(".zip") and not (actual and actual[0] == "OFD"):
                         unpack_zip(inner, payload, depth + 1, link_label)
                     else:
                         source = f"ZIP:正文链接:{link_label}" if link_label else f"ZIP:{name}"

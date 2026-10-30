@@ -108,6 +108,7 @@ class FileRecord:
     exported_name: str = ""                         # T3-1 导出前留空
     acquisition: str = ""                            # T3: 附件/正文链接，空为旧数据
     source_ref: str = ""                             # 脱敏来源标识，不保存签名 URL
+    model_usage: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -121,6 +122,8 @@ class SourceMeta:
     field_evidence: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     conflicts: list[dict[str, Any]] = field(default_factory=list)
     delivery_blocked: bool = False
+    same_invoice_records: list[dict[str, str]] = field(default_factory=list)
+    same_invoice_duplicate: bool = False
 
 
 @dataclass
@@ -132,6 +135,7 @@ class MatchedItinerary:
     """
     file_seq: str = ""                                       # 行程单文件序号
     match_amount: Union[Decimal, float, str] = NOT_FOUND     # 行程单票面金额
+    mail_id: str = ""
 
 
 @dataclass
@@ -232,6 +236,8 @@ def _file_to_dict(f: FileRecord) -> dict:
         result["acquisition"] = f.acquisition
     if f.source_ref:
         result["source_ref"] = f.source_ref
+    if f.model_usage:
+        result["model_usage"] = f.model_usage
     return result
 
 
@@ -278,6 +284,10 @@ def _record_to_dict(r: InvoiceRecord) -> dict:
         source["conflicts"] = r.source.conflicts
     if r.source.delivery_blocked:
         source["delivery_blocked"] = True
+    if r.source.same_invoice_duplicate:
+        source["same_invoice_duplicate"] = True
+    if r.source.same_invoice_records:
+        source["same_invoice_records"] = r.source.same_invoice_records
     out: dict = {
         "record_id": r.record_id,
         "kind": r.kind,
@@ -289,6 +299,8 @@ def _record_to_dict(r: InvoiceRecord) -> dict:
             "file_seq": r.matched_itinerary.file_seq,
             "match_amount": amount_to_json(r.matched_itinerary.match_amount),
         }
+        if r.matched_itinerary.mail_id:
+            out["matched_itinerary"]["mail_id"] = r.matched_itinerary.mail_id
     out["status"] = r.status
     return out
 

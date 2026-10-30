@@ -289,6 +289,19 @@ def arbitrate_records(mails: list[MailRecord], cfg: RunConfig | None = None, *,
     for number, entries in by_number.items():
         if len(entries) < 2:
             continue
+        # Same-number records with a verifiable XML invoice use that record
+        # directly; other formats must not decide or fill its business fields.
+        xml_entries = [(mail, record) for mail, record in entries
+                       if "invoice_number" in _reliable_xml_values(mail, record)]
+        if re.fullmatch(r"[0-9]{20}", number) and xml_entries and len({_signature(record) for _, record in xml_entries}) == 1:
+            chosen = xml_entries[0][1]
+            for mail, record in entries:
+                if record is chosen:
+                    continue
+                mail.excel_skip_record_ids.add(record.record_id)
+                record.source.delivery_blocked = True
+                _alert(mail, record, f"{record.record_id} 与 {chosen.record_id} 同票，采用 XML 记录；原记录保留在 JSON")
+            continue
         by_signature: OrderedDict[tuple, list[tuple[MailRecord, InvoiceRecord]]] = OrderedDict()
         for entry in entries:
             by_signature.setdefault(_signature(entry[1]), []).append(entry)

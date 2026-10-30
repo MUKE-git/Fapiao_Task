@@ -105,20 +105,29 @@ def _t3_default_transport(*, model: str, api_key: str, messages: list, vision: b
 
 def extract_single_file(request: ModelFileInput, cfg: object,
                         transport: Callable[..., object] | None = None,
-                        sleep: Callable[[float], None] = time.sleep) -> ModelFileOutput:
+                        sleep: Callable[[float], None] = time.sleep,
+                        diagnostics: dict | None = None) -> ModelFileOutput:
     """Return one file's candidate only; never rename files or pair documents.
 
     ``transport`` accepts the same keyword arguments as _t3_default_transport,
     so fixed-response tests replace only the external service boundary.
     """
+    trace = diagnostics if diagnostics is not None else {}
+    trace.update(call_attempted=False, successful_response=False, extraction_source="none")
+    def result(**kwargs):
+        trace["result"] = kwargs.get("error_reason") or "response_parsed"
+        if trace["result"].startswith(("MODEL_JSON_INVALID", "MODEL_SHAPE_INVALID", "MODEL_CLASSIFICATION_INVALID")):
+            trace["extraction_source"] = "none"
+        return ModelFileOutput(**kwargs)
+
     if not request.file_seq or not request.internal_name or not request.file_type:
-        return ModelFileOutput(error_reason="MODEL_INPUT_IDENTITY_MISSING")
+        return result(error_reason="MODEL_INPUT_IDENTITY_MISSING")
     if len(request.text) > 12000 or len(request.images) > 8 or sum(len(p[0]) for p in request.images) > 15_000_000:
-        return ModelFileOutput(error_reason="MODEL_INPUT_LIMIT_EXCEEDED")
+        return result(error_reason="MODEL_INPUT_LIMIT_EXCEEDED")
     vision = bool(request.images)
     key = str(getattr(cfg, "dashscope_api_key", "") or os.getenv("DASHSCOPE_API_KEY", ""))
     if transport is None and not key:
-        return ModelFileOutput(error_reason="MODEL_API_KEY_MISSING")
+        return result(error_reason="MODEL_API_KEY_MISSING")
     model = str((getattr(cfg, "dashscope_vision_model", None) or os.getenv("DASHSCOPE_VISION_MODEL")
                  or "qwen-vl-plus") if vision else (getattr(cfg, "dashscope_model", None) or "qwen-plus"))
     system = ("从当前单个票据文件提取 JSON。只返回一项 file_classifications，file 必须等于输入 internal_name。"
@@ -155,6 +164,7 @@ def extract_single_file(request: ModelFileInput, cfg: object,
     response = None
     for attempt in range(3):
         try:
+            trace["call_attempted"] = True
             response = send(model=model, api_key=key, messages=messages, vision=vision)
             status = int(getattr(response, "status_code", 0) or 0)
         except Exception as exc:
@@ -163,31 +173,33 @@ def extract_single_file(request: ModelFileInput, cfg: object,
                 status = 503
                 response = None
             else:
-                return ModelFileOutput(error_reason="MODEL_TRANSPORT_" + type(exc).__name__)
+                return result(error_reason="MODEL_TRANSPORT_" + type(exc).__name__)
         if status == 200:
+            trace["successful_response"] = True
+            trace["extraction_source"] = "model_response"
             break
         if (status == 429 or status >= 500) and attempt < 2:
             sleep((1, 3)[attempt])
             continue
-        return ModelFileOutput(error_reason=f"MODEL_API_STATUS_{status}")
+        return result(error_reason=f"MODEL_API_STATUS_{status}")
     raw = _t3_response_text(response).strip()
     if raw.startswith("```json"):
         raw = raw[7:].removesuffix("```").strip()
     try:
         parsed = json.loads(raw, parse_float=Decimal)
     except (ValueError, TypeError):
-        return ModelFileOutput(error_reason="MODEL_JSON_INVALID")
+        return result(error_reason="MODEL_JSON_INVALID")
     if not isinstance(parsed, dict):
-        return ModelFileOutput(error_reason="MODEL_SHAPE_INVALID")
+        return result(error_reason="MODEL_SHAPE_INVALID")
     classifications = parsed.get("file_classifications")
     if not (isinstance(classifications, list) and len(classifications) == 1
             and isinstance(classifications[0], dict)
             and classifications[0].get("file") == request.internal_name
             and classifications[0].get("role") in _T3_ROLES):
-        return ModelFileOutput(error_reason="MODEL_CLASSIFICATION_INVALID")
+        return result(error_reason="MODEL_CLASSIFICATION_INVALID")
     role = classifications[0]["role"]
     if parsed.get("multiple_documents") is True:
-        return ModelFileOutput(role="Unknown", error_reason="MULTIPLE_DOCUMENTS_IN_IMAGE")
+        return result(role="Unknown", error_reason="MULTIPLE_DOCUMENTS_IN_IMAGE")
     names = _T3_INVOICE_FIELDS if role == "Invoice" else _T3_ITINERARY_FIELDS if role == "Itinerary" else ()
     values: dict[str, str] = {}
     evidence: dict[str, list[dict]] = {}
@@ -249,7 +261,7 @@ def extract_single_file(request: ModelFileInput, cfg: object,
                 raise ValueError
         except (ArithmeticError, ValueError):
             errors.append("MODEL_AMOUNT_INVALID")
-    return ModelFileOutput(role=role, fields=values, field_evidence=evidence,
+    return result(role=role, fields=values, field_evidence=evidence,
                            error_reason=";".join(errors))
 
 
@@ -349,6 +361,33 @@ def _rename_pdfs_with_audit(
 
     mm = collect_classification_mismatches(task_info, data, mail_subject)
     return mm, manual_unknown
+
+
+def _connection_failure_category(exc: Exception) -> str:
+    """Classify without saving exception messages, URLs, credentials or payloads."""
+    pending = [exc]
+    seen = set()
+    signals = []
+    while pending and len(seen) < 20:
+        item = pending.pop()
+        if id(item) in seen:
+            continue
+        seen.add(id(item))
+        if isinstance(item, BaseException):
+            signals.append(type(item).__name__.lower())
+            signals.extend(str(arg).lower() for arg in item.args if isinstance(arg, str))
+            pending.extend(arg for arg in item.args if isinstance(arg, BaseException))
+            pending.extend(x for x in (item.__cause__, item.__context__) if x is not None)
+    text = " ".join(signals)
+    for category, words in (("proxy", ("proxyerror", "proxy error", "proxy connection")),
+                            ("tls", ("sslerror", "certificate verify", "tls handshake")),
+                            ("dns", ("name resolution", "nameresolution", "getaddrinfo", "nodename nor servname")),
+                            ("timeout", ("timeout", "timed out")),
+                            ("connection_reset", ("connection reset", "connectionreset")),
+                            ("connection_refused", ("connection refused", "connectionrefused"))):
+        if any(word in text for word in words):
+            return category
+    return "connection_other" if "connection" in text else "other"
 
 
 def call_ai_audit_and_rename(
@@ -477,6 +516,9 @@ def call_ai_audit_and_rename(
 }"""
 
     error_reason = ""
+    trace = task_info.setdefault("model_usage", {})
+    trace.update(call_attempted=False, successful_response=False, extraction_source="none",
+                 attempt_count=0, attempt_errors=[], failure_categories=[])
     try:
         # 步骤 B：HTTP 调 DashScope，带重试（429/5xx 最多重试2次，间隔1s/3s）
         response = None
@@ -484,16 +526,30 @@ def call_ai_audit_and_rename(
         for attempt in range(1 + len(retry_intervals)):
             if Generation is None:
                 raise RuntimeError("DASHSCOPE_SDK_UNAVAILABLE")
-            response = Generation.call(
-                api_key=api_key or os.getenv("DASHSCOPE_API_KEY", ""),
-                model=model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": combined_content},
-                ],
-            )
+            trace["call_attempted"] = True
+            trace["attempt_count"] += 1
+            try:
+                response = Generation.call(
+                    api_key=api_key or os.getenv("DASHSCOPE_API_KEY", ""),
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": combined_content},
+                    ],
+                )
+            except Exception as exc:
+                kind = type(exc).__name__
+                trace["attempt_errors"].append(kind)
+                trace["failure_categories"].append(_connection_failure_category(exc))
+                retryable = (isinstance(exc, (ConnectionError, TimeoutError))
+                             or any(token in kind.lower() for token in ("connection", "timeout")))
+                if retryable and attempt < len(retry_intervals):
+                    time.sleep(retry_intervals[attempt])
+                    continue
+                raise
             if response.status_code == 200:
                 break
+            trace["attempt_errors"].append(f"HTTP_{response.status_code}")
             if response.status_code == 429 or response.status_code >= 500:
                 if attempt < len(retry_intervals):
                     time.sleep(retry_intervals[attempt])
@@ -501,6 +557,8 @@ def call_ai_audit_and_rename(
             break
 
         if response.status_code == 200:
+            trace["successful_response"] = True
+            trace["extraction_source"] = "model_response"
             raw = response.output.text
             if not raw and response.output and getattr(response.output, "choices", None):
                 raw = response.output.choices[0].get("message", {}).get("content", "")
@@ -510,6 +568,7 @@ def call_ai_audit_and_rename(
             except Exception:
                 # 步骤 B-失败：JSON 解析不了 → 用本机正则兜底一版「伪 AI 结果」
                 data = build_fallback_audit_result(task_info.get("files", []))
+                trace["extraction_source"] = "local_regex"
                 error_reason = "JSON_PARSE_ERROR;USE_FALLBACK"
             # 按当前文件角色检查必需字段；行程单不能因缺少发票字段而误报。
             missing = missing_keys(data)
@@ -527,6 +586,7 @@ def call_ai_audit_and_rename(
         code = str(getattr(response, "code", "") or "")
         error_reason = f"AI_API_{code}" if code else f"AI_API_STATUS_{response.status_code}"
         data = build_fallback_audit_result(task_info.get("files", []))
+        trace["extraction_source"] = "local_regex"
         if core_missing(data):
             error_reason = (error_reason + ";FIELD_NOT_FOUND").strip(";")
         mm, manual_u = _rename_pdfs_with_audit(task_info, data, mail_subject, mail_date_hint, run_id)

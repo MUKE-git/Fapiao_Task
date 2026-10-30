@@ -64,7 +64,7 @@ class DeliveryT3Tests(unittest.TestCase):
                 "Invoice_Task/用户票据/服务费+2031-01-02+12.34元.pdf",
             })
 
-    def test_ofd_copy_then_image_fallback(self):
+    def test_ofd_copy_is_ignored_even_if_an_old_copy_is_supplied(self):
         ofd = self.pdf("ofd_copy.pdf")
         image = self.pdf("image_copy.pdf")
         files = [{"file_seq": "01", "file_type": "OFD", "internal_name": "a.ofd"},
@@ -72,12 +72,11 @@ class DeliveryT3Tests(unittest.TestCase):
         source = self.mail(files, ["01", "02"])
         plan = prepare_delivery(self.cfg, source, {("Msg1", "01"): ofd,
                                                    ("Msg1", "02"): image})
-        self.assertEqual(plan.entries[0].file_seq, "01")
-        Path(ofd).write_bytes(b"not a PDF")
-        plan = prepare_delivery(self.cfg, source, {("Msg1", "01"): ofd,
-                                                   ("Msg1", "02"): image})
         self.assertEqual(plan.entries[0].file_seq, "02")
-        self.assertIn("不是可识别 PDF", plan.issues[0])
+        self.assertEqual(plan.mails[0]["files"][0]["exported_name"], "")
+        ofd_only = prepare_delivery(self.cfg, self.mail(files[:1], ["01"]),
+                                    {("Msg1", "01"): ofd})
+        self.assertFalse(ofd_only.entries)
 
     def test_xml_only_and_blocked_conflict_do_not_export(self):
         files = [{"file_seq": "01", "file_type": "XML", "internal_name": "a.xml"}]
@@ -95,7 +94,7 @@ class DeliveryT3Tests(unittest.TestCase):
         Path(self.cfg.debug_file).write_text("[]", encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "最终 JSON"):
             build_delivery_zip(self.cfg, plan)
-        files = [{"file_seq": "01", "file_type": "OFD", "internal_name": "a.ofd"}]
+        files = [{"file_seq": "01", "file_type": "图片", "internal_name": "a.png"}]
         plan = prepare_delivery(self.cfg, self.mail(files, ["01"]),
                                 {("Msg1", "01"): str(Path(self.temp.name) / "outside.pdf")})
         self.assertFalse(plan.entries)

@@ -23,12 +23,19 @@ def _dashscope_api_key() -> str:
         return ""
 
 
-def _model_setting(name: str, default: str) -> str:
+def _model_setting_with_source(name: str, default: str) -> tuple[str, str]:
     try:
         secret_model = str(st.secrets.get(name, "") or "").strip()
     except Exception:
         secret_model = ""
-    return secret_model or (os.environ.get(name) or "").strip() or default
+    if secret_model:
+        return secret_model, "secrets.toml"
+    env_model = (os.environ.get(name) or "").strip()
+    return (env_model, "environment") if env_model else (default, "default")
+
+
+def _model_setting(name: str, default: str) -> str:
+    return _model_setting_with_source(name, default)[0]
 
 
 def _dashscope_model() -> str:
@@ -202,6 +209,8 @@ if submitted:
             output_root = tempfile.mkdtemp(prefix="fapiao_")
 
             try:
+                text_model, text_source = _model_setting_with_source("DASHSCOPE_MODEL", "qwen-plus")
+                vision_model, vision_source = _model_setting_with_source("DASHSCOPE_VISION_MODEL", "qwen-vl-plus")
                 cfg = RunConfig(
                     imap_host=imap_host.strip(),
                     imap_user=imap_user.strip(),
@@ -209,8 +218,10 @@ if submitted:
                     output_folder_name="Invoice_Task",
                     use_netease_id=use_netease,
                     dashscope_api_key=api_key,
-                    dashscope_model=_dashscope_model(),
-                    dashscope_vision_model=_dashscope_vision_model(),
+                    dashscope_model=text_model,
+                    dashscope_vision_model=vision_model,
+                    dashscope_model_source=text_source,
+                    dashscope_vision_model_source=vision_source,
                     output_root=output_root,
                 )
 
@@ -246,10 +257,13 @@ if submitted:
                         record_count = sum(len(mail.get("records") or []) for mail in debug_mails)
                     except (OSError, ValueError, TypeError, AttributeError) as exc:
                         debug_error = str(exc)
+                duplicate_count = stats.get("duplicate_record_count")
+                duplicate_display = duplicate_count if isinstance(duplicate_count, int) and duplicate_count >= 0 else "未统计"
+                record_display = record_count if debug_error is None else "未统计"
                 st.info(
                     f"本轮统计：IMAP 未读 **{stats.get('unseen_total', 0)}** 封；"
-                    f"主题命中 **{stats.get('invoice_keyword_mails', 0)}** 封；"
-                    f"JSON 登记 **{registered_count}** 封；发票记录 **{record_count}** 笔。"
+                    f"发票相关 **{stats.get('invoice_keyword_mails', 0)}** 封；"
+                    f"发票记录 **{record_display}** 笔；重复记录 **{duplicate_display}** 笔。"
                 )
                 if debug_error:
                     st.error("本轮处理记录未能读取，请重新运行本次处理。")

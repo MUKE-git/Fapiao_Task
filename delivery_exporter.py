@@ -9,6 +9,7 @@ import io
 import json
 import zipfile
 import copy
+import hashlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Mapping
@@ -54,7 +55,7 @@ def _pdf_for_source(cfg: RunConfig, item: dict, mail_id: str,
         if not name or Path(name).name != name or Path(name).suffix.lower() != ".pdf":
             raise ValueError("内部 PDF 文件名无效")
         return Path(cfg.extract_dir) / name
-    if kind in {"OFD", "图片"} and (mail_id, seq) in converted_pdfs:
+    if kind == "图片" and (mail_id, seq) in converted_pdfs:
         return Path(converted_pdfs[(mail_id, seq)])
     raise ValueError("来源没有可交付 PDF")
 
@@ -62,7 +63,7 @@ def _pdf_for_source(cfg: RunConfig, item: dict, mail_id: str,
 def _choose_pdf(cfg: RunConfig, mail_id: str, files: list[dict], seqs: list[str],
                 converted_pdfs: Mapping[tuple[str, str], str], issues: list[str]
                 ) -> tuple[dict, Path] | None:
-    priority = {"PDF": 0, "OFD": 1, "图片": 2}
+    priority = {"PDF": 0, "图片": 1}
     order = {str(item.get("file_seq") or ""): index for index, item in enumerate(files)}
     by_seq = {str(item.get("file_seq") or ""): item for item in files}
     candidates = [by_seq[str(seq)] for seq in dict.fromkeys(seqs) if str(seq) in by_seq]
@@ -90,7 +91,7 @@ def prepare_delivery(cfg: RunConfig, mails: list[dict],
                      ) -> DeliveryPlan:
     """Choose PDFs and fill exported_name before the final JSON is written.
 
-    Converted paths are checked PDF copies of OFD/image sources within this
+    Converted paths are checked PDF copies of image sources within this
     run's work directory. The input business result is copied, not changed.
     """
     if not Path(cfg.summary_excel_file).is_file():
@@ -101,6 +102,11 @@ def prepare_delivery(cfg: RunConfig, mails: list[dict],
     plan = DeliveryPlan(copy.deepcopy(mails))
     namer = BusinessPdfNamer()
     seen_numbers: dict[str, tuple] = {}
+    seen_trip_content: set[tuple[str, str]] = set()
+    by_mail = {str(m.get("mail_id") or ""): m for m in plan.mails}
+    for m in plan.mails:
+        for f in m.get("files") or []:
+            f["exported_name"] = ""
     # A missed upstream arbitration flag must not let whichever mail is first
     # donate an arbitrary PDF. Suppress only this number, preserving other PDFs.
     number_signatures: dict[str, set[tuple]] = {}
@@ -128,8 +134,6 @@ def prepare_delivery(cfg: RunConfig, mails: list[dict],
         files = mail.get("files") or []
         if not isinstance(files, list):
             raise ValueError("调试 JSON 文件列表无效")
-        for item in files:
-            item["exported_name"] = ""
         trips: dict[str, dict] = {}
         for trip in mail.get("itineraries") or []:
             seq = _trip_seq(mail_id, trip)
@@ -142,6 +146,8 @@ def prepare_delivery(cfg: RunConfig, mails: list[dict],
             if not matched:
                 continue
             seq = str(matched.get("file_seq") or "")
+            if matched.get("mail_id") and matched["mail_id"] != mail_id:
+                continue
             if not seq or seq not in trips:
                 raise ValueError(f"发票关联的行程单不存在：{seq}")
             if seq in trip_invoice_amounts:
@@ -151,11 +157,28 @@ def prepare_delivery(cfg: RunConfig, mails: list[dict],
         for record in mail.get("records") or []:
             source = record.get("source") or {}
             if source.get("delivery_blocked") or record.get("delivery_blocked"):
-                plan.issues.append(f"{record.get('record_id')}: 凭证归属未决，未自动交付 PDF")
+                if not source.get("same_invoice_duplicate"):
+                    plan.issues.append(f"{record.get('record_id')}: 凭证归属未决，未自动交付 PDF")
                 continue
             chosen = _choose_pdf(cfg, mail_id, files, list(source.get("source_file_seq") or []),
-                                 converted_pdfs, plan.issues)
+                                 converted_pdfs, [])
+            chosen_mail = mail
             if chosen is None:
+                for ref in source.get("same_invoice_records") or []:
+                    other = by_mail.get(str(ref.get("mail_id") or ""))
+                    if other is None:
+                        continue
+                    other_record = next((r for r in other.get("records") or [] if r.get("record_id") == ref.get("record_id")), None)
+                    if not other_record:
+                        continue
+                    chosen = _choose_pdf(cfg, str(other.get("mail_id")), other.get("files") or [],
+                                         list((other_record.get("source") or {}).get("source_file_seq") or []),
+                                         converted_pdfs, [])
+                    if chosen is not None:
+                        chosen_mail = other
+                        break
+            if chosen is None:
+                plan.issues.append(f"{record.get('record_id')}: 来源没有可交付 PDF")
                 continue
             fields = record.get("fields") or {}
             number = str(fields.get("invoice_number") or "").strip()
@@ -170,12 +193,15 @@ def prepare_delivery(cfg: RunConfig, mails: list[dict],
                     continue
                 seen_numbers[number] = signature
             matched = record.get("matched_itinerary") or {}
-            linked_trip = trips[str(matched.get("file_seq"))] if matched else None
+            trip_mail = by_mail.get(str(matched.get("mail_id") or mail_id), mail)
+            trip_seq = str(matched.get("file_seq") or "")
+            linked_trip = next((t for t in trip_mail.get("itineraries") or []
+                                if _trip_seq(str(trip_mail.get("mail_id") or ""), t) == trip_seq), None) if matched else None
             item, path = chosen
             seq = str(item.get("file_seq") or "")
             name = namer.invoice_name(fields, f"{mail.get('mail_uid')}:{seq}", linked_trip)
             item["exported_name"] = name
-            plan.entries.append(DeliveryEntry(name, path, mail_id, seq))
+            plan.entries.append(DeliveryEntry(name, path, str(chosen_mail.get("mail_id") or mail_id), seq))
 
         for trip in mail.get("itineraries") or []:
             seq = _trip_seq(mail_id, trip)
@@ -190,6 +216,16 @@ def prepare_delivery(cfg: RunConfig, mails: list[dict],
             item, path = chosen
             if item.get("exported_name"):
                 continue
+            matched_numbers = {str((r.get("fields") or {}).get("invoice_number") or "")
+                               for r in mail.get("records") or []
+                               if str((r.get("matched_itinerary") or {}).get("file_seq") or "") == seq
+                               and str((r.get("matched_itinerary") or {}).get("mail_id") or mail_id) == mail_id}
+            valid_numbers = {n for n in matched_numbers if len(n) == 20 and n.isdigit()}
+            if len(valid_numbers) == 1:
+                key = (next(iter(valid_numbers)), hashlib.sha256(_read_checked_pdf(cfg, path)).hexdigest())
+                if key in seen_trip_content:
+                    continue
+                seen_trip_content.add(key)
             amount = (trip_invoice_amounts[seq] if seq in trip_invoice_amounts
                       else trip.get("match_amount"))
             source_seq = str(item.get("file_seq") or "")

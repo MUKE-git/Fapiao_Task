@@ -159,10 +159,19 @@ def process_image(file: CollectedFile, cfg: RunConfig, mail_subject: str,
     decoding, validation, conversion and file bookkeeping still execute.
     """
     seq = file.meta.file_seq
+    configured_model = str(getattr(cfg, "dashscope_vision_model", "") or os.getenv("DASHSCOPE_VISION_MODEL") or "qwen-vl-plus")
+    source = getattr(cfg, "dashscope_vision_model_source", "programmatic")
+    if not getattr(cfg, "dashscope_vision_model", ""):
+        source = "environment" if os.getenv("DASHSCOPE_VISION_MODEL") else "default"
+    file.meta.model_usage = {"model_kind": "vision", "configured_model": configured_model,
+                             "config_source": source, "call_attempted": False,
+                             "successful_response": False, "extraction_source": "none",
+                             "result": "not_started"}
     try:
         actual, frames, image_bytes = _load_frames(file.path)
     except (OSError, ValueError, UnidentifiedImageError, Image.DecompressionBombError,
             Image.DecompressionBombWarning) as exc:
+        file.meta.model_usage["result"] = "IMAGE_READ_" + type(exc).__name__
         return DocumentResult(file_seq=seq, role="Unknown",
                               source_file_seq=[seq],
                               error_reason="IMAGE_READ_" + str(exc).splitlines()[0][:80])
@@ -173,7 +182,7 @@ def process_image(file: CollectedFile, cfg: RunConfig, mail_subject: str,
                              file_type=actual, pre_read_role=name_hint,
                              images=image_bytes,
                              mail_id=(re.match(r"Msg[0-9]+", file.meta.internal_name) or [""])[0])
-    candidate = extract_single_file(request, cfg)
+    candidate = extract_single_file(request, cfg, diagnostics=file.meta.model_usage)
     role = candidate.role
     fields = dict(candidate.fields)
     errors = [candidate.error_reason] if candidate.error_reason else []

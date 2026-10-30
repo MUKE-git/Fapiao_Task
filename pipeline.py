@@ -19,7 +19,7 @@ from typing import Any, Callable, Optional
 from openpyxl import Workbook
 
 
-from attachment_processor import collect_mail_files
+from attachment_processor import collect_mail_files, has_non_ofd_attachment
 from config import (RunConfig, SUMMARY_COLUMNS, TRANSPORT_RECEIPT_KEYWORDS,
                     ensure_output_dirs, should_send_netease_id)
 from data_model import (
@@ -178,7 +178,9 @@ def process_message(msg: email.message.Message, mail_id: str, mail_uid: str,
     header = (msg.get("Date") or "").strip()
     ports = ports or load_stage_ports()
     try:
-        if max_link_bytes <= 0 and max_links > 0:
+        if has_non_ofd_attachment(msg):
+            linked_files, link_failures = [], []
+        elif max_link_bytes <= 0 and max_links > 0:
             linked_files = []
             link_failures = [LinkFailure(candidate.label, "LINK_ROUND_BYTES_LIMIT")
                              for candidate in discover_links(msg)]
@@ -336,6 +338,91 @@ def _apply_matching(outcomes: list[MessageOutcome], ports: StagePorts) -> None:
             outcome.alerts.append(_alert(mail, "行程单匹配尚待 T2-3 接入，需人工核对"))
 
 
+def _consolidate_confirmed_same_invoice(outcomes: list[MessageOutcome], cfg: RunConfig) -> None:
+    """Keep originals; group only valid same numbers with exactly one retained winner."""
+    groups = {}
+    for outcome in outcomes:
+        for record in outcome.mail.records:
+            number = str(record.fields.invoice_number or "")
+            if re.fullmatch(r"[0-9]{20}", number):
+                groups.setdefault(number, []).append((outcome, record))
+    for entries in groups.values():
+        winners = [(o, r) for o, r in entries if r.record_id not in o.mail.excel_skip_record_ids]
+        if len(entries) < 2 or len(winners) != 1:
+            continue
+        owner, winner = winners[0]
+        winner.source.same_invoice_records = [{"mail_id": o.mail.mail_id, "record_id": r.record_id} for o, r in entries]
+        matches = [(o, r) for o, r in entries if r.matched_itinerary is not None]
+        # Multiple confirmed matches are equivalent only when actual file bytes
+        # and extracted trip fields all agree. Missing files never prove identity.
+        if len(matches) > 1:
+            import hashlib
+            hashes = []
+            for donor, source in matches:
+                seq = source.matched_itinerary.file_seq
+                f = next((item for item in donor.mail.files if item.file_seq == seq), None)
+                try:
+                    if not f or os.path.basename(f.internal_name) != f.internal_name:
+                        raise ValueError("invalid source")
+                    path = os.path.realpath(os.path.join(cfg.extract_dir, f.internal_name))
+                    if os.path.dirname(path) != os.path.realpath(cfg.extract_dir):
+                        raise ValueError("invalid source")
+                    with open(path, "rb") as handle:
+                        hashes.append(hashlib.sha256(handle.read()).hexdigest())
+                except (OSError, ValueError):
+                    hashes.append(None)
+            values = {(str(r.matched_itinerary.match_amount), r.fields.travel_time, r.fields.origin_dest) for _, r in matches}
+            if None not in hashes and len(set(hashes)) == 1 and len(values) == 1:
+                matches = matches[:1]
+            else:
+                winner.status = STATUS_MANUAL_REVIEW
+                owner.alerts.append(_alert(owner.mail, f"{winner.record_id} 同票关联多份行程单，关系需人工核对"))
+                matches = []
+        if winner.matched_itinerary is None and len(matches) == 1:
+            donor, source = matches[0]
+            from copy import deepcopy
+            winner.matched_itinerary = deepcopy(source.matched_itinerary)
+            if donor.mail.mail_id != owner.mail.mail_id:
+                winner.matched_itinerary.mail_id = donor.mail.mail_id
+            winner.fields.travel_time = source.fields.travel_time
+            winner.fields.origin_dest = source.fields.origin_dest
+        # Same checked delivery criterion as the ZIP exporter, including
+        # a real converted PDF for image-only vouchers.
+        from delivery_exporter import _pdf_for_source, _read_checked_pdf
+        has_voucher = False
+        for o, r in entries:
+            for f in o.mail.files:
+                if f.file_seq not in r.source.source_file_seq:
+                    continue
+                try:
+                    source = {"file_type": f.file_type, "file_seq": f.file_seq,
+                              "internal_name": f.internal_name}
+                    path = _pdf_for_source(cfg, source, o.mail.mail_id,
+                        {(o.mail.mail_id, seq): pdf for seq, pdf in o.converted_pdfs.items()})
+                    _read_checked_pdf(cfg, path)
+                    has_voucher = True
+                    break
+                except (OSError, ValueError):
+                    continue
+            if has_voucher:
+                break
+        if has_voucher and winner.status == STATUS_MISSING_VOUCHER:
+            winner.status = STATUS_COMPLETE
+        for outcome, record in entries:
+            if record is not winner:
+                record.source.same_invoice_duplicate = True
+            if record is winner and not has_voucher and winner.matched_itinerary is None:
+                continue
+            suppress_voucher = has_voucher
+            suppress_trip = winner.matched_itinerary is not None
+            def keep(alert):
+                flags = alert.get("flags") or []
+                text = " ".join(str(x) for x in flags)
+                return not ((suppress_voucher and record.record_id in text and "缺凭证" in text)
+                            or (suppress_trip and "缺行程单" in text and len(outcome.mail.records) == 1))
+            outcome.alerts = [a for a in outcome.alerts if keep(a)]
+
+
 def _check_source_chain(mails: list[MailRecord], cfg: RunConfig | None = None) -> None:
     """输出前检查编号、记录引用及实际落盘文件组成可双向追查的来源链。"""
     mail_ids: set[str] = set()
@@ -391,11 +478,11 @@ def _check_source_chain(mails: list[MailRecord], cfg: RunConfig | None = None) -
             if record.record_id in record_ids:
                 raise ValueError(f"{record.record_id} 记录编号重复")
             record_ids.add(record.record_id)
-            if record.matched_itinerary and record.matched_itinerary.file_seq not in known:
-                raise ValueError(f"{record.record_id} 行程单来源链断裂")
             if record.matched_itinerary:
-                matched_id = f"{mail.mail_id}-{record.matched_itinerary.file_seq}"
-                itinerary = itineraries_by_id.get(matched_id)
+                trip_mail = record.matched_itinerary.mail_id or mail.mail_id
+                matched_id = f"{trip_mail}-{record.matched_itinerary.file_seq}"
+                itinerary = next((item for m in mails if m.mail_id == trip_mail for item in m.itineraries
+                                  if item.record_id == matched_id), None)
                 if itinerary is None:
                     raise ValueError(f"{record.record_id} 匹配的行程单未保存")
                 matched_amount = normalize_amount(record.matched_itinerary.match_amount)
@@ -455,7 +542,7 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
         "failed_mails": [], "run_error": None, "excel_error": None,
         "delivery_status": "summary_failed", "delivery_zip_bytes": None,
         "delivery_error": "", "delivery_issues": [],
-        "summary_row_count": 0,
+        "summary_row_count": 0, "duplicate_record_count": None,
     }
     if not (cfg.dashscope_api_key or "").strip():
         return [], {**stats, "error": "no_api_key"}
@@ -573,16 +660,27 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
                 for alert in mail.arbitration_alerts:
                     alert.setdefault("mail_id", mail.mail_id)
                     alert.setdefault("mail_uid", mail.mail_uid)
-                stats["not_found_alerts"].extend(mail.arbitration_alerts)
         elif any(mail.records for mail in mails):
             for mail in mails:
                 for record in mail.records:
                     record.status = STATUS_MANUAL_REVIEW
             stats["not_found_alerts"].append({"mail_subject": "本轮结果",
                 "flags": ["写表前去重仲裁尚待 T2-4 接入；当前记录均需人工核对"]})
+        _consolidate_confirmed_same_invoice(outcomes, cfg)
+        if ports.arbitrate_records is not None:
+            stats["duplicate_record_count"] = sum(len(mail.excel_skip_record_ids) for mail in mails)
+        for mail in mails:
+            duplicate_ids = {r.record_id for r in mail.records if r.source.same_invoice_duplicate}
+            for alert in mail.arbitration_alerts:
+                flags = " ".join(str(x) for x in alert.get("flags", []))
+                if any(record_id in flags for record_id in duplicate_ids) and ("同票，采用 XML 记录" in flags or "一致，已跳过重复 Excel 行" in flags):
+                    continue
+                stats["not_found_alerts"].append(alert)
         if ports.validate_records is not None:
             for mail in mails:
-                alerts = ports.validate_records(mail)
+                from field_validator import validate_records as native_validator
+                alerts = (native_validator(mail, mails) if ports.validate_records is native_validator
+                          else ports.validate_records(mail))
                 for alert in alerts:
                     alert.setdefault("mail_id", mail.mail_id)
                     alert.setdefault("mail_uid", mail.mail_uid)
@@ -598,6 +696,8 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
         for mail in mails:
             files_by_seq = {item.file_seq: item for item in mail.files}
             for record in mail.records:
+                if record.record_id in mail.excel_skip_record_ids:
+                    continue
                 missing = _missing_excel_keys(record)
                 if not missing:
                     continue

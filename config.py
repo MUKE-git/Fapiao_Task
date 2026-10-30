@@ -66,6 +66,8 @@ class RunConfig:
     dashscope_model: str = "qwen-plus"
     output_root: Optional[str] = None
     dashscope_vision_model: str = ""
+    dashscope_model_source: str = "programmatic"
+    dashscope_vision_model_source: str = "programmatic"
 
     @property
     def base_path(self) -> str:

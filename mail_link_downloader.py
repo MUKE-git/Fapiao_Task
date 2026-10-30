@@ -148,7 +148,7 @@ def discover_links(msg: Message) -> list[LinkCandidate]:
         for raw, anchor, context in pairs:
             url = _normalize_url(raw)
             hint = _hint(url, anchor, context)
-            if not hint or url in seen:
+            if not hint or hint == "OFD" or url in seen:
                 continue
             seen.add(url)
             items.append(LinkCandidate(url, _label(url, hint)))

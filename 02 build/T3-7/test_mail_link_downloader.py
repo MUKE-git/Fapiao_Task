@@ -35,9 +35,9 @@ class LinkDownloadTests(unittest.TestCase):
                    html='<a href="https://e.example/get?jflx=pdf&amp;sign=x">发票 PDF 文件下载</a>'
                         '<a href="https://e.example/get?jflx=ofd&amp;sign=y">发票 OFD 文件下载</a>')
         links = discover_links(msg)
-        self.assertEqual(len(links), 3)
+        self.assertEqual(len(links), 2)
         self.assertIn("jflx=xml&sign=secret", links[0].url)
-        self.assertEqual(["XML", "PDF", "OFD"],
+        self.assertEqual(["XML", "PDF"],
                          [link.label.rsplit("（", 1)[-1].rstrip("）") for link in links])
         self.assertTrue(all("secret" not in link.label for link in links))
 
@@ -89,13 +89,21 @@ class LinkDownloadTests(unittest.TestCase):
                                          max_total_bytes=20)
         self.assertEqual(failures[0].reason, "LINK_SIZE_LIMIT")
 
-    def test_ofd_and_zip_are_distinguished_by_container(self):
+    def test_explicit_ofd_links_are_ignored_before_network(self):
+        msg = mail(plain="https://e.example/a.ofd https://e.example/get?jflx=ofd")
+        def forbidden(*_args, **_kwargs):
+            raise AssertionError("明确的 OFD 链接不应访问")
+        files, failures = download_links(msg, resolver=forbidden, requester=forbidden)
+        self.assertEqual(files, [])
+        self.assertEqual(failures, [])
+
+    def test_generic_link_returning_ofd_is_identified_for_later_ignore(self):
         out = io.BytesIO()
         with zipfile.ZipFile(out, "w") as archive:
             archive.writestr("OFD.xml", "<ofd/>")
         response = lambda *_: _Response(200, {"content-type": "application/ofd"}, out.getvalue())
-        files, failures = download_links(mail(plain="https://e.example/a.ofd"),
-                                         resolver=public_dns, requester=response)
+        msg = mail(html='<a href="https://e.example/get">下载发票</a>')
+        files, failures = download_links(msg, resolver=public_dns, requester=response)
         self.assertEqual(files[0].file_type, "OFD")
         self.assertEqual(failures, [])
 

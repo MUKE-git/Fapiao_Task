@@ -58,6 +58,9 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
             "local_pdf_type": local_type,
             "text_snapshot": text[:3000],
         }]}
+        file.meta.model_usage = {"model_kind": "text", "configured_model": cfg.dashscope_model,
+                                 "config_source": getattr(cfg, "dashscope_model_source", "programmatic")}
+        task_info["model_usage"] = file.meta.model_usage
         audit, error, mismatches, manual = call_ai_audit_and_rename(
             task_info, model=cfg.dashscope_model, mail_subject=mail_subject,
             mail_date_hint=mail_date, run_id=run_id,
@@ -72,6 +75,9 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
         item["filename"] = os.path.basename(file.path)
 
     data = audit if isinstance(audit, dict) else pre_read
+    if not isinstance(audit, dict):
+        file.meta.model_usage["extraction_source"] = "local_regex"
+    file.meta.model_usage["result"] = error or "response_parsed"
     ai_roles = data.get("file_classifications") or []
     valid_classification = (isinstance(ai_roles, list) and len(ai_roles) == 1
                             and isinstance(ai_roles[0], dict)
