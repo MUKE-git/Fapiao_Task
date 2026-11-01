@@ -1,0 +1,92 @@
+[
+  {
+    "kind": "text_pdf",
+    "model": "deepseek-v4.1-flash",
+    "trace": {
+      "config_source": "secrets.toml",
+      "call_attempted": true,
+      "successful_response": true,
+      "extraction_source": "model_response",
+      "attempt_count": 1,
+      "attempt_errors": [],
+      "failure_categories": []
+    },
+    "result": {
+      "total_amount": "123.45",
+      "match_amount": "Not Found",
+      "invoice_number": "12345678901234567890",
+      "invoice_date": "2026-11-01",
+      "travel_time": "Not Found",
+      "invoice_type": "Not Found",
+      "receipt_type": "Office supplies",
+      "seller": "ABC Company",
+      "origin_dest": "Not Found",
+      "data_source": "Unknown",
+      "file_classifications": [
+        {
+          "file": "synthetic_invoice.pdf",
+          "role": "Invoice"
+        }
+      ]
+    },
+    "error": ""
+  },
+  {
+    "kind": "image",
+    "model": "deepseek-v4.1-flash-1017",
+    "trace": {
+      "call_attempted": true,
+      "successful_response": true,
+      "extraction_source": "model_response",
+      "configured_model": "deepseek-v4.1-flash-1017",
+      "config_source": "secrets.toml",
+      "result": "response_parsed"
+    },
+    "result": {
+      "role": "Invoice",
+      "fields": {
+        "invoice_number": "12345678901234567890",
+        "invoice_date": "2026-11-01",
+        "total_amount": "123.45",
+        "invoice_type": "",
+        "receipt_type": "Not Found",
+        "seller": "ABC Company"
+      },
+      "field_evidence": {
+        "invoice_number": [
+          {
+            "file_seq": "01",
+            "raw": "12345678901234567890",
+            "normalized": "12345678901234567890",
+            "location": "Invoice number: 之后的文本"
+          }
+        ],
+        "invoice_date": [
+          {
+            "file_seq": "01",
+            "raw": "2026-11-01",
+            "normalized": "2026-11-01",
+            "location": "Invoice date: 之后的文本"
+          }
+        ],
+        "total_amount": [
+          {
+            "file_seq": "01",
+            "raw": "123.45",
+            "normalized": "123.45",
+            "location": "Total amount: 之后的文本"
+          }
+        ],
+        "seller": [
+          {
+            "file_seq": "01",
+            "raw": "ABC Company",
+            "normalized": "ABC Company",
+            "location": "Seller: 之后的文本"
+          }
+        ]
+      },
+      "error_reason": ""
+    }
+  }
+]

@@ -63,9 +63,10 @@ class RunConfig:
     output_folder_name: str = "Invoice_Task"
     use_netease_id: bool = False
     dashscope_api_key: str = ""
-    dashscope_model: str = "qwen-plus"
+    dashscope_model: str = "qwen3.7-max"
     output_root: Optional[str] = None
-    dashscope_vision_model: str = ""
+    dashscope_vision_model: str = "qwen3-vl-plus"
+    deepseek_base_url: str = ""
     dashscope_model_source: str = "programmatic"
     dashscope_vision_model_source: str = "programmatic"
 

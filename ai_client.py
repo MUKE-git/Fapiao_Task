@@ -12,6 +12,8 @@ AI 审计与重命名模块（由 invoice_pipeline.py 拆分而来，契约 = A 
 
 from __future__ import annotations
 
+from prompt_loader import load_prompt
+
 import json
 import base64
 from dataclasses import dataclass, field
@@ -91,16 +93,11 @@ def _t3_response_text(response: object) -> str:
     return ""
 
 
-def _t3_default_transport(*, model: str, api_key: str, messages: list, vision: bool):
-    if vision:
-        from dashscope import MultiModalConversation
-        return MultiModalConversation.call(api_key=api_key, model=model,
-                                           messages=messages,
-                                           response_format={"type": "json_object"})
-    if Generation is None:
-        raise RuntimeError("DASHSCOPE_SDK_UNAVAILABLE")
-    return Generation.call(api_key=api_key, model=model, messages=messages,
-                           result_format="message", response_format={"type": "json_object"})
+def _t3_default_transport(*, model: str, api_key: str, messages: list, vision: bool, source="programmatic", base_url=""):
+    from model_gateway import model_call
+    return model_call(api_key=api_key, model=model, messages=messages, vision=vision, source=source, base_url=base_url,
+                     response_format={"type": "json_object"},
+                     **({} if vision else {"result_format": "message"}))
 
 
 def extract_single_file(request: ModelFileInput, cfg: object,
@@ -118,6 +115,8 @@ def extract_single_file(request: ModelFileInput, cfg: object,
         trace["result"] = kwargs.get("error_reason") or "response_parsed"
         if trace["result"].startswith(("MODEL_JSON_INVALID", "MODEL_SHAPE_INVALID", "MODEL_CLASSIFICATION_INVALID")):
             trace["extraction_source"] = "none"
+        from model_gateway import record_processing
+        record_processing(trace)
         return ModelFileOutput(**kwargs)
 
     if not request.file_seq or not request.internal_name or not request.file_type:
@@ -129,29 +128,13 @@ def extract_single_file(request: ModelFileInput, cfg: object,
     if transport is None and not key:
         return result(error_reason="MODEL_API_KEY_MISSING")
     model = str((getattr(cfg, "dashscope_vision_model", None) or os.getenv("DASHSCOPE_VISION_MODEL")
-                 or "qwen-vl-plus") if vision else (getattr(cfg, "dashscope_model", None) or "qwen-plus"))
-    system = ("从当前单个票据文件提取 JSON。只返回一项 file_classifications，file 必须等于输入 internal_name。"
-              "role 只能是 Invoice、Itinerary、Unknown。发票字段为 invoice_number、invoice_date、"
-              "total_amount、invoice_type、receipt_type、seller；行程单字段为 match_amount、"
-              "travel_time、origin_dest。字段值必须为字符串；开票日期严格使用 YYYY-MM-DD，"
-              "金额只用数字和小数点，保留原小数位，不带货币符号或单位；缺失用 Not Found。"
-              "每个非空字段在 field_evidence 中给出 raw 和 location；不臆造不可见的值。"
-              "若同一画面有多张独立票据，设置 multiple_documents=true。"
-              f"提示词版本 {T3_EXTRACTION_PROMPT_VERSION}。")
+                 or "qwen3-vl-plus") if vision else (getattr(cfg, "dashscope_model", None) or "qwen3.7-max"))
+    system = load_prompt("single_file")
     identity = (f"mail_id={request.mail_id}; file_seq={request.file_seq}; internal_name={request.internal_name}; "
                 f"original_name={request.original_name}; format={request.file_type}; "
                 f"pre_read_role={request.pre_read_role}")
     if vision:
-        system += (
-            "图片发票的 receipt_type 必须从票面“项目名称”一栏提取，"
-            "若项目名称为 *一级*二级，则只返回二级名称；"
-            "例如 *运输服务*客运服务费 应返回 客运服务费。"
-            "不要将票面标题、二维码旁的文字或文件名当作项目名称。"
-            "项目名称无法辨认或多个项目无法唯一确定时，返回 Not Found，不要猜测。"
-            "receipt_type 的 field_evidence 中 raw 应保留项目名称原文，"
-            "location 应指明项目名称在图片中的位置。"
-            "图片票面类型规则版本 t3-image-receipt-v2。"
-        )
+        system += load_prompt("image_extra")
         content = [{"image": "data:" + mime + ";base64," + base64.b64encode(data).decode("ascii")}
                    for data, mime in request.images]
         content.append({"text": identity})
@@ -160,7 +143,9 @@ def extract_single_file(request: ModelFileInput, cfg: object,
     else:
         messages = [{"role": "system", "content": system},
                     {"role": "user", "content": identity + "\n" + request.text}]
-    send = transport or _t3_default_transport
+    source = getattr(cfg, "dashscope_vision_model_source" if vision else "dashscope_model_source", "programmatic")
+    trace.update(configured_model=model, config_source=source)
+    send = transport or (lambda **kwargs: _t3_default_transport(source=source, base_url=getattr(cfg, "deepseek_base_url", ""), **kwargs))
     response = None
     for attempt in range(3):
         try:
@@ -392,11 +377,12 @@ def _connection_failure_category(exc: Exception) -> str:
 
 def call_ai_audit_and_rename(
     task_info: dict,
-    model: str = "qwen-plus",
+    model: str = "qwen3.7-max",
     mail_subject: str = "",
     mail_date_hint: str = "",
     run_id: str = "",
     api_key: str = "",
+    deepseek_base_url: str = "",
 ) -> Tuple[Optional[dict], str, List[Dict[str, Any]], List[Dict[str, Any]]]:
     def document_role(data: dict) -> str:
         # 本次调用只有一个文件；原名/正文预读已确定时，字段归属与 PDF 处理器一致。
@@ -436,84 +422,7 @@ def call_ai_audit_and_rename(
         combined_content += f"Pre-Type（仅 PDF 正文）: {file.get('local_pdf_type', file.get('identified_type', ''))}\n"
         combined_content += f"Text: {file['text_snapshot']}\n"
 
-    system_prompt = """# Role
-你是一个专业的财务报销审计专家，擅长从复杂的出行票据中提取结构化信息。
-
-# Context 我会为你提供一组文件的文本内容。每个文件含「AttachmentOriginalName」（邮件内附件原名）与「Pre-Type（原名优先合并后）」：若原名含「行程单」「发票」等，以该合并结果为准；否则再结合正文判断。 
-
-# Task 
-1. **角色判定**：结合附件原名与正文，判断每个文件是真正的【发票】、还是【行程单/行程明细】、或其它（Unknown）。
-2. **数据核实**：若附件原名已能判断类型，file_classifications 的 role 应与「Pre-Type（原名优先合并后）」一致；若正文与原名明显矛盾，role 可为 Unknown。 
-3. **信息提取**：从判定后的文件中提取以下所有字段。
-4. **必须输出 file_classifications**：与上述文件一一对应；每个对象的 file 字段必须与输入中的文件名（含 Msg 前缀的 pdf 名）一致；role 只能是 Invoice、Itinerary、Unknown 三者之一（英文）。
-
-# Extraction Rules
-1. **报销金额 (total_amount)**：
-   - 必须从【发票】文本中提取。
-   - 寻找“价税合计（小写）”或“合 计”字样后的数值 。
-   - 如果发票包含多个金额（如单价、税额、抵扣额），请务必只提取最终的【价税合计】。
-   - 按票面原有小数位输出十进制字符串，包括末尾的 0；例如票面 `8.00` 应输出 `"8.00"`，不得缩写为 `8.0` 或 `8`。
-   - 行程单没有发票价税合计时填写 "Not Found"，不得用行程单金额填充此字段。
-2. **行程单匹配金额 (match_amount)**：
-   - 必须从【当前行程单】自身的票面总金额提取，保留原有小数位；可见标签可能是“报销金额”“费用合计”“总金额”“实付金额”等。
-   - 多段行程时取明确标注的整单金额，不取某一段费用；没有可确认总额时填写 "Not Found"。
-   - 发票文件填写 "Not Found"，不得复制发票价税合计或另一文件的金额。
-3. **发票号码 (invoice_number)**：
-   - 从【发票】文本中提取。
-   - 通常位于“发票号码”关键词之后，是一串长数字 。
-   - 通常位于文件右上部分 。
-4. **开票日期 (invoice_date)**：
-   - 从【发票】文本中提取。
-   - 通常位于“开票日期”关键词之后 。
-   - 通常位于文件右上部分，发票号码下方 。
-   - 格式统一转化为 YYYY-MM-DD（例如 2026-03-09） 。
-5. **出行时间 (travel_time)**：
-   - 必须从【行程单】文本中提取。
-   - 重点寻找“上车时间”、“用车时间”或“入口时间” 。
-   - **核心逻辑**：如果行程单包含多段行程（多行数据），请务必只提取【第一笔行程】的起始时间 。
-   - 忽略“申请日期”或“打印日期” 。
-   - 输出统一为 YYYY-MM-DD HH:mm；票面含秒时保留到分钟，不把秒写入字段。
-6. **发票类型 (invoice_type)**：
-   - 从【发票】文本中提取。
-   - 如“增值税电子普通发票”、“增值税专用发票”、“增值税普通发票”等。
-   - 通常位于票面顶部标题区域。
-7. **票面类型 (receipt_type)**：
-   - 从【发票】文本中提取。
-   - 即发票的服务/货物名称，如“客运服务费”、“餐饮服务费”、“住宿服务费”等。
-   - 通常位于“货物或应税劳务、服务名称”或“*服务名称*”之后。
-8. **销售方 (seller)**：
-   - 从【发票】文本中提取。
-   - 即开票方企业名称，通常位于“销售方名称”或“销售方”之后。
-   - 提取完整的公司全称。
-9. **出发地/目的地 (origin_dest)**：
-   - 必须从【行程单】文本中提取。
-   - 格式为“出发地 → 目的地”，如“北京 → 上海”、“杭州东站 → 南京南站”。
-   - 若行程单包含多段行程，只提取第一段的起终点。
-   - 若无法提取，填写 "Not Found"。
-
-# Constraints
-- 如果信息缺失，请填写 "Not Found"。
-- **每个字段都必须出现在 JSON 输出中**，即使值为 "Not Found" 也不能省略该字段。
-- 不要包含任何解释性文字，只输出 JSON 格式。
-- 金额只保留数字，不带货币符号。
-- file_classifications 数组长度必须与附件文件数量相同，顺序与输入 File 段落顺序一致。
-
-# Output Format (Example JSON)
-{
-  "total_amount": "14.76",
-  "match_amount": "Not Found",
-  "invoice_number": "26327000000491302024",
-  "invoice_date": "2026-03-09",
-  "travel_time": "Not Found",
-  "invoice_type": "增值税电子普通发票",
-  "receipt_type": "客运服务费",
-  "seller": "某某出行科技有限公司",
-  "origin_dest": "Not Found",
-  "data_source": "T3_Chuxing",
-  "file_classifications": [
-    {"file": "Msg123_发票.pdf", "role": "Invoice"}
-  ]
-}"""
+    system_prompt = load_prompt("pdf_text")
 
     error_reason = ""
     trace = task_info.setdefault("model_usage", {})
@@ -529,7 +438,11 @@ def call_ai_audit_and_rename(
             trace["call_attempted"] = True
             trace["attempt_count"] += 1
             try:
-                response = Generation.call(
+                from model_gateway import model_call
+                response = model_call(
+                    sdk_call=Generation.call,
+                    base_url=deepseek_base_url,
+                    source=trace.get("config_source", "programmatic"),
                     api_key=api_key or os.getenv("DASHSCOPE_API_KEY", ""),
                     model=model,
                     messages=[

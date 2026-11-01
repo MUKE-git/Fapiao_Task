@@ -159,7 +159,7 @@ def process_image(file: CollectedFile, cfg: RunConfig, mail_subject: str,
     decoding, validation, conversion and file bookkeeping still execute.
     """
     seq = file.meta.file_seq
-    configured_model = str(getattr(cfg, "dashscope_vision_model", "") or os.getenv("DASHSCOPE_VISION_MODEL") or "qwen-vl-plus")
+    configured_model = str(getattr(cfg, "dashscope_vision_model", "") or os.getenv("DASHSCOPE_VISION_MODEL") or "qwen3-vl-plus")
     source = getattr(cfg, "dashscope_vision_model_source", "programmatic")
     if not getattr(cfg, "dashscope_vision_model", ""):
         source = "environment" if os.getenv("DASHSCOPE_VISION_MODEL") else "default"

@@ -65,6 +65,7 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
             task_info, model=cfg.dashscope_model, mail_subject=mail_subject,
             mail_date_hint=mail_date, run_id=run_id,
             api_key=cfg.dashscope_api_key,
+            deepseek_base_url=getattr(cfg, "deepseek_base_url", ""),
         )
         expected_name = os.path.basename(temp_path)
 
@@ -78,6 +79,8 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
     if not isinstance(audit, dict):
         file.meta.model_usage["extraction_source"] = "local_regex"
     file.meta.model_usage["result"] = error or "response_parsed"
+    from model_gateway import record_processing
+    record_processing(file.meta.model_usage)
     ai_roles = data.get("file_classifications") or []
     valid_classification = (isinstance(ai_roles, list) and len(ai_roles) == 1
                             and isinstance(ai_roles[0], dict)

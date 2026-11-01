@@ -1,0 +1,148 @@
+[
+  {
+    "kind": "text_pdf",
+    "model": "deepseek-v4.1-flash-1017",
+    "trace": {
+      "config_source": "secrets.toml",
+      "call_attempted": true,
+      "successful_response": true,
+      "extraction_source": "model_response",
+      "attempt_count": 1,
+      "attempt_errors": [],
+      "failure_categories": []
+    },
+    "result": {
+      "total_amount": "123.45",
+      "match_amount": "Not Found",
+      "invoice_number": "12345678901234567890",
+      "invoice_date": "2026-11-01",
+      "travel_time": "Not Found",
+      "invoice_type": "Not Found",
+      "receipt_type": "Office supplies",
+      "seller": "ABC Company",
+      "origin_dest": "Not Found",
+      "data_source": "Not Found",
+      "file_classifications": [
+        {
+          "file": "synthetic_invoice.pdf",
+          "role": "Invoice"
+        }
+      ]
+    },
+    "error": "",
+    "field_comparison": {
+      "invoice_number": {
+        "expected": "12345678901234567890",
+        "actual": "12345678901234567890",
+        "passed": true
+      },
+      "invoice_date": {
+        "expected": "2026-11-01",
+        "actual": "2026-11-01",
+        "passed": true
+      },
+      "total_amount": {
+        "expected": "123.45",
+        "actual": "123.45",
+        "passed": true
+      },
+      "seller": {
+        "expected": "ABC Company",
+        "actual": "ABC Company",
+        "passed": true
+      },
+      "receipt_type": {
+        "expected": "Office supplies",
+        "actual": "Office supplies",
+        "passed": true
+      }
+    },
+    "fixture_type": "synthetic English invoice"
+  },
+  {
+    "kind": "image",
+    "model": "deepseek-v4.1-flash-1017",
+    "trace": {
+      "call_attempted": true,
+      "successful_response": true,
+      "extraction_source": "model_response",
+      "configured_model": "deepseek-v4.1-flash-1017",
+      "config_source": "secrets.toml",
+      "result": "response_parsed"
+    },
+    "result": {
+      "role": "Invoice",
+      "fields": {
+        "invoice_number": "12345678901234567890",
+        "invoice_date": "2026-11-01",
+        "total_amount": "123.45",
+        "invoice_type": "",
+        "receipt_type": "Not Found",
+        "seller": "ABC Company"
+      },
+      "field_evidence": {
+        "invoice_number": [
+          {
+            "file_seq": "01",
+            "raw": "12345678901234567890",
+            "normalized": "12345678901234567890",
+            "location": "Invoice number 行"
+          }
+        ],
+        "invoice_date": [
+          {
+            "file_seq": "01",
+            "raw": "2026-11-01",
+            "normalized": "2026-11-01",
+            "location": "Invoice date 行"
+          }
+        ],
+        "total_amount": [
+          {
+            "file_seq": "01",
+            "raw": "123.45",
+            "normalized": "123.45",
+            "location": "Total amount 行"
+          }
+        ],
+        "seller": [
+          {
+            "file_seq": "01",
+            "raw": "ABC Company",
+            "normalized": "ABC Company",
+            "location": "Seller 行"
+          }
+        ]
+      },
+      "error_reason": ""
+    },
+    "field_comparison": {
+      "invoice_number": {
+        "expected": "12345678901234567890",
+        "actual": "12345678901234567890",
+        "passed": true
+      },
+      "invoice_date": {
+        "expected": "2026-11-01",
+        "actual": "2026-11-01",
+        "passed": true
+      },
+      "total_amount": {
+        "expected": "123.45",
+        "actual": "123.45",
+        "passed": true
+      },
+      "seller": {
+        "expected": "ABC Company",
+        "actual": "ABC Company",
+        "passed": true
+      },
+      "receipt_type": {
+        "expected": "Office supplies",
+        "actual": "Not Found",
+        "passed": false
+      }
+    },
+    "fixture_type": "synthetic English invoice"
+  }
+]

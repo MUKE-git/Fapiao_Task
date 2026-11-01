@@ -1,0 +1,87 @@
+[
+  {
+    "kind": "image",
+    "model": "deepseek-v4.1-flash-1017",
+    "trace": {
+      "call_attempted": true,
+      "successful_response": true,
+      "extraction_source": "model_response",
+      "configured_model": "deepseek-v4.1-flash-1017",
+      "config_source": "secrets.toml",
+      "result": "response_parsed"
+    },
+    "result": {
+      "role": "Invoice",
+      "fields": {
+        "invoice_number": "12345678901234567890",
+        "invoice_date": "2026-11-01",
+        "total_amount": "123.45",
+        "invoice_type": "",
+        "receipt_type": "Not Found",
+        "seller": "ABC Company"
+      },
+      "field_evidence": {
+        "invoice_number": [
+          {
+            "file_seq": "01",
+            "raw": "Invoice number: 12345678901234567890",
+            "normalized": "12345678901234567890",
+            "location": "Second line of text"
+          }
+        ],
+        "invoice_date": [
+          {
+            "file_seq": "01",
+            "raw": "Invoice date: 2026-11-01",
+            "normalized": "2026-11-01",
+            "location": "Third line of text"
+          }
+        ],
+        "total_amount": [
+          {
+            "file_seq": "01",
+            "raw": "Total amount: 123.45",
+            "normalized": "123.45",
+            "location": "Fourth line of text"
+          }
+        ],
+        "seller": [
+          {
+            "file_seq": "01",
+            "raw": "Seller: ABC Company",
+            "normalized": "ABC Company",
+            "location": "Fifth line of text"
+          }
+        ]
+      },
+      "error_reason": ""
+    },
+    "field_comparison": {
+      "invoice_number": {
+        "expected": "12345678901234567890",
+        "actual": "12345678901234567890",
+        "passed": true
+      },
+      "invoice_date": {
+        "expected": "2026-11-01",
+        "actual": "2026-11-01",
+        "passed": true
+      },
+      "total_amount": {
+        "expected": "123.45",
+        "actual": "123.45",
+        "passed": true
+      },
+      "seller": {
+        "expected": "ABC Company",
+        "actual": "ABC Company",
+        "passed": true
+      },
+      "receipt_type": {
+        "expected": "Office supplies",
+        "actual": "Not Found",
+        "passed": false
+      }
+    }
+  }
+]

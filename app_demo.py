@@ -39,11 +39,11 @@ def _model_setting(name: str, default: str) -> str:
 
 
 def _dashscope_model() -> str:
-    return _model_setting("DASHSCOPE_MODEL", "qwen-plus")
+    return _model_setting("DASHSCOPE_MODEL", "")
 
 
 def _dashscope_vision_model() -> str:
-    return _model_setting("DASHSCOPE_VISION_MODEL", "qwen-vl-plus")
+    return _model_setting("DASHSCOPE_VISION_MODEL", "")
 
 
 def mail_notice_cards(mails: list[dict], alerts: list[dict], mismatches: list[dict]) -> list[dict]:
@@ -209,8 +209,14 @@ if submitted:
             output_root = tempfile.mkdtemp(prefix="fapiao_")
 
             try:
-                text_model, text_source = _model_setting_with_source("DASHSCOPE_MODEL", "qwen-plus")
-                vision_model, vision_source = _model_setting_with_source("DASHSCOPE_VISION_MODEL", "qwen-vl-plus")
+                text_model, text_source = _model_setting_with_source("DASHSCOPE_MODEL", "")
+                vision_model, vision_source = _model_setting_with_source("DASHSCOPE_VISION_MODEL", "")
+                from model_gateway import validate_models
+                plan = validate_models(text_model, vision_model)
+                deepseek_url = _model_setting("DEEPSEEK_BASE_URL", "")
+                if plan == "A":
+                    from model_gateway import validate_deepseek_url
+                    validate_deepseek_url(deepseek_url)
                 cfg = RunConfig(
                     imap_host=imap_host.strip(),
                     imap_user=imap_user.strip(),
@@ -219,6 +225,7 @@ if submitted:
                     use_netease_id=use_netease,
                     dashscope_api_key=api_key,
                     dashscope_model=text_model,
+                    deepseek_base_url=deepseek_url,
                     dashscope_vision_model=vision_model,
                     dashscope_model_source=text_source,
                     dashscope_vision_model_source=vision_source,

@@ -546,6 +546,11 @@ def run_pipeline(cfg: RunConfig, log: Optional[LogFn] = None) -> tuple[list[dict
     }
     if not (cfg.dashscope_api_key or "").strip():
         return [], {**stats, "error": "no_api_key"}
+    from model_gateway import validate_models
+    plan = validate_models(cfg.dashscope_model, cfg.dashscope_vision_model)
+    if plan == "A":
+        from model_gateway import validate_deepseek_url
+        validate_deepseek_url(cfg.deepseek_base_url)
     ensure_output_dirs(cfg)
     ports = load_stage_ports(cfg)
     outcomes: list[MessageOutcome] = []
