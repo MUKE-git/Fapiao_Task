@@ -137,7 +137,7 @@ def extract_single_file(request: ModelFileInput, cfg: object,
         system += load_prompt("image_extra")
         content = [{"image": "data:" + mime + ";base64," + base64.b64encode(data).decode("ascii")}
                    for data, mime in request.images]
-        content.append({"text": identity})
+        content.append({"text": identity + ("\n" + request.text if request.text else "")})
         messages = [{"role": "system", "content": [{"text": system}]},
                     {"role": "user", "content": content}]
     else:

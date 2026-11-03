@@ -204,7 +204,38 @@ def _choose_with_ai(entries: list[tuple[MailRecord, InvoiceRecord]], cfg: RunCon
                     ) -> tuple[str, list[dict]] | None:
     if cfg is None:
         return None
-    loader = text_loader or _pdf_text
+    prepared_files = {}
+    visual_parts = []
+    if text_loader is None:
+        from pdf_input import prepare_pdf
+        import base64
+        try:
+            ordered = [(mail, [item for item in mail.files if record.source.source_file_seq
+                              and item.file_seq == record.source.source_file_seq[0]]) for mail, record in entries]
+            ordered += [(mail, mail.files) for mail, _ in entries]
+            for mail, files in ordered:
+                for item in files:
+                    key = (mail.mail_id, item.file_seq)
+                    if item.file_type != 'PDF' or key in prepared_files:
+                        continue
+                    source = _source_pdf(item, cfg)
+                    if source is None:
+                        return None
+                    prepared = prepare_pdf(source.path)
+                    prepared_files[key] = prepared
+                    for page, (data, mime) in zip(prepared.image_pages, prepared.images):
+                        visual_parts.extend([{'text': f'mail_id={mail.mail_id}; file_seq={item.file_seq}; PDF page={page}'},
+                                             {'image': 'data:' + mime + ';base64,' + base64.b64encode(data).decode('ascii')}])
+            image_parts = [p for p in visual_parts if 'image' in p]
+            if len(image_parts) > 8 or sum(len(p['image']) for p in image_parts) > 20_000_000:
+                return None
+        except Exception:
+            return None
+    def shared_text(mail, record, cfg):
+        seq = record.source.source_file_seq[0] if record.source.source_file_seq else ''
+        prepared = prepared_files.get((mail.mail_id, seq))
+        return prepared.text if prepared else ''
+    loader = text_loader or shared_text
     try:
         texts = {record.record_id: loader(mail, record, cfg) for mail, record in entries}
     except Exception:
@@ -224,6 +255,8 @@ def _choose_with_ai(entries: list[tuple[MailRecord, InvoiceRecord]], cfg: RunCon
             source_record = next((record for candidate_mail, record in entries
                                   if candidate_mail is mail and item.file_seq in record.source.source_file_seq), None)
             pdf_text = (texts[source_record.record_id] if source_record is not None
+                        else prepared_files[(mail.mail_id, item.file_seq)].text
+                        if (mail.mail_id, item.file_seq) in prepared_files
                         else _pdf_text_file(item, cfg) if item.file_type == "PDF" else "")
             attachments.append({"file_seq": item.file_seq, "file_type": item.file_type,
                                 "original_name": item.original_name, "pdf_text": pdf_text})
@@ -249,6 +282,11 @@ def _choose_with_ai(entries: list[tuple[MailRecord, InvoiceRecord]], cfg: RunCon
         {"role": "system", "content": load_prompt("arbitration")},
         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
     ]
+    if len(json.dumps(payload, ensure_ascii=False)) > 36000:
+        return None
+    if visual_parts:
+        messages = [{'role': 'system', 'content': [{'text': load_prompt('arbitration')}]},
+                    {'role': 'user', 'content': [{'text': json.dumps(payload, ensure_ascii=False)}] + visual_parts}]
     call = ai_call or Generation.call
     data = None
     for attempt, delay in enumerate((1, 3, None)):
@@ -257,8 +295,11 @@ def _choose_with_ai(entries: list[tuple[MailRecord, InvoiceRecord]], cfg: RunCon
                 response = call(model=cfg.dashscope_model, messages=messages)
             else:
                 from model_gateway import model_call
-                response = model_call(api_key=cfg.dashscope_api_key, model=cfg.dashscope_model, messages=messages,
-                                     source=cfg.dashscope_model_source, base_url=getattr(cfg, "deepseek_base_url", ""))
+                response = model_call(api_key=cfg.dashscope_api_key,
+                                     model=cfg.dashscope_vision_model if visual_parts else cfg.dashscope_model,
+                                     messages=messages, vision=bool(visual_parts),
+                                     source=cfg.dashscope_vision_model_source if visual_parts else cfg.dashscope_model_source,
+                                     base_url=getattr(cfg, "deepseek_base_url", ""))
             data = _response_json(response)
             if data is not None:
                 break
@@ -271,10 +312,17 @@ def _choose_with_ai(entries: list[tuple[MailRecord, InvoiceRecord]], cfg: RunCon
             break
         time.sleep(delay)
     decision = _confirmed_selection(data, entries, texts, differences)
+    if visual_parts:
+        # A page/region citation locates visual evidence, but cannot establish
+        # its truth by string search. Never treat model OCR as independent proof.
+        for mail, record in entries:
+            _alert(mail, record, 'PDF 图片证据已提交视觉仲裁；缺少可独立核对的文字证据，需人工核对页面')
+        decision = None
     if ai_call is None:
         from model_gateway import record_processing
-        record_processing(dict(configured_model=cfg.dashscope_model, config_source=cfg.dashscope_model_source,
-                               model_kind="text_arbitration", call_attempted=True,
+        record_processing(dict(configured_model=cfg.dashscope_vision_model if visual_parts else cfg.dashscope_model,
+                               config_source=cfg.dashscope_vision_model_source if visual_parts else cfg.dashscope_model_source,
+                               model_kind="vision_arbitration" if visual_parts else "text_arbitration", call_attempted=True,
                                successful_response=getattr(locals().get("response"), "status_code", 0) == 200,
                                result="selection_confirmed" if decision else "manual_review_required"))
     return decision

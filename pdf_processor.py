@@ -40,6 +40,34 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
         merge_type_from_name_and_local(file.meta.original_name, local_type)
     )
     file.meta.pre_read_type = pre_type
+    from pdf_input import prepare_pdf
+    try:
+        prepared = prepare_pdf(file.path)
+    except Exception as exc:
+        error = str(exc) if isinstance(exc, ValueError) and str(exc).startswith('PDF_') else 'PDF_READ_' + type(exc).__name__
+        file.meta.model_usage = dict(call_attempted=False, successful_response=False, result=error)
+        return DocumentResult(file_seq=file.meta.file_seq, role=pre_type,
+                              source_file_seq=[file.meta.file_seq], error_reason=error)
+    if prepared.images:
+        from ai_client import ModelFileInput, extract_single_file
+        trace = dict(model_kind='vision', configured_model=cfg.dashscope_vision_model,
+                     config_source=cfg.dashscope_vision_model_source,
+                     pdf_image_pages=list(prepared.image_pages), pdf_page_count=prepared.page_count)
+        file.meta.model_usage = trace
+        candidate = extract_single_file(ModelFileInput(file.meta.file_seq, os.path.basename(file.path),
+                                       file.meta.original_name, 'PDF', pre_read_role=pre_type,
+                                       text=prepared.text, images=prepared.images), cfg, diagnostics=trace)
+        from type_classifier import collect_classification_mismatches, triple_type_disagreement
+        context = {'files': [{'local_path': file.path, 'attachment_original_name': file.meta.original_name,
+                             'identified_type': pre_type, 'local_pdf_type': local_type}]}
+        data = {**candidate.fields, 'file_classifications': [{'file': os.path.basename(file.path), 'role': candidate.role}]}
+        mismatches = collect_classification_mismatches(context, data, mail_subject)
+        manual = ([{'filename': file.meta.original_name, 'reason': 'PDF 预读与视觉分类分歧'}]
+                  if triple_type_disagreement(context['files'][0], candidate.role) else [])
+        return DocumentResult(file_seq=file.meta.file_seq, role=pre_type if pre_type != PRE_READ_UNKNOWN else candidate.role,
+                              fields=data, source_file_seq=[file.meta.file_seq], error_reason=candidate.error_reason,
+                              field_evidence=candidate.field_evidence, mismatches=mismatches, manual_unknown=manual)
+    text = prepared.text
     fallback_input = [{"identified_type": pre_type, "text_snapshot": text[:3000]}]
     pre_read = build_fallback_audit_result(fallback_input)
     file.meta.pre_read_invoice_no = str(pre_read.get("invoice_number") or NOT_FOUND)
@@ -56,7 +84,7 @@ def process_pdf(file: CollectedFile, cfg: RunConfig, mail_subject: str,
             "attachment_original_name": file.meta.original_name,
             "identified_type": pre_type,
             "local_pdf_type": local_type,
-            "text_snapshot": text[:3000],
+            "text_snapshot": text,
         }]}
         file.meta.model_usage = {"model_kind": "text", "configured_model": cfg.dashscope_model,
                                  "config_source": getattr(cfg, "dashscope_model_source", "programmatic")}
