@@ -160,10 +160,6 @@ def _show_delivery_result(stats: dict, mails: list[dict], mismatches: list[dict]
         st.error(view["message"])
 
 
-st.set_page_config(page_title="发票邮件处理 Demo", layout="centered")
-st.title("发票邮件处理 Demo")
-st.caption("本轮在独立临时目录处理；完成后下载交付 ZIP。")
-
 IMAP_PRESETS = {
     "163 邮箱": "imap.163.com",
     "QQ 邮箱": "imap.qq.com",
@@ -172,168 +168,185 @@ IMAP_PRESETS = {
     "其他（手动输入）": "__custom__",
 }
 
-with st.form("mail_form"):
-    imap_choice = st.selectbox("IMAP 服务器", options=list(IMAP_PRESETS.keys()))
-    if IMAP_PRESETS[imap_choice] == "__custom__":
-        imap_host = st.text_input("手动输入 IMAP 服务器地址", placeholder="例如 imap.example.com")
-    else:
-        imap_host = IMAP_PRESETS[imap_choice]
-    imap_user = st.text_input("邮箱账号")
-    imap_password = st.text_input("邮箱授权码（或密码）", type="password")
-    use_netease = st.checkbox(
-        "这是网易邮箱（163/126/yeah）",
-        value=False,
-        help="若 IMAP 地址里已含 163.com 等，可不勾，程序会自动发送网易兼容指令。"
-        "若使用 QQ 邮箱等，请勿勾选，否则可能无法登录。",
-    )
-    submitted = st.form_submit_button("开始处理")
-
-if submitted:
-    # 每次提交都只展示本轮结果，避免校验失败时沿用上轮下载按钮。
-    for key in ("last_zip_bytes", "last_zip_name"):
-        st.session_state.pop(key, None)
-    if not imap_user.strip() or not imap_password:
-        st.error("请填写邮箱账号与授权码。")
-    else:
-        api_key = _dashscope_api_key()
-        if not api_key:
-            st.error(
-                "未检测到有效的 DashScope API Key。\n\n"
-                "**任选其一：**\n"
-                "- 在系统环境变量中设置 `DASHSCOPE_API_KEY`（需重启终端 / IDE 后再运行 Streamlit）。\n"
-                "- 在 **`项目目录/.streamlit/secrets.toml`** 中写入一行：\n"
-                "  `DASHSCOPE_API_KEY = \"你的百炼 Key\"`  \n"
-                "  **引号内不能为空**；若曾清空过该文件，请重新粘贴 Key。"
-            )
+def render_use_page() -> None:
+    with st.form("mail_form"):
+        imap_choice = st.selectbox("IMAP 服务器", options=list(IMAP_PRESETS.keys()))
+        if IMAP_PRESETS[imap_choice] == "__custom__":
+            imap_host = st.text_input("手动输入 IMAP 服务器地址", placeholder="例如 imap.example.com")
         else:
-            output_root = tempfile.mkdtemp(prefix="fapiao_")
+            imap_host = IMAP_PRESETS[imap_choice]
+        imap_user = st.text_input("邮箱账号")
+        imap_password = st.text_input("邮箱授权码（或密码）", type="password")
+        use_netease = st.checkbox(
+            "这是网易邮箱（163/126/yeah）",
+            value=False,
+            help="若 IMAP 地址里已含 163.com 等，可不勾，程序会自动发送网易兼容指令。"
+            "若使用 QQ 邮箱等，请勿勾选，否则可能无法登录。",
+        )
+        submitted = st.form_submit_button("开始处理")
 
-            try:
-                text_model, text_source = _model_setting_with_source("DASHSCOPE_MODEL", "")
-                vision_model, vision_source = _model_setting_with_source("DASHSCOPE_VISION_MODEL", "")
-                from model_gateway import validate_models
-                plan = validate_models(text_model, vision_model)
-                deepseek_url = _model_setting("DEEPSEEK_BASE_URL", "")
-                if plan == "A":
-                    from model_gateway import validate_deepseek_url
-                    validate_deepseek_url(deepseek_url)
-                cfg = RunConfig(
-                    imap_host=imap_host.strip(),
-                    imap_user=imap_user.strip(),
-                    imap_password=imap_password,
-                    output_folder_name="Invoice_Task",
-                    use_netease_id=use_netease,
-                    dashscope_api_key=api_key,
-                    dashscope_model=text_model,
-                    deepseek_base_url=deepseek_url,
-                    dashscope_vision_model=vision_model,
-                    dashscope_model_source=text_source,
-                    dashscope_vision_model_source=vision_source,
-                    output_root=output_root,
+    if submitted:
+        # 每次提交都只展示本轮结果，避免校验失败时沿用上轮下载按钮。
+        for key in ("last_zip_bytes", "last_zip_name"):
+            st.session_state.pop(key, None)
+        if not imap_user.strip() or not imap_password:
+            st.error("请填写邮箱账号与授权码。")
+        else:
+            api_key = _dashscope_api_key()
+            if not api_key:
+                st.error(
+                    "未检测到有效的 DashScope API Key。\n\n"
+                    "**任选其一：**\n"
+                    "- 在系统环境变量中设置 `DASHSCOPE_API_KEY`（需重启终端 / IDE 后再运行 Streamlit）。\n"
+                    "- 在 **`项目目录/.streamlit/secrets.toml`** 中写入一行：\n"
+                    "  `DASHSCOPE_API_KEY = \"你的百炼 Key\"`  \n"
+                    "  **引号内不能为空**；若曾清空过该文件，请重新粘贴 Key。"
                 )
+            else:
+                output_root = tempfile.mkdtemp(prefix="fapiao_")
 
-                with st.status("正在处理…", expanded=False) as status:
+                try:
+                    text_model, text_source = _model_setting_with_source("DASHSCOPE_MODEL", "")
+                    vision_model, vision_source = _model_setting_with_source("DASHSCOPE_VISION_MODEL", "")
+                    from model_gateway import validate_models
+                    plan = validate_models(text_model, vision_model)
+                    deepseek_url = _model_setting("DEEPSEEK_BASE_URL", "")
+                    if plan == "A":
+                        from model_gateway import validate_deepseek_url
+                        validate_deepseek_url(deepseek_url)
+                    cfg = RunConfig(
+                        imap_host=imap_host.strip(),
+                        imap_user=imap_user.strip(),
+                        imap_password=imap_password,
+                        output_folder_name="Invoice_Task",
+                        use_netease_id=use_netease,
+                        dashscope_api_key=api_key,
+                        dashscope_model=text_model,
+                        deepseek_base_url=deepseek_url,
+                        dashscope_vision_model=vision_model,
+                        dashscope_model_source=text_source,
+                        dashscope_vision_model_source=vision_source,
+                        output_root=output_root,
+                    )
 
-                    def log(msg: str) -> None:
-                        # Backend logs may include internal paths. Keep them out of
-                        # the user page while retaining server-side diagnostics.
-                        print(msg, flush=True)
+                    with st.status("正在处理…", expanded=False) as status:
 
-                    try:
-                        mismatches, stats = run_pipeline(cfg, log=log)
-                    except Exception as exc:
-                        print(f"主流程异常：{type(exc).__name__}: {exc}", flush=True)
-                        mismatches, stats = [], {"run_error": type(exc).__name__,
-                                                 "delivery_status": "unavailable"}
+                        def log(msg: str) -> None:
+                            # Backend logs may include internal paths. Keep them out of
+                            # the user page while retaining server-side diagnostics.
+                            print(msg, flush=True)
 
-                imap_err = stats.get("imap_error")
-                run_err = stats.get("run_error")
-                excel_err = stats.get("excel_error")
-                failed_mails = stats.get("failed_mails") or []
-                registered_count = 0
-                record_count = 0
-                debug_error = None
-                debug_mails: list[dict] = []
-                if os.path.isfile(cfg.debug_file):
-                    try:
-                        with open(cfg.debug_file, encoding="utf-8") as debug_input:
-                            debug_mails = json.load(debug_input)
-                        if not isinstance(debug_mails, list):
-                            raise ValueError("顶层不是邮件列表")
-                        registered_count = len(debug_mails)
-                        record_count = sum(len(mail.get("records") or []) for mail in debug_mails)
-                    except (OSError, ValueError, TypeError, AttributeError) as exc:
-                        debug_error = str(exc)
-                duplicate_count = stats.get("duplicate_record_count")
-                duplicate_display = duplicate_count if isinstance(duplicate_count, int) and duplicate_count >= 0 else "未统计"
-                record_display = record_count if debug_error is None else "未统计"
-                st.info(
-                    f"本轮统计：IMAP 未读 **{stats.get('unseen_total', 0)}** 封；"
-                    f"发票相关 **{stats.get('invoice_keyword_mails', 0)}** 封；"
-                    f"发票记录 **{record_display}** 笔；重复记录 **{duplicate_display}** 笔。"
-                )
-                if debug_error:
-                    st.error("本轮处理记录未能读取，请重新运行本次处理。")
-                if imap_err:
-                    st.error("邮件获取未完成，请检查邮箱连接与授权信息。")
-                    hint = _imap_error_hint(imap_err)
-                    if hint:
-                        st.warning(hint)
-                    st.session_state.pop("last_zip_bytes", None)
-                    st.session_state.pop("last_zip_name", None)
-                else:
-                    ut = stats.get("unseen_total", 0)
-                    ikw = stats.get("invoice_keyword_mails", 0)
+                        try:
+                            mismatches, stats = run_pipeline(cfg, log=log)
+                        except Exception as exc:
+                            print(f"主流程异常：{type(exc).__name__}: {exc}", flush=True)
+                            mismatches, stats = [], {"run_error": type(exc).__name__,
+                                                     "delivery_status": "unavailable"}
 
-                    if run_err:
-                        st.error("本轮处理未完成，请重新运行；已取得的处理记录可供排查。")
-                    if failed_mails:
-                        st.warning(f"有 {len(failed_mails)} 封邮件处理失败；其他邮件仍继续处理。失败邮件已按 UID 保存在 JSON，请人工核对。")
+                    imap_err = stats.get("imap_error")
+                    run_err = stats.get("run_error")
+                    excel_err = stats.get("excel_error")
+                    failed_mails = stats.get("failed_mails") or []
+                    registered_count = 0
+                    record_count = 0
+                    debug_error = None
+                    debug_mails: list[dict] = []
+                    if os.path.isfile(cfg.debug_file):
+                        try:
+                            with open(cfg.debug_file, encoding="utf-8") as debug_input:
+                                debug_mails = json.load(debug_input)
+                            if not isinstance(debug_mails, list):
+                                raise ValueError("顶层不是邮件列表")
+                            registered_count = len(debug_mails)
+                            record_count = sum(len(mail.get("records") or []) for mail in debug_mails)
+                        except (OSError, ValueError, TypeError, AttributeError) as exc:
+                            debug_error = str(exc)
+                    duplicate_count = stats.get("duplicate_record_count")
+                    duplicate_display = duplicate_count if isinstance(duplicate_count, int) and duplicate_count >= 0 else "未统计"
+                    record_display = record_count if debug_error is None else "未统计"
+                    st.info(
+                        f"本轮统计：IMAP 未读 **{stats.get('unseen_total', 0)}** 封；"
+                        f"发票相关 **{stats.get('invoice_keyword_mails', 0)}** 封；"
+                        f"发票记录 **{record_display}** 笔；重复记录 **{duplicate_display}** 笔。"
+                    )
+                    if debug_error:
+                        st.error("本轮处理记录未能读取，请重新运行本次处理。")
+                    if imap_err:
+                        st.error("邮件获取未完成，请检查邮箱连接与授权信息。")
+                        hint = _imap_error_hint(imap_err)
+                        if hint:
+                            st.warning(hint)
+                        st.session_state.pop("last_zip_bytes", None)
+                        st.session_state.pop("last_zip_name", None)
+                    else:
+                        ut = stats.get("unseen_total", 0)
+                        ikw = stats.get("invoice_keyword_mails", 0)
 
-                    if ut == 0 and not run_err:
-                        st.info("收件箱内未检索到未读邮件，请确认发票邮件位于收件箱且仍为未读。")
-                        ims = stats.get("imap_mailbox_status") or {}
-                        nmsg = ims.get("messages")
-                        nuns = ims.get("unseen")
-                        if ims.get("error"):
-                            st.caption(f"IMAP STATUS 未取到：`{ims.get('error')}`")
-                        elif nmsg is not None and nmsg > 0:
-                            ex_sel = ims.get("exists_from_select")
-                            all_c = ims.get("all_search_count")
-                            extra = ""
-                            if ex_sel is not None and all_c is not None:
-                                extra = (
-                                    f"（SELECT 的 EXISTS={ex_sel}，与 SEARCH ALL 序号数={all_c}"
-                                    + (" 一致" if ex_sel == all_c else " 不一致")
-                                    + "；均为 **IMAP 收件箱 INBOX** 内「一封邮件算一封」，不是网页会话折叠后的条数。）"
+                        if run_err:
+                            st.error("本轮处理未完成，请重新运行；已取得的处理记录可供排查。")
+                        if failed_mails:
+                            st.warning(f"有 {len(failed_mails)} 封邮件处理失败；其他邮件仍继续处理。失败邮件已按 UID 保存在 JSON，请人工核对。")
+
+                        if ut == 0 and not run_err:
+                            st.info("收件箱内未检索到未读邮件，请确认发票邮件位于收件箱且仍为未读。")
+                            ims = stats.get("imap_mailbox_status") or {}
+                            nmsg = ims.get("messages")
+                            nuns = ims.get("unseen")
+                            if ims.get("error"):
+                                st.caption(f"IMAP STATUS 未取到：`{ims.get('error')}`")
+                            elif nmsg is not None and nmsg > 0:
+                                ex_sel = ims.get("exists_from_select")
+                                all_c = ims.get("all_search_count")
+                                extra = ""
+                                if ex_sel is not None and all_c is not None:
+                                    extra = (
+                                        f"（SELECT 的 EXISTS={ex_sel}，与 SEARCH ALL 序号数={all_c}"
+                                        + (" 一致" if ex_sel == all_c else " 不一致")
+                                        + "；均为 **IMAP 收件箱 INBOX** 内「一封邮件算一封」，不是网页会话折叠后的条数。）"
+                                    )
+                                st.info(
+                                    f"服务器侧统计：收件箱 **INBOX** 内共有 **{nmsg}** 封邮件，**UNSEEN（未读）= {nuns if nuns is not None else '?'}**。"
+                                    f"{extra}"
+                                    "若网页列表比这里**多得多**，常见是：网页用了**会话/主题合并**、或列表里混入了**其它文件夹**；本程序只认 **IMAP 里的标准收件箱 INBOX**。"
+                                    "若网页仍显示未读而此处 UNSEEN=0，可 **标已读再标回未读** 同步状态，或确认信在 **收件箱** 而非仅推广等分类。"
                                 )
-                            st.info(
-                                f"服务器侧统计：收件箱 **INBOX** 内共有 **{nmsg}** 封邮件，**UNSEEN（未读）= {nuns if nuns is not None else '?'}**。"
-                                f"{extra}"
-                                "若网页列表比这里**多得多**，常见是：网页用了**会话/主题合并**、或列表里混入了**其它文件夹**；本程序只认 **IMAP 里的标准收件箱 INBOX**。"
-                                "若网页仍显示未读而此处 UNSEEN=0，可 **标已读再标回未读** 同步状态，或确认信在 **收件箱** 而非仅推广等分类。"
+                            st.session_state.pop("last_zip_bytes", None)
+                            st.session_state.pop("last_zip_name", None)
+                        elif ikw == 0 and not failed_mails and not run_err:
+                            st.info(f"检索到 {ut} 封未读邮件，但邮件主题均不符合发票/报销筛选条件。")
+                            st.session_state.pop("last_zip_bytes", None)
+                            st.session_state.pop("last_zip_name", None)
+                        elif record_count == 0:
+                            st.warning(
+                                "本轮没有生成发票记录，请查看该轮待核事项并回原邮件核对。"
                             )
-                        st.session_state.pop("last_zip_bytes", None)
-                        st.session_state.pop("last_zip_name", None)
-                    elif ikw == 0 and not failed_mails and not run_err:
-                        st.info(f"检索到 {ut} 封未读邮件，但邮件主题均不符合发票/报销筛选条件。")
-                        st.session_state.pop("last_zip_bytes", None)
-                        st.session_state.pop("last_zip_name", None)
-                    elif record_count == 0:
-                        st.warning(
-                            "本轮没有生成发票记录，请查看该轮待核事项并回原邮件核对。"
-                        )
-                    _render_mail_alerts(debug_mails, stats.get("not_found_alerts") or [], mismatches)
+                        _render_mail_alerts(debug_mails, stats.get("not_found_alerts") or [], mismatches)
 
-                _show_delivery_result(stats, debug_mails, mismatches,
-                                      failed_mails, imap_err, run_err)
-            finally:
-                shutil.rmtree(output_root, ignore_errors=True)
+                    _show_delivery_result(stats, debug_mails, mismatches,
+                                          failed_mails, imap_err, run_err)
+                finally:
+                    shutil.rmtree(output_root, ignore_errors=True)
 
-if st.session_state.get("last_zip_bytes"):
-    st.download_button(
-        label="下载本轮结果",
-        data=st.session_state["last_zip_bytes"],
-        file_name=st.session_state.get("last_zip_name") or "fapiao_output.zip",
-        mime="application/zip",
-    )
+    if st.session_state.get("last_zip_bytes"):
+        st.download_button(
+            label="下载本轮结果",
+            data=st.session_state["last_zip_bytes"],
+            file_name=st.session_state.get("last_zip_name") or "fapiao_output.zip",
+            mime="application/zip",
+        )
+
+
+def main() -> None:
+    from frontend import render_home, render_navigation
+
+    st.set_page_config(page_title="发票邮件处理助手", page_icon="▤", layout="wide")
+    render_navigation()
+    if st.query_params.get("page", "home") == "use":
+        st.html('<header class="use-heading"><div class="eyebrow">WORKSPACE / 开始处理</div><h1>发票邮件处理助手</h1><p>填写邮箱信息，整理本轮未读的发票邮件。</p></header>')
+        render_use_page()
+    else:
+        render_home()
+
+
+if __name__ == "__main__":
+    main()
